@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoute = require("./routes/authRoute.js");
@@ -14,10 +16,20 @@ const adminRoute = require("./routes/adminRoute.js");
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 80;
-const mongouri = process.env.mongo_url;
+const limiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
+const app = express();
+const port = process.env.PORT || 4000;
+const mongo_url = process.env.mongo_url;
+
+app.use(helmet());
+app.use(limiter);
+app.disable("x-powered-by");
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 
@@ -39,7 +51,7 @@ app.get("/api/", (req, res) => {
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(mongouri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(mongo_url, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("MongoDB connected!");
     app.listen(port, () =>

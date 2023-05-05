@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    unique: true,
   },
   phoneNumber: {
     type: Number,
@@ -33,17 +34,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "none",
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
   userID: {
     type: String,
     require: true,
-  },
-  resetPasswordCode: {
-    type: Number,
-    default: 0,
-  },
-  resetPasswordExpires: {
-    type: Number,
-    default: 0,
   },
   createdAt: {
     type: Date,

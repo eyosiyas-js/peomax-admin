@@ -1,15 +1,17 @@
 const express = require("express");
 const User = require("../models/User.js");
+const OTP = require("../models/OTP.js");
 const Token = require("../models/Token.js");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
-const { uid } = require("uid");
+const otpGenerator = require("otp-generator");
+
 const {
   validateSignupData,
   validateLoginData,
 } = require("../utils/validator.js");
+const { uid } = require("uid");
 
 require("dotenv").config();
 
@@ -32,6 +34,7 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const userData = {
+      userID: uid(16),
       firstName: firstName,
       lastName: lastName,
       password: hashedPassword,
@@ -43,6 +46,33 @@ router.post("/signup", async (req, res) => {
     const user = new User(userData);
 
     await user.save();
+
+    const code = await otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    const otp = new OTP({
+      userID: userData.userID,
+      code: code,
+      type: "emailVerification",
+    });
+    await otp.save();
+
+    const response = await sendEmail(
+      firstName,
+      email,
+      "emailVerification",
+      code
+    );
+
+    if (!response.success)
+      return res
+        .status(400)
+        .send({ error: `Could not send verification code to ${email}` });
+
+    res.send({ message: "Verify your email address" });
 
     delete userData.password;
 
@@ -74,6 +104,23 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { code } = req.body;
+    const otp = await OTP.findOne({ code: code, type: "emailVerification" });
+
+    if (!otp)
+      return res.status(400).send({ error: "Incorrect or expired code" });
+
+    await User.findOneAndUpdate({ userID: OTP.userID }, { verified: true });
+
+    res.send({ message: "Email verified" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: "Could not verify code" });
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { valid, errors } = await validateLoginData(req.body);
@@ -83,7 +130,9 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
 
-    if (!user) return res.status(404).send({ error: "User not found." });
+    if (!user) return res.status(404).send({ error: "User not found" });
+    if (!user.verified)
+      return res.status(404).send({ error: "User not verified" });
 
     const userData = {
       firstName: user.firstName,
@@ -131,81 +180,69 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/forgot-password", async (req, res) => {
+router.post("/reset-password", async (req, res) => {
   try {
-    const code = await crypto.randomInt(0, 1000000);
-    const resetPasswordExpires = (await Date.now()) + 3600000;
+    const code = await otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
 
     const { email } = req.body;
-    const user = await User.findOneAndUpdate(
-      { email: email },
-      { resetPasswordCode: code, resetPasswordExpires: resetPasswordExpires }
+    const user = await User.findOne({ email: email });
+
+    if (!user)
+      return res
+        .status(404)
+        .send({ error: `No user found with the email ${email}` });
+
+    const otp = new OTP({
+      userID: user.userID,
+      code: code,
+      type: "resetPassword",
+    });
+    otp.save();
+
+    const response = await sendEmail(
+      user.firstName,
+      email,
+      "resetPassword",
+      code
     );
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.email,
-        pass: process.env.email_password,
-      },
-    });
+    if (!response.success)
+      return res.status(400).send({ error: response.error });
 
-    const mailOptions = {
-      to: email,
-      from: process.env.email,
-      subject: "Password Reset Request",
-      text: `Please type the following verification code into your browser inorder to change your password. \n\n
-                            ${code} \n\n
-          if you did not request to change your password, just ignore this message.
-        `,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-        res.status(500).send({ error: "Couldn't send email" });
-      } else {
-        res.status(200).send({ message: "Password reset email sent" });
-      }
-    });
+    res.send(response.message);
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: "Couldn't change password" });
   }
 });
 
-router.post("/confirm-code/:code", async (req, res) => {
+router.post("/verify-code", async (req, res) => {
   try {
-    const { code } = req.params;
+    const { code } = req.body;
+    const otp = await OTP.findOne({ code: code, type: "resetPassword" });
 
-    const user = await User.findOne({ resetPasswordCode: code });
+    if (!otp)
+      return res.status(400).send({ error: "Incorrect or expired code" });
 
-    if (!user)
-      return res.status(400).send({ error: "Invalid or expired token" });
-
-    const resetPasswordExpires = user.resetPasswordExpires;
-
-    if (resetPasswordExpires < Date.now())
-      return res.status(500).send({ error: "Verification code expired." });
-
-    if (parseInt(code) !== user.resetPasswordCode)
-      return res.status(500).send({ error: "Incorrect verification code." });
-
-    res.send({ code });
+    res.send({ message: "Code verified", code: code });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ error: "Could not change password" });
+    res.status(500).send({ error: "Could not verify code" });
   }
 });
 
-router.post("/change-password/:code", async (req, res) => {
-  const { code } = req.params;
-  const { newPassword } = req.body;
+router.put("/change-password/", async (req, res) => {
+  const { code, newPassword } = req.body;
 
   try {
-    const user = await User.findOne({ resetPasswordCode: code });
-    if (!user)
-      return res.status(404).send({ error: "Code expired or invalid." });
+    const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+    if (!otp)
+      return res.status(404).send({ error: "Incorrect or expired code" });
+    const user = await User.findOne({ userID: OTP.userID });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);
@@ -247,7 +284,7 @@ router.get("/refresh-token", async (req, res) => {
       token: req.body.refresh_token,
     });
     if (!refresh_token)
-      return res.status(401).send({ error: "Inavliad/Expired refresh token" });
+      return res.status(401).send({ error: "Invalid/Expired refresh token" });
     const userData = await jwt.verify(
       req.body.refresh_token.slice(7),
       process.env.refresh_token_secret_key
@@ -270,7 +307,7 @@ router.get("/refresh-token", async (req, res) => {
   }
 });
 
-router.post("/logout", async (req, res) => {
+router.delete("/logout", async (req, res) => {
   try {
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,

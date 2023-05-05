@@ -82,31 +82,6 @@ router.post("/signup", async (req, res) => {
 
     await user.save();
     res.send({ message: "Verify your email address" });
-
-    // delete userData.password;
-
-    // const token1 = await jwt.sign(
-    //   userData,
-    //   process.env.access_token_secret_key,
-    //   {
-    //     expiresIn: "30d",
-    //   }
-    // );
-
-    // const token2 = await jwt.sign(
-    //   userData,
-    //   process.env.refresh_token_secret_key,
-    //   {
-    //     expiresIn: "60d",
-    //   }
-    // );
-
-    // const newToken = new Token({ userID: userData.userID, token: token2 });
-    // await newToken.save();
-
-    // const token = `Bearer ${token1}`;
-    // const refresh_token = `Bearer ${token2}`;
-    // res.send({ token, refresh_token, userData });
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error saving signup user." });
@@ -163,6 +138,61 @@ router.post("/verify-email", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: "Could not verify code" });
+  }
+});
+
+router.post("/auth-provider", async (req, res) => {
+  try {
+    const { firstName, lastName, email, verified, phoneNumber } = req.body;
+
+    const existingUser = await User.findOne({ email: email });
+
+    if (existingUser)
+      return res.status(400).send({ error: "User already exists." });
+
+    const userData = {
+      userID: uid(16),
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      verified: verified ? true : false,
+      phoneNumber: phoneNumber,
+      role: "client",
+    };
+
+    const user = new User(userData);
+    await user.save();
+
+    const token1 = await jwt.sign(
+      userData,
+      process.env.access_token_secret_key,
+      {
+        expiresIn: "30d",
+      }
+    );
+
+    const token2 = await jwt.sign(
+      userData,
+      process.env.refresh_token_secret_key,
+      {
+        expiresIn: "60d",
+      }
+    );
+
+    const token = `Bearer ${token1}`;
+    const refresh_token = `Bearer ${token2}`;
+
+    const newRefreshToken = new Token({
+      userID: userData.userID,
+      token: refresh_token,
+    });
+    await newRefreshToken.save();
+
+    res.send({ token, refresh_token, userData });
+    res.send({ message: "Verify your email address" });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Error saving signup user." });
   }
 });
 

@@ -258,7 +258,7 @@ router.post("/reset-password", async (req, res) => {
     if (!response.success)
       return res.status(400).send({ error: response.error });
 
-    res.send(response.message);
+    res.send({ message: response.message });
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: "Couldn't change password" });
@@ -280,14 +280,17 @@ router.post("/verify-code", async (req, res) => {
   }
 });
 
-router.put("/change-password/", async (req, res) => {
-  const { code, newPassword } = req.body;
+router.put("/change-password", async (req, res) => {
+  const { code, newPassword, confirmNewPassword } = req.body;
 
   try {
     const otp = await OTP.findOne({ code: code, type: "resetPassword" });
     if (!otp)
       return res.status(404).send({ error: "Incorrect or expired code" });
-    const user = await User.findOne({ userID: OTP.userID });
+
+    if (newPassword !== confirmNewPassword)
+      return res.status(404).send({ error: "Passwords do not match" });
+    const user = await User.findOne({ userID: otp.userID });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);
@@ -305,7 +308,7 @@ router.put("/change-password/", async (req, res) => {
 
     await user.save();
 
-    const jwttoken = await jwt.sign(
+    const token1 = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
@@ -313,9 +316,24 @@ router.put("/change-password/", async (req, res) => {
       }
     );
 
-    delete userData.password;
+    const token2 = await jwt.sign(
+      userData,
+      process.env.refresh_token_secret_key,
+      {
+        expiresIn: "60d",
+      }
+    );
 
-    const token = `Bearer ${jwttoken}`;
+    const token = `Bearer ${token1}`;
+    const refresh_token = `Bearer ${token2}`;
+
+    const newRefreshToken = new Token({
+      userID: userData.userID,
+      token: refresh_token,
+    });
+    await newRefreshToken.save();
+
+    res.send({ token, refresh_token, userData });
     res.send({ token, userData });
   } catch (error) {
     console.log(error);
@@ -336,6 +354,7 @@ router.get("/refresh-token", async (req, res) => {
     );
 
     delete userData.exp;
+    delete userData.password;
 
     const token = await jwt.sign(
       userData,

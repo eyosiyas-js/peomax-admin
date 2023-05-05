@@ -6,6 +6,7 @@ require("dotenv").config();
 const sendEmail = async (clientName, clientEmail, type, code) => {
   let transporter = nodemailer.createTransport({
     service: "gmail",
+    port: 587,
     auth: {
       user: process.env.email,
       pass: process.env.email_password,
@@ -26,7 +27,7 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
         ? "Welcome to Reserve ET! We're very excited to have you on board."
         : "Their has been a request from you to change your account password",
     instruction:
-      type == "email-verification"
+      type == "emailVerification"
         ? "Please copy and paste the following code to verify your email:"
         : "Please copy and paste the following code to reset your password:",
   };
@@ -52,7 +53,10 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
   let message = {
     from: process.env.email,
     to: clientEmail,
-    subject: "Password reset",
+    subject:
+      type == "emailVerification"
+        ? "Account email verification"
+        : "Account password reset",
     html: emailBody,
   };
 

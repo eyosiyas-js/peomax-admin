@@ -22,12 +22,22 @@ router.post("/signup", async (req, res) => {
     const { valid, errors } = await validateSignupData(req.body);
     if (!valid) return res.status(400).json(errors);
 
-    const { firstName, lastName, password, email, phoneNumber } = req.body;
+    const {
+      firstName,
+      lastName,
+      password,
+      confirmPassword,
+      email,
+      phoneNumber,
+    } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser)
       return res.status(400).send({ error: "User already exists." });
+
+    if (password !== confirmPassword)
+      return res.status(400).send({ error: "Passwords do not match" });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);
@@ -44,8 +54,6 @@ router.post("/signup", async (req, res) => {
     };
 
     const user = new User(userData);
-
-    await user.save();
 
     const code = await otpGenerator.generate(6, {
       lowerCaseAlphabets: false,
@@ -72,9 +80,59 @@ router.post("/signup", async (req, res) => {
         .status(400)
         .send({ error: `Could not send verification code to ${email}` });
 
+    await user.save();
     res.send({ message: "Verify your email address" });
 
-    delete userData.password;
+    // delete userData.password;
+
+    // const token1 = await jwt.sign(
+    //   userData,
+    //   process.env.access_token_secret_key,
+    //   {
+    //     expiresIn: "30d",
+    //   }
+    // );
+
+    // const token2 = await jwt.sign(
+    //   userData,
+    //   process.env.refresh_token_secret_key,
+    //   {
+    //     expiresIn: "60d",
+    //   }
+    // );
+
+    // const newToken = new Token({ userID: userData.userID, token: token2 });
+    // await newToken.save();
+
+    // const token = `Bearer ${token1}`;
+    // const refresh_token = `Bearer ${token2}`;
+    // res.send({ token, refresh_token, userData });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Error saving signup user." });
+  }
+});
+
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { code } = req.body;
+    const otp = await OTP.findOne({ code: code, type: "emailVerification" });
+
+    if (!otp)
+      return res.status(400).send({ error: "Incorrect or expired code" });
+
+    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true });
+    const user = await User.findOne({ userID: otp.userID });
+
+    const userData = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      password: user.password,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      userID: user.userID,
+      role: user.role,
+    };
 
     const token1 = await jwt.sign(
       userData,
@@ -92,29 +150,16 @@ router.post("/signup", async (req, res) => {
       }
     );
 
-    const newToken = new Token({ userID: userData.userID, token: token2 });
-    await newToken.save();
-
     const token = `Bearer ${token1}`;
     const refresh_token = `Bearer ${token2}`;
+
+    const newRefreshToken = new Token({
+      userID: userData.userID,
+      token: refresh_token,
+    });
+    await newRefreshToken.save();
+
     res.send({ token, refresh_token, userData });
-  } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error saving signup user." });
-  }
-});
-
-router.post("/verify-email", async (req, res) => {
-  try {
-    const { code } = req.body;
-    const otp = await OTP.findOne({ code: code, type: "emailVerification" });
-
-    if (!otp)
-      return res.status(400).send({ error: "Incorrect or expired code" });
-
-    await User.findOneAndUpdate({ userID: OTP.userID }, { verified: true });
-
-    res.send({ message: "Email verified" });
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: "Could not verify code" });

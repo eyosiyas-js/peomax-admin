@@ -354,15 +354,18 @@ router.get("/refresh-token", async (req, res) => {
     );
 
     delete userData.exp;
+    delete userData.iat;
     delete userData.password;
 
-    const token = await jwt.sign(
+    const jwttoken = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
         expiresIn: "30d",
       }
     );
+
+    const token = `Bearer ${jwttoken}`;
 
     res.send({ token, userData });
   } catch (error) {

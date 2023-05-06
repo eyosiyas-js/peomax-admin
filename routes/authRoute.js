@@ -35,7 +35,6 @@ router.post("/signup", async (req, res) => {
 
     if (existingUser)
       return res.status(400).send({ error: "User already exists." });
-
     if (password !== confirmPassword)
       return res.status(400).send({ error: "Passwords do not match" });
 
@@ -92,7 +91,6 @@ router.post("/verify-email", async (req, res) => {
   try {
     const { code } = req.body;
     const otp = await OTP.findOne({ code: code, type: "emailVerification" });
-
     if (!otp)
       return res.status(400).send({ error: "Incorrect or expired code" });
 
@@ -147,49 +145,86 @@ router.post("/auth-provider", async (req, res) => {
 
     const existingUser = await User.findOne({ email: email });
 
-    if (existingUser)
-      return res.status(400).send({ error: "User already exists." });
+    if (existingUser) {
+      const userData = {
+        userID: existingUser.userID,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        email: existingUser.email,
+        verified: !existingUser.verified ? false : true,
+        phoneNumber: existingUser.phoneNumber,
+        role: existingUser.role,
+      };
 
-    const userData = {
-      userID: uid(16),
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      verified: verified ? true : false,
-      phoneNumber: phoneNumber,
-      role: "client",
-    };
+      const token1 = await jwt.sign(
+        userData,
+        process.env.access_token_secret_key,
+        {
+          expiresIn: "30d",
+        }
+      );
 
-    const user = new User(userData);
-    await user.save();
+      const token2 = await jwt.sign(
+        userData,
+        process.env.refresh_token_secret_key,
+        {
+          expiresIn: "60d",
+        }
+      );
 
-    const token1 = await jwt.sign(
-      userData,
-      process.env.access_token_secret_key,
-      {
-        expiresIn: "30d",
-      }
-    );
+      const token = `Bearer ${token1}`;
+      const refresh_token = `Bearer ${token2}`;
 
-    const token2 = await jwt.sign(
-      userData,
-      process.env.refresh_token_secret_key,
-      {
-        expiresIn: "60d",
-      }
-    );
+      const newRefreshToken = new Token({
+        userID: userData.userID,
+        token: refresh_token,
+      });
+      await newRefreshToken.save();
+      const status = "login";
 
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
+      res.send({ status, token, refresh_token, userData });
+    } else {
+      const userData = {
+        userID: uid(16),
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        verified: !verified ? false : true,
+        phoneNumber: phoneNumber,
+        role: "client",
+      };
 
-    const newRefreshToken = new Token({
-      userID: userData.userID,
-      token: refresh_token,
-    });
-    await newRefreshToken.save();
+      const user = new User(userData);
+      await user.save();
 
-    res.send({ token, refresh_token, userData });
-    res.send({ message: "Verify your email address" });
+      const token1 = await jwt.sign(
+        userData,
+        process.env.access_token_secret_key,
+        {
+          expiresIn: "30d",
+        }
+      );
+
+      const token2 = await jwt.sign(
+        userData,
+        process.env.refresh_token_secret_key,
+        {
+          expiresIn: "60d",
+        }
+      );
+
+      const token = `Bearer ${token1}`;
+      const refresh_token = `Bearer ${token2}`;
+
+      const newRefreshToken = new Token({
+        userID: userData.userID,
+        token: refresh_token,
+      });
+      await newRefreshToken.save();
+      const status = "signup";
+
+      res.send({ status, token, refresh_token, userData });
+    }
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error saving signup user." });
@@ -295,20 +330,20 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
-router.post("/verify-code", async (req, res) => {
-  try {
-    const { code } = req.body;
-    const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+// router.post("/verify-code", async (req, res) => {
+//   try {
+//     const { code } = req.body;
+//     const otp = await OTP.findOne({ code: code, type: "resetPassword" });
 
-    if (!otp)
-      return res.status(400).send({ error: "Incorrect or expired code" });
+//     if (!otp)
+//       return res.status(400).send({ error: "Incorrect or expired code" });
 
-    res.send({ message: "Code verified", code: code });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Could not verify code" });
-  }
-});
+//     res.send({ message: "Code verified", code: code });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({ error: "Could not verify code" });
+//   }
+// });
 
 router.put("/change-password", async (req, res) => {
   const { code, newPassword, confirmNewPassword } = req.body;
@@ -364,7 +399,6 @@ router.put("/change-password", async (req, res) => {
     await newRefreshToken.save();
 
     res.send({ token, refresh_token, userData });
-    res.send({ token, userData });
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: "Couldn't change password" });

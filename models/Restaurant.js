@@ -35,6 +35,10 @@ const restaurantSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
+  ownerID: {
+    type: String,
+    require: true,
+  },
   tables: {
     type: Number,
     required: false,

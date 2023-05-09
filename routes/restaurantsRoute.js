@@ -147,6 +147,7 @@ router.post("/add", uploads.array("images", 5), async (req, res) => {
       images: images,
       rating: req.body.rating ? req.body.rating : 0,
       tables: tables,
+      ownerID: req.body.ownerID ? req.body.ownerID : "",
       availableSpots: availableSpots,
       totalSpots: totalSpots,
       totalSpots: totalBooks,

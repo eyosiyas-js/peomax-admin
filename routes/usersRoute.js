@@ -8,10 +8,7 @@ const router = express.Router();
 
 router.get("/", adminChecker, async (req, res) => {
   try {
-    const users = await User.find(
-      {},
-      { password: 0, resetPasswordCode: 0, resetPasswordExpires: 0 }
-    );
+    const users = await User.find({}, { password: 0 });
     res.send(users.map((user) => user.toObject()));
   } catch (error) {
     console.error(error);
@@ -21,23 +18,7 @@ router.get("/", adminChecker, async (req, res) => {
 
 router.get("/:id", adminChecker, async (req, res) => {
   try {
-    const user = await User.findOne(
-      { userID: req.params.id },
-      { password: 0, resetPasswordCode: 0, resetPasswordExpires: 0 }
-    );
-    res.send(user.toObject());
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting user" });
-  }
-});
-
-router.get("/profile", userChecker, async (req, res) => {
-  try {
-    const user = await User.findOne(
-      { userID: req.user.userID },
-      { password: 0, resetPasswordCode: 0, resetPasswordExpires: 0 }
-    );
+    const user = await User.findOne({ userID: req.params.id }, { password: 0 });
     res.send(user.toObject());
   } catch (error) {
     console.error(error);
@@ -88,7 +69,10 @@ router.get("/order-history", userChecker, async (req, res) => {
 
 router.put("/update", userChecker, async (req, res) => {
   try {
-    const user = await User.findOne({ userID: req.user.userID });
+    const user = await User.findOne(
+      { userID: req.user.userID },
+      { password: 0 }
+    );
     const { firstName, lastName, email, phoneNumber, address } = req.body;
     user.firstName = firstName;
     user.lastName = lastName;

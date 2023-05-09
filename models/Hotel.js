@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const restaurantSchema = new mongoose.Schema({
+const hotelSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -11,10 +11,20 @@ const restaurantSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  category: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   location: {
     type: String,
     required: true,
     trim: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
   },
   branches: {
     type: Array,
@@ -67,7 +77,7 @@ const restaurantSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
-  restaurantID: {
+  hotelID: {
     type: String,
     require: true,
   },
@@ -77,6 +87,6 @@ const restaurantSchema = new mongoose.Schema({
   },
 });
 
-const Restaurant = mongoose.model("Restaurant", restaurantSchema);
+const Hotel = mongoose.model("Hotel", hotelSchema);
 
-module.exports = Restaurant;
+module.exports = Hotel;

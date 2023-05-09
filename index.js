@@ -6,8 +6,9 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoute = require("./routes/authRoute.js");
 const usersRoute = require("./routes/usersRoute.js");
+const accountRoute = require("./routes/accountRoute.js");
 const adminRoute = require("./routes/adminRoute.js");
-// const restaurantsRoute = require("./routes/restaurantsRoute.js");
+const restaurantsRoute = require("./routes/restaurantsRoute.js");
 // const reserveRoute = require("./routes/reserveRoute.js");
 // const eventRoute = require("./routes/eventRoute.js");
 // const searchRoute = require("./routes/searchRoute.js");
@@ -35,9 +36,10 @@ app.use(cors({ origin: "*" }));
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
+app.use("/api/account", accountRoute);
 app.use("/api/admin", adminRoute);
 
-// app.use("/api/restaurants", restaurantsRoute);
+app.use("/api/restaurants", restaurantsRoute);
 // app.use("/api/reserve", reserveRoute);
 // app.use("/api/event", eventRoute);
 

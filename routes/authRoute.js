@@ -22,14 +22,7 @@ router.post("/signup", async (req, res) => {
     const { valid, errors } = await validateSignupData(req.body);
     if (!valid) return res.status(400).json(errors);
 
-    const {
-      firstName,
-      lastName,
-      password,
-      confirmPassword,
-      email,
-      phoneNumber,
-    } = req.body;
+    const { firstName, lastName, password, confirmPassword, email } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
@@ -48,7 +41,6 @@ router.post("/signup", async (req, res) => {
       lastName: lastName,
       password: hashedPassword,
       email: email,
-      phoneNumber: phoneNumber,
       role: "client",
     };
 
@@ -102,7 +94,6 @@ router.post("/verify-email", async (req, res) => {
       lastName: user.lastName,
       password: user.password,
       email: user.email,
-      phoneNumber: user.phoneNumber,
       userID: user.userID,
       role: user.role,
     };
@@ -141,7 +132,7 @@ router.post("/verify-email", async (req, res) => {
 
 router.post("/auth-provider", async (req, res) => {
   try {
-    const { firstName, lastName, email, verified, phoneNumber } = req.body;
+    const { firstName, lastName, email, verified } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
@@ -152,7 +143,6 @@ router.post("/auth-provider", async (req, res) => {
         lastName: existingUser.lastName,
         email: existingUser.email,
         verified: !existingUser.verified ? false : true,
-        phoneNumber: existingUser.phoneNumber,
         role: existingUser.role,
       };
 
@@ -190,7 +180,6 @@ router.post("/auth-provider", async (req, res) => {
         lastName: lastName,
         email: email,
         verified: !verified ? false : true,
-        phoneNumber: phoneNumber,
         role: "client",
       };
 
@@ -249,7 +238,6 @@ router.post("/login", async (req, res) => {
       lastName: user.lastName,
       password: user.password,
       email: user.email,
-      phoneNumber: user.phoneNumber,
       userID: user.userID,
       role: user.role,
     };
@@ -366,7 +354,6 @@ router.put("/change-password", async (req, res) => {
       lastName: user.lastName,
       password: newhashedPassword,
       email: user.email,
-      phoneNumber: user.phoneNumber,
       userID: user.userID,
       role: user.role,
     };

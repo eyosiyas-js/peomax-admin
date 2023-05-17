@@ -1,9 +1,4 @@
-const express = require("express");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const User = require("../models/User.js");
-const Product = require("../models/Restaurant.js");
 const dotenv = require("dotenv");
 dotenv.config();
 

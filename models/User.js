@@ -23,11 +23,11 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: Number,
-    required: true,
+    required: false,
   },
   role: {
     type: String,
-    enum: ["admin", "client"],
+    enum: ["admin", "client", "hotel-admin"],
     default: "client",
   },
   profilePicture: {

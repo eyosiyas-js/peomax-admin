@@ -36,8 +36,6 @@ function validateSignupData({
     errors.password = "Password must not be empty";
   } else if (isEmpty(phoneNumber)) {
     errors.phoneNumber = "Phone number must not be empty";
-  } else if (!isPhoneNumber(phoneNumber)) {
-    errors.phoneNumber = "Invalid phone number";
   }
 
   return {

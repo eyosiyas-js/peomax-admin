@@ -16,23 +16,15 @@ const isPhoneNumber = (str) => {
   return phoneRegex.test(str);
 };
 
-function validateSignupData({
-  email,
-  password,
-  confirmPassword,
-  firstName,
-  lastName,
-}) {
+function validateSignupData({ email, password, confirmPassword, name }) {
   let errors = {};
 
   if (isEmpty(email)) {
     errors.email = "Email must not be empty";
   } else if (!isEmail(email)) {
     errors.email = "Invalid email address";
-  } else if (isEmpty(firstName)) {
-    errors.firstName = "firstName must not be empty";
-  } else if (isEmpty(lastName)) {
-    errors.firstName = "lastName must not be empty";
+  } else if (isEmpty(name)) {
+    errors.name = "name must not be empty";
   } else if (isEmpty(confirmPassword)) {
     errors.password = "confirm password must not be empty";
   } else if (isEmpty(password)) {

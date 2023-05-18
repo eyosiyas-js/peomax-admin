@@ -11,7 +11,9 @@ module.exports = async (req, res, next) => {
       const token = req.headers.authorization.split("Bearer ")[1];
       const decoded = jwt.verify(token, process.env.access_token_secret_key);
 
-      if (decoded.role == "hotel-admin") {
+      req.user = decoded;
+
+      if (decoded.role == "manager" || decoded.role == "admin") {
         next();
       } else {
         res.status(403).send({ Error: "Action not allowed" });

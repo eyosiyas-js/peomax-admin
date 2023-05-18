@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
 const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
-const adminAuth = require("../middleware/adminChecker.js");
+const adminChecker = require("../middleware/adminChecker.js");
 const router = express.Router();
 
 const dotenv = require("dotenv");

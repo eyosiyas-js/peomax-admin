@@ -3,12 +3,17 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
   },
   lastName: {
     type: String,
-    required: true,
+    required: false,
+    trim: true,
+  },
+  name: {
+    type: String,
+    required: false,
     trim: true,
   },
   password: {
@@ -27,7 +32,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "client", "hotel-admin"],
+    enum: ["admin", "client", "manager"],
     default: "client",
   },
   profilePicture: {

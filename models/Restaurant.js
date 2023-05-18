@@ -35,10 +35,6 @@ const restaurantSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
-  ownerID: {
-    type: String,
-    require: true,
-  },
   tables: {
     type: Number,
     required: false,
@@ -72,6 +68,10 @@ const restaurantSchema = new mongoose.Schema({
     min: 0,
   },
   restaurantID: {
+    type: String,
+    require: true,
+  },
+  managerID: {
     type: String,
     require: true,
   },

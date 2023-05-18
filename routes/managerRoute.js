@@ -6,28 +6,29 @@ const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
+const adminChecker = require("../middleware/adminChecker.js");
 
 const {
   validateSignupData,
   validateLoginData,
-} = require("../utils/validator.js");
+} = require("../utils/managerValidator.js");
 const { uid } = require("uid");
 
 require("dotenv").config();
 
 const router = express.Router();
 
-router.post("/signup", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { valid, errors } = await validateSignupData(req.body);
     if (!valid) return res.status(400).json(errors);
 
-    const { firstName, lastName, password, confirmPassword, email } = req.body;
+    const { name, password, confirmPassword, email } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser)
-      return res.status(400).send({ error: "User already exists." });
+      return res.status(400).send({ error: "Manager account already exists." });
     if (password !== confirmPassword)
       return res.status(400).send({ error: "Passwords do not match" });
 
@@ -37,186 +38,19 @@ router.post("/signup", async (req, res) => {
 
     const userData = {
       userID: uid(16),
-      firstName: firstName,
-      lastName: lastName,
+      name: name,
       password: hashedPassword,
       email: email,
-      role: "client",
+      role: "manager",
     };
 
     const user = new User(userData);
 
-    const code = await otpGenerator.generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
-
-    const otp = new OTP({
-      userID: userData.userID,
-      code: code,
-      type: "emailVerification",
-    });
-    await otp.save();
-
-    const response = await sendEmail(
-      firstName,
-      email,
-      "emailVerification",
-      code
-    );
-
-    if (!response.success)
-      return res
-        .status(400)
-        .send({ error: `Could not send verification code to ${email}` });
-
     await user.save();
-    res.send({ message: "Verify your email address" });
+    res.send({ message: "Account created" });
   } catch (err) {
     console.log(err);
-    res.status(400).send({ error: "Error saving signup user." });
-  }
-});
-
-router.post("/verify-email", async (req, res) => {
-  try {
-    const { code } = req.body;
-    const otp = await OTP.findOne({ code: code, type: "emailVerification" });
-    if (!otp)
-      return res.status(400).send({ error: "Incorrect or expired code" });
-
-    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true });
-    const user = await User.findOne({ userID: otp.userID });
-
-    const userData = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      password: user.password,
-      email: user.email,
-      userID: user.userID,
-      role: user.role,
-    };
-
-    const token1 = await jwt.sign(
-      userData,
-      process.env.access_token_secret_key,
-      {
-        expiresIn: "30d",
-      }
-    );
-
-    const token2 = await jwt.sign(
-      userData,
-      process.env.refresh_token_secret_key,
-      {
-        expiresIn: "60d",
-      }
-    );
-
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
-
-    const newRefreshToken = new Token({
-      userID: userData.userID,
-      token: refresh_token,
-    });
-    await newRefreshToken.save();
-
-    res.send({ token, refresh_token, userData });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Could not verify code" });
-  }
-});
-
-router.post("/auth-provider", async (req, res) => {
-  try {
-    const { firstName, lastName, email, verified } = req.body;
-
-    const existingUser = await User.findOne({ email: email });
-
-    if (existingUser) {
-      const userData = {
-        userID: existingUser.userID,
-        firstName: existingUser.firstName,
-        lastName: existingUser.lastName,
-        email: existingUser.email,
-        verified: !existingUser.verified ? false : true,
-        role: existingUser.role,
-      };
-
-      const token1 = await jwt.sign(
-        userData,
-        process.env.access_token_secret_key,
-        {
-          expiresIn: "30d",
-        }
-      );
-
-      const token2 = await jwt.sign(
-        userData,
-        process.env.refresh_token_secret_key,
-        {
-          expiresIn: "60d",
-        }
-      );
-
-      const token = `Bearer ${token1}`;
-      const refresh_token = `Bearer ${token2}`;
-
-      const newRefreshToken = new Token({
-        userID: userData.userID,
-        token: refresh_token,
-      });
-      await newRefreshToken.save();
-      const status = "login";
-
-      res.send({ status, token, refresh_token, userData });
-    } else {
-      const userData = {
-        userID: uid(16),
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        verified: !verified ? false : true,
-        role: "client",
-      };
-
-      const user = new User(userData);
-      await user.save();
-
-      const token1 = await jwt.sign(
-        userData,
-        process.env.access_token_secret_key,
-        {
-          expiresIn: "30d",
-        }
-      );
-
-      const token2 = await jwt.sign(
-        userData,
-        process.env.refresh_token_secret_key,
-        {
-          expiresIn: "60d",
-        }
-      );
-
-      const token = `Bearer ${token1}`;
-      const refresh_token = `Bearer ${token2}`;
-
-      const newRefreshToken = new Token({
-        userID: userData.userID,
-        token: refresh_token,
-      });
-      await newRefreshToken.save();
-      const status = "signup";
-
-      res.send({ status, token, refresh_token, userData });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error saving signup user." });
+    res.status(400).send({ error: "Error creating Account" });
   }
 });
 
@@ -227,15 +61,12 @@ router.post("/login", async (req, res) => {
     if (!valid) return res.status(400).json(errors);
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email, role: "client" });
+    const user = await User.findOne({ email: email, role: "manager" });
 
-    if (!user) return res.status(404).send({ error: "User not found" });
-    if (!user.verified)
-      return res.status(404).send({ error: "User not verified" });
+    if (!user) return res.status(404).send({ error: "Account not found" });
 
     const userData = {
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       password: user.password,
       email: user.email,
       userID: user.userID,
@@ -271,6 +102,8 @@ router.post("/login", async (req, res) => {
     });
     await newRefreshToken.save();
 
+    delete userData.password;
+
     res.send({ token, refresh_token, userData });
   } catch (error) {
     res.status(500).send({ error: "Could not loggin user." });
@@ -292,7 +125,7 @@ router.post("/reset-password", async (req, res) => {
     if (!user)
       return res
         .status(404)
-        .send({ error: `No user found with the email ${email}` });
+        .send({ error: `No Account found with the email ${email}` });
 
     const otp = new OTP({
       userID: user.userID,
@@ -301,12 +134,7 @@ router.post("/reset-password", async (req, res) => {
     });
     otp.save();
 
-    const response = await sendEmail(
-      user.firstName,
-      email,
-      "resetPassword",
-      code
-    );
+    const response = await sendEmail(user.name, email, "resetPassword", code);
 
     if (!response.success)
       return res.status(400).send({ error: response.error });
@@ -350,8 +178,7 @@ router.put("/change-password", async (req, res) => {
     const newhashedPassword = await bcrypt.hash(newPassword, salt);
 
     const userData = {
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       password: newhashedPassword,
       email: user.email,
       userID: user.userID,

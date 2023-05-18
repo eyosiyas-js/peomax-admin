@@ -8,6 +8,7 @@ const authRoute = require("./routes/authRoute.js");
 const usersRoute = require("./routes/usersRoute.js");
 const accountRoute = require("./routes/accountRoute.js");
 const adminRoute = require("./routes/adminRoute.js");
+const managerRoute = require("./routes/managerRoute.js");
 const restaurantsRoute = require("./routes/restaurantsRoute.js");
 // const reserveRoute = require("./routes/reserveRoute.js");
 // const eventRoute = require("./routes/eventRoute.js");
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
 app.use("/api/account", accountRoute);
 app.use("/api/admin", adminRoute);
+app.use("/api/manager", managerRoute);
 
 app.use("/api/restaurants", restaurantsRoute);
 // app.use("/api/reserve", reserveRoute);

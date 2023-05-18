@@ -81,6 +81,10 @@ const hotelSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  managerID: {
+    type: String,
+    require: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

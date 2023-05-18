@@ -125,6 +125,8 @@ router.post(
       if (hasInvalidFile)
         return res.status(400).send({ error: "Invalid file type detected" });
 
+      files.map((file) => unlinkSync(file.path));
+
       const {
         name,
         description,

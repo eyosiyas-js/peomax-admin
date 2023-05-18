@@ -4,7 +4,7 @@ const { uid } = require("uid");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "gs://ecom-7959a.appspot.com",
+  storageBucket: "gs://reserve-et.appspot.com",
 });
 
 const bucket = admin.storage().bucket();

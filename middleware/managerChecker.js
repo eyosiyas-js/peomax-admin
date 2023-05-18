@@ -9,6 +9,11 @@ module.exports = async (req, res, next) => {
   ) {
     try {
       const token = req.headers.authorization.split("Bearer ")[1];
+
+      if (!token) {
+        res.status(403).send({ error: "No token provided" });
+      }
+
       const decoded = jwt.verify(token, process.env.access_token_secret_key);
 
       req.user = decoded;
@@ -16,10 +21,12 @@ module.exports = async (req, res, next) => {
       if (decoded.role == "manager" || decoded.role == "admin") {
         next();
       } else {
-        res.status(403).send({ Error: "Action not allowed" });
+        res.status(403).send({ error: "Action not allowed" });
       }
     } catch (err) {
-      res.status(401).send({ Error: "Invalid/expired Token" });
+      res.status(401).send({ error: "Invalid/expired Token" });
     }
+  } else {
+    res.status(401).send({ error: "Missing or invalid token" });
   }
 };

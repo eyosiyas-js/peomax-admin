@@ -1,17 +1,12 @@
 const express = require("express");
 const Restaurant = require("../models/Restaurant");
-const adminChecker = require("../middleware/adminChecker");
+const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
 
 const multer = require("multer");
-const {
-  readFileSync,
-  unlinkSync,
-  rmSync,
-  existsSync,
-  mkdirSync,
-} = require("fs");
+const { unlinkSync, existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
+const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
 const formats = [
@@ -83,6 +78,7 @@ router.get("/:id/related", async (req, res) => {
         {
           $or: [
             { name: { $regex: new RegExp(restaurant.name, "i") } },
+            { managerID: restaurant.managerID },
             {
               location: {
                 $regex: new RegExp(restaurant.location, "i"),
@@ -103,116 +99,76 @@ router.get("/:id/related", async (req, res) => {
   }
 });
 
-router.post("/add", uploads.array("images", 5), async (req, res) => {
-  try {
-    const files = await req.files;
-    let hasInvalidFile = false;
-    const images = await Promise.all(
-      files.map(async (file) => {
-        const { path, mimetype } = file;
-        if (!formats.includes(mimetype)) {
-          unlinkSync(path);
-          hasInvalidFile = true;
-          return;
-        }
-        const buffer = readFileSync(path);
-        const base64 = buffer.toString("base64");
-        unlinkSync(path);
-        return `data:${mimetype};base64,${base64}`;
-      })
-    );
+router.post(
+  "/create",
+  managerChecker,
+  uploads.array("images", 10),
+  async (req, res) => {
+    try {
+      const files = await req.files;
+      let hasInvalidFile = false;
+      const images = await Promise.all(
+        files.map(async (file) => {
+          const { path, filename, mimetype } = file;
+          if (!formats.includes(mimetype)) {
+            unlinkSync(path);
+            hasInvalidFile = true;
+            return;
+          } else {
+            const response = await uploadFile(path, filename, mimetype);
+            if (response.status !== "error") return response.url;
+            if (response.status !== "error") return "none";
+          }
+        })
+      );
 
-    if (hasInvalidFile)
-      return res.status(400).send({ error: "Invalid file type detected" });
+      if (hasInvalidFile)
+        return res.status(400).send({ error: "Invalid file type detected" });
 
-    const {
-      name,
-      description,
-      location,
-      tables,
-      availableSpots,
-      totalSpots,
-      openingTime,
-      closingTime,
-      numReviews,
-      totalBooks,
-    } = req.body;
+      const {
+        name,
+        description,
+        location,
+        tables,
+        availableSpots,
+        totalSpots,
+        openingTime,
+        closingTime,
+        numReviews,
+        totalBooks,
+      } = req.body;
 
-    const restaurant = new Restaurant({
-      name: name,
-      description: description,
-      location: location,
-      branches: req.body.branches ? req.body.branches : [],
-      image: images[0],
-      images: images,
-      rating: req.body.rating ? req.body.rating : 0,
-      tables: tables,
-      ownerID: req.body.ownerID ? req.body.ownerID : "",
-      availableSpots: availableSpots,
-      totalSpots: totalSpots,
-      totalSpots: totalBooks,
-      openingTime: openingTime,
-      closingTime: closingTime,
-      numReviews: numReviews,
-      totalBooks: totalBooks,
-      restaurantID: uid(16),
-    });
+      const restaurant = new Restaurant({
+        name: name,
+        description: description,
+        location: location,
+        branches: req.body.branches ? req.body.branches : [],
+        image: images[0],
+        images: images,
+        rating: req.body.rating ? req.body.rating : 0,
+        tables: tables,
+        ownerID: req.body.ownerID ? req.body.ownerID : "",
+        availableSpots: availableSpots,
+        totalSpots: totalSpots,
+        totalSpots: totalBooks,
+        openingTime: openingTime,
+        closingTime: closingTime,
+        numReviews: numReviews,
+        totalBooks: totalBooks,
+        restaurantID: uid(16),
+      });
 
-    await restaurant.save();
+      await restaurant.save();
 
-    res.send(restaurant);
-  } catch (error) {
-    res.status(500).send({ error: "Error adding restaurant" });
-    console.log(error);
+      res.send(restaurant);
+    } catch (error) {
+      res.status(500).send({ error: "Error adding restaurant" });
+      console.log(error);
+    }
   }
-});
+);
 
-router.post("/create", async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      location,
-      image,
-      images,
-      tables,
-      availableSpots,
-      totalSpots,
-      openingTime,
-      closingTime,
-      numReviews,
-      totalBooks,
-    } = req.body;
-
-    const restaurant = new Restaurant({
-      name: name,
-      description: description,
-      location: location,
-      branches: req.body.branches ? req.body.branches : [],
-      image: image,
-      images: images,
-      rating: req.body.rating ? req.body.rating : 0,
-      tables: tables,
-      availableSpots: availableSpots,
-      totalSpots: totalSpots,
-      totalSpots: totalBooks,
-      openingTime: openingTime,
-      closingTime: closingTime,
-      numReviews: numReviews,
-      totalBooks: totalBooks,
-      restaurantID: uid(16),
-    });
-
-    await restaurant.save();
-
-    res.send(restaurant.toObject());
-  } catch (error) {
-    res.status(500).send({ error: "Error adding restaurant" });
-    console.log(error);
-  }
-});
-
-router.put("/:id/edit", adminChecker, async (req, res) => {
+router.put("/:id/edit", managerChecker, async (req, res) => {
   try {
     const {
       name,
@@ -259,7 +215,7 @@ router.put("/:id/edit", adminChecker, async (req, res) => {
   }
 });
 
-router.delete("/:id/delete", adminChecker, async (req, res) => {
+router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
       restaurantID: req.params.id,

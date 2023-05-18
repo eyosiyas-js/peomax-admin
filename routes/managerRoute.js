@@ -18,7 +18,7 @@ require("dotenv").config();
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
+router.post("/register", adminChecker, async (req, res) => {
   try {
     const { valid, errors } = await validateSignupData(req.body);
     if (!valid) return res.status(400).json(errors);

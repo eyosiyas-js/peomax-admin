@@ -140,6 +140,8 @@ router.post(
         totalBooks,
       } = req.body;
 
+      const managerID = req.user.userID;
+
       const restaurant = new Restaurant({
         name: name,
         description: description,
@@ -149,7 +151,7 @@ router.post(
         images: images,
         rating: req.body.rating ? req.body.rating : 0,
         tables: tables,
-        ownerID: req.body.ownerID ? req.body.ownerID : "",
+        managerID: managerID,
         availableSpots: availableSpots,
         totalSpots: totalSpots,
         totalSpots: totalBooks,

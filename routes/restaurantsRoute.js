@@ -172,52 +172,90 @@ router.post(
   }
 );
 
-router.put("/:id/edit", managerChecker, async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      location,
-      image,
-      images,
-      rating,
-      tables,
-      availableSpots,
-      totalSpots,
-      openingTime,
-      closingTime,
-      numReviews,
-      totalBooks,
-    } = req.body;
-    let restaurant = await Restaurant.findOne({ restaurantID: req.params.id });
+router.put(
+  "/:id/edit",
+  managerChecker,
+  uploads.array("images", 10),
+  async (req, res) => {
+    async function update(req, res, images) {
+      const urls = images || [];
+      const {
+        name,
+        description,
+        location,
+        tables,
+        availableSpots,
+        totalSpots,
+        openingTime,
+        closingTime,
+        numReviews,
+        totalBooks,
+      } = req.body;
 
-    if (!restaurant) {
-      return res.status(404).send({ error: "restaurant not found" });
+      const restaurant = await Restaurant.findOne({
+        restaurantID: req.params.id,
+      });
+
+      if (!restaurant)
+        return res
+          .status(403)
+          .send({ error: `No restaurant with ID: ${req.params.id} found` });
+
+      restaurant.name = name || restaurant.name;
+      restaurant.description = description || restaurant.description;
+      restaurant.location = location || restaurant.location;
+      restaurant.branches = req.body.branches ? req.body.branches : [];
+      restaurant.image = urls.length !== 0 ? urls[0] : restaurant.image;
+      restaurant.images = urls.length !== 0 ? urls : restaurant.images;
+      restaurant.rating = req.body.rating ? req.body.rating : 0;
+      restaurant.tables = tables || restaurant.tables;
+      restaurant.availableSpots = availableSpots || restaurant.availableSpots;
+      restaurant.totalSpots = totalSpots || restaurant.totalSpots;
+      restaurant.totalSpots = totalBooks || restaurant.totalSpots;
+      restaurant.openingTime = openingTime || restaurant.openingTime;
+      restaurant.closingTime = closingTime || restaurant.closingTime;
+      restaurant.numReviews = numReviews || restaurant.numReviews;
+      restaurant.totalBooks = totalBooks || restaurant.totalBooks;
+
+      await restaurant.save();
+
+      res.send(restaurant.toObject());
     }
 
-    restaurant.name = name;
-    restaurant.description = description;
-    restaurant.location = location;
-    restaurant.image = image;
-    restaurant.images = images;
-    restaurant.rating = rating;
-    restaurant.tables = tables;
-    restaurant.availableSpots = availableSpots;
-    restaurant.totalSpots = totalSpots;
-    restaurant.totalSpots = totalBooks;
-    restaurant.openingTime = openingTime;
-    restaurant.closingTime = closingTime;
-    restaurant.numReviews = numReviews;
-    restaurant.totalBooks = totalBooks;
+    try {
+      if (req.query.files == "true") {
+        const files = await req.files;
+        let hasInvalidFile = false;
+        urls = await Promise.all(
+          files.map(async (file) => {
+            const { path, filename, mimetype } = file;
+            if (!formats.includes(mimetype)) {
+              unlinkSync(path);
+              hasInvalidFile = true;
+              return "none";
+            } else {
+              const response = await uploadFile(path, filename, mimetype);
+              if (response.status !== "error") return response.url;
+              if (response.status !== "error") return "none";
+            }
+          })
+        );
 
-    await restaurant.save();
+        if (hasInvalidFile) {
+          return res.status(400).send({ error: "Invalid file type" });
+        }
 
-    res.send(restaurant.toObject());
-  } catch (error) {
-    res.status(500).send({ error: "Error updating restaurant" });
-    console.log(error);
+        files.map((file) => unlinkSync(file.path));
+        update(req, res, urls);
+      } else {
+        update(req, res);
+      }
+    } catch (error) {
+      res.status(500).send({ error: "Error updating restaurant" });
+      console.log(error);
+    }
   }
-});
+);
 
 router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {

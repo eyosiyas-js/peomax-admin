@@ -37,4 +37,18 @@ router.get("/total", adminChecker, async (req, res) => {
   }
 });
 
+router.delete("/:id/ban", adminChecker, async (req, res) => {
+  try {
+    const user = await User.findOne({ userID: req.params.id });
+
+    if (!user) return res.status(403).send({ error: "User not found" });
+
+    await user.remove();
+    res.send({ message: `User removed` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Couldn't ban user" });
+  }
+});
+
 module.exports = router;

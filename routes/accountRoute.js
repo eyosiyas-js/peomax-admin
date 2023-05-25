@@ -23,12 +23,9 @@ router.put("/update", userChecker, async (req, res) => {
       { userID: req.user.userID },
       { password: 0 }
     );
-    const { firstName, lastName, email, phoneNumber, address } = req.body;
+    const { firstName, lastName } = req.body;
     user.firstName = firstName;
     user.lastName = lastName;
-    user.email = email;
-    user.phoneNumber = phoneNumber;
-    user.address = address;
 
     await user.save();
 

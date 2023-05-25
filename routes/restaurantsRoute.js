@@ -201,21 +201,21 @@ router.put(
           .status(403)
           .send({ error: `No restaurant with ID: ${req.params.id} found` });
 
-      restaurant.name = name || restaurant.name;
-      restaurant.description = description || restaurant.description;
-      restaurant.location = location || restaurant.location;
-      restaurant.branches = req.body.branches ? req.body.branches : [];
+      restaurant.name = name ?? restaurant.name;
+      restaurant.description = description ?? restaurant.description;
+      restaurant.location = location ?? restaurant.location;
+      restaurant.branches = req.body.branches || [];
       restaurant.image = urls.length !== 0 ? urls[0] : restaurant.image;
       restaurant.images = urls.length !== 0 ? urls : restaurant.images;
-      restaurant.rating = req.body.rating ? req.body.rating : 0;
-      restaurant.tables = tables || restaurant.tables;
-      restaurant.availableSpots = availableSpots || restaurant.availableSpots;
-      restaurant.totalSpots = totalSpots || restaurant.totalSpots;
-      restaurant.totalSpots = totalBooks || restaurant.totalSpots;
-      restaurant.openingTime = openingTime || restaurant.openingTime;
-      restaurant.closingTime = closingTime || restaurant.closingTime;
-      restaurant.numReviews = numReviews || restaurant.numReviews;
-      restaurant.totalBooks = totalBooks || restaurant.totalBooks;
+      restaurant.rating = req.body.rating || 0;
+      restaurant.tables = tables ?? restaurant.tables;
+      restaurant.availableSpots = availableSpots ?? restaurant.availableSpots;
+      restaurant.totalSpots = totalSpots ?? restaurant.totalSpots;
+      restaurant.totalBooks = totalBooks ?? restaurant.totalSpots;
+      restaurant.openingTime = openingTime ?? restaurant.openingTime;
+      restaurant.closingTime = closingTime ?? restaurant.closingTime;
+      restaurant.numReviews = numReviews ?? restaurant.numReviews;
+      restaurant.totalBooks = totalBooks ?? restaurant.totalBooks;
 
       await restaurant.save();
 

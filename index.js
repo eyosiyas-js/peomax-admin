@@ -10,6 +10,10 @@ const accountRoute = require("./routes/accountRoute.js");
 const adminRoute = require("./routes/adminRoute.js");
 const managerRoute = require("./routes/managerRoute.js");
 const restaurantsRoute = require("./routes/restaurantsRoute.js");
+const barsRoute = require("./routes/barsRoute.js");
+const clubsRoute = require("./routes/clubsRoute.js");
+const hotelsRoute = require("./routes/hotelsRoute.js");
+
 // const reserveRoute = require("./routes/reserveRoute.js");
 // const eventRoute = require("./routes/eventRoute.js");
 // const searchRoute = require("./routes/searchRoute.js");
@@ -42,6 +46,10 @@ app.use("/api/admin", adminRoute);
 app.use("/api/manager", managerRoute);
 
 app.use("/api/restaurants", restaurantsRoute);
+app.use("/api/hotels", hotelsRoute);
+app.use("/api/clubs", clubsRoute);
+app.use("/api/bars", barsRoute);
+
 // app.use("/api/reserve", reserveRoute);
 // app.use("/api/event", eventRoute);
 

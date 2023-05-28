@@ -77,6 +77,10 @@ const hotelSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  category: {
+    type: String,
+    default: "hotel",
+  },
   hotelID: {
     type: String,
     require: true,

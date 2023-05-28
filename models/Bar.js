@@ -77,6 +77,10 @@ const barSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  category: {
+    type: String,
+    default: "bar",
+  },
   barID: {
     type: String,
     require: true,

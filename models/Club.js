@@ -77,6 +77,10 @@ const clubSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  category: {
+    type: String,
+    default: "club",
+  },
   clubID: {
     type: String,
     require: true,

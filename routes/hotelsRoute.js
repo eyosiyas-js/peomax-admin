@@ -15,6 +15,7 @@ const formats = [
   "image/png",
   "image/bmp",
   "image/webp",
+  "image/avif",
   "image/tiff",
   "image/svg+xml",
   "image/x-icon",
@@ -130,6 +131,7 @@ router.post(
       const {
         name,
         description,
+        price,
         location,
         tables,
         availableSpots,
@@ -145,6 +147,7 @@ router.post(
       const hotel = new Hotel({
         name: name,
         description: description,
+        price: price,
         location: location,
         branches: req.body.branches ? req.body.branches : [],
         image: images[0],
@@ -198,8 +201,11 @@ router.put(
 
       if (!hotel)
         return res
-          .status(403)
+          .status(404)
           .send({ error: `No hotel with ID: ${req.params.id} found` });
+
+      if (hotel.managerID !== req.user.userID)
+        return res.status(403).send({ error: "Unauthorized" });
 
       hotel.name = name ?? hotel.name;
       hotel.description = description ?? hotel.description;
@@ -261,11 +267,13 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
       hotelID: req.params.id,
+      managerID: req.user.userID,
     });
 
-    if (!hotel) {
-      return res.status(404).send("hotel not found");
-    }
+    if (!hotel) return res.status(404).send("hotel not found");
+
+    if (hotel.managerID !== req.user.userID)
+      return res.status(403).send({ error: "Unauthorized" });
 
     await hotel.remove();
 

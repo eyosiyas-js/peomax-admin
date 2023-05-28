@@ -15,6 +15,7 @@ const formats = [
   "image/png",
   "image/bmp",
   "image/webp",
+  "image/avif",
   "image/tiff",
   "image/svg+xml",
   "image/x-icon",
@@ -199,6 +200,9 @@ router.put(
           .status(403)
           .send({ error: `No bar with ID: ${req.params.id} found` });
 
+      if (bar.managerID !== req.user.userID)
+        return res.status(403).send({ error: "Unauthorized" });
+
       bar.name = name ?? bar.name;
       bar.description = description ?? bar.description;
       bar.location = location ?? bar.location;
@@ -261,9 +265,10 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
       barID: req.params.id,
     });
 
-    if (!bar) {
-      return res.status(404).send("bar not found");
-    }
+    if (!bar) return res.status(404).send("bar not found");
+
+    if (bar.managerID !== req.user.userID)
+      return res.status(403).send({ error: "Unauthorized" });
 
     await bar.remove();
 

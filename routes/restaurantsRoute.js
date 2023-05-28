@@ -15,6 +15,7 @@ const formats = [
   "image/png",
   "image/bmp",
   "image/webp",
+  "image/avif",
   "image/tiff",
   "image/svg+xml",
   "image/x-icon",
@@ -201,6 +202,9 @@ router.put(
           .status(403)
           .send({ error: `No restaurant with ID: ${req.params.id} found` });
 
+      if (restaurant.managerID !== req.user.userID)
+        return res.status(403).send({ error: "Unauthorized" });
+
       restaurant.name = name ?? restaurant.name;
       restaurant.description = description ?? restaurant.description;
       restaurant.location = location ?? restaurant.location;
@@ -263,9 +267,10 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
       restaurantID: req.params.id,
     });
 
-    if (!restaurant) {
-      return res.status(404).send("restaurant not found");
-    }
+    if (!restaurant) return res.status(404).send("restaurant not found");
+
+    if (restaurant.managerID !== req.user.userID)
+      return res.status(403).send({ error: "Unauthorized" });
 
     await restaurant.remove();
 

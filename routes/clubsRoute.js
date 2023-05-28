@@ -15,6 +15,7 @@ const formats = [
   "image/png",
   "image/bmp",
   "image/webp",
+  "image/avif",
   "image/tiff",
   "image/svg+xml",
   "image/x-icon",
@@ -263,9 +264,7 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
       clubID: req.params.id,
     });
 
-    if (!club) {
-      return res.status(404).send("club not found");
-    }
+    if (!club) return res.status(404).send("club not found");
 
     await club.remove();
 

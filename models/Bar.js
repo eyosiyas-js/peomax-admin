@@ -81,6 +81,10 @@ const barSchema = new mongoose.Schema({
     type: String,
     default: "bar",
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
   barID: {
     type: String,
     require: true,

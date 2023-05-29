@@ -13,6 +13,8 @@ const restaurantsRoute = require("./routes/restaurantsRoute.js");
 const barsRoute = require("./routes/barsRoute.js");
 const clubsRoute = require("./routes/clubsRoute.js");
 const hotelsRoute = require("./routes/hotelsRoute.js");
+const allRoute = require("./routes/allRoute.js");
+const featuredRoute = require("./routes/featuredRoute.js");
 
 // const reserveRoute = require("./routes/reserveRoute.js");
 // const eventRoute = require("./routes/eventRoute.js");
@@ -50,6 +52,8 @@ app.use("/api/hotels", hotelsRoute);
 app.use("/api/clubs", clubsRoute);
 app.use("/api/bars", barsRoute);
 
+app.use("/api/all", allRoute);
+app.use("/api/featured", featuredRoute);
 // app.use("/api/reserve", reserveRoute);
 // app.use("/api/event", eventRoute);
 

@@ -81,6 +81,10 @@ const hotelSchema = new mongoose.Schema({
     type: String,
     default: "hotel",
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
   hotelID: {
     type: String,
     require: true,

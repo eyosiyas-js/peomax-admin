@@ -31,7 +31,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const count = parseInt(req.query.count) || 10;
+    const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
     const restaurantsCount = await Restaurant.countDocuments({});
@@ -40,6 +40,7 @@ router.get("/", async (req, res) => {
     res.send({
       page,
       totalPages,
+      restaurantsCount,
       restaurants,
     });
   } catch (error) {

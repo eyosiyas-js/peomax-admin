@@ -81,6 +81,10 @@ const clubSchema = new mongoose.Schema({
     type: String,
     default: "club",
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
   clubID: {
     type: String,
     require: true,

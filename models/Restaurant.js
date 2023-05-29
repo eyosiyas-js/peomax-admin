@@ -71,6 +71,10 @@ const restaurantSchema = new mongoose.Schema({
     type: String,
     default: "restaurant",
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
   restaurantID: {
     type: String,
     require: true,

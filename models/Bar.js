@@ -21,6 +21,16 @@ const barSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  geoLocation: {
+    latitude: {
+      type: Number,
+      required: false,
+    },
+    longitude: {
+      type: Number,
+      required: false,
+    },
+  },
   price: {
     type: Number,
     required: true,

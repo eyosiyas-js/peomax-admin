@@ -1,5 +1,5 @@
 {
-  "name": "ecom",
+  "name": "ReserveET",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,6 +17,7 @@
     "express": "^4.18.2",
     "express-rate-limit": "^6.7.0",
     "firebase-admin": "^11.8.0",
+    "haversine": "^1.1.1",
     "helmet": "^6.1.5",
     "jsonwebtoken": "^9.0.0",
     "mailgen": "^2.0.27",

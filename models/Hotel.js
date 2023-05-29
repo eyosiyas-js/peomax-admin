@@ -85,6 +85,10 @@ const hotelSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  restaurantsRoute: {
+    type: Array,
+    required: false,
+  },
   hotelID: {
     type: String,
     require: true,

@@ -34,7 +34,7 @@ function validateSignupData({
   } else if (isEmpty(lastName)) {
     errors.firstName = "lastName must not be empty";
   } else if (isEmpty(confirmPassword)) {
-    errors.password = "confirm password must not be empty";
+    errors.confirmPassword = "confirm password must not be empty";
   } else if (isEmpty(password)) {
     errors.password = "Password must not be empty";
   }

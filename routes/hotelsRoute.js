@@ -161,6 +161,7 @@ router.post(
         totalSpots: totalBooks,
         openingTime: openingTime,
         closingTime: closingTime,
+        restaurants: req.body.restaurants ? req.body.restaurants : [],
         numReviews: numReviews,
         totalBooks: totalBooks,
         hotelID: uid(16),
@@ -221,6 +222,7 @@ router.put(
       hotel.totalBooks = totalBooks ?? hotel.totalSpots;
       hotel.openingTime = openingTime ?? hotel.openingTime;
       hotel.closingTime = closingTime ?? hotel.closingTime;
+      hotel.restaurants = req.body.restaurants || [];
       hotel.numReviews = numReviews ?? hotel.numReviews;
       hotel.totalBooks = totalBooks ?? hotel.totalBooks;
 

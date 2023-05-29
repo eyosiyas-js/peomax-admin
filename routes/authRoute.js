@@ -25,8 +25,20 @@ router.post("/signup", async (req, res) => {
     const { firstName, lastName, password, confirmPassword, email } = req.body;
 
     const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      const prevOtp = await OTP.findOne({
+        userID: existingUser.userID,
+        type: "emailVerification",
+      });
 
-    if (existingUser)
+      if (prevOtp) {
+        return res.status(400).send({ error: "Please verify your email" });
+      }
+
+      await existingUser.remove();
+    }
+
+    if (existingUser && existingUser.verified)
       return res.status(400).send({ error: "User already exists." });
     if (password !== confirmPassword)
       return res.status(400).send({ error: "Passwords do not match" });

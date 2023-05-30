@@ -95,7 +95,7 @@ const barSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  barID: {
+  ID: {
     type: String,
     require: true,
   },

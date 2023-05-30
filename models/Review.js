@@ -32,7 +32,7 @@ const ReviewSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
-  restaurantID: {
+  ID: {
     type: String,
     required: true,
     trim: true,

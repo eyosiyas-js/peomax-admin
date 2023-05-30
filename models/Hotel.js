@@ -89,7 +89,7 @@ const hotelSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
-  hotelID: {
+  ID: {
     type: String,
     require: true,
   },

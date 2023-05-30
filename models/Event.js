@@ -5,6 +5,10 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ID: {
+    type: String,
+    required: true,
+  },
   availableSpots: {
     type: Number,
     default: 1,

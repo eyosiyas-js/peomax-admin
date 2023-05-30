@@ -85,7 +85,7 @@ const clubSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  clubID: {
+  ID: {
     type: String,
     require: true,
   },

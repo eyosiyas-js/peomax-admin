@@ -52,7 +52,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const bar = await Bar.findOne({
-      barID: req.params.id,
+      ID: req.params.id,
     });
     res.send(bar.toObject());
   } catch (error) {
@@ -66,15 +66,15 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/related", async (req, res) => {
   try {
     const bar = await Bar.findOne({
-      barID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!bar)
-      return res.status(400).send({ error: `No bar found with ID:  ${barID}` });
+      return res.status(400).send({ error: `No bar found with ID:  ${ID}` });
 
     const related_bars = await Bar.find({
       $and: [
-        { barID: { $ne: bar.barID } },
+        { ID: { $ne: bar.ID } },
         {
           $or: [
             { name: { $regex: new RegExp(bar.name, "i") } },
@@ -159,7 +159,7 @@ router.post(
         closingTime: closingTime,
         numReviews: numReviews,
         totalBooks: totalBooks,
-        barID: uid(16),
+        ID: uid(16),
       });
 
       await bar.save();
@@ -193,7 +193,7 @@ router.put(
       } = req.body;
 
       const bar = await Bar.findOne({
-        barID: req.params.id,
+        ID: req.params.id,
       });
 
       if (!bar)
@@ -263,7 +263,7 @@ router.put(
 router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const bar = await Bar.findOne({
-      barID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!bar) return res.status(404).send("bar not found");

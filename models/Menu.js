@@ -39,7 +39,7 @@ const mealSchema = new mongoose.Schema({
 });
 
 const menuSchema = new mongoose.Schema({
-  restaurantID: {
+  ID: {
     type: String,
     required: true,
   },

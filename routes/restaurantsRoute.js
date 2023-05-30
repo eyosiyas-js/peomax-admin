@@ -52,7 +52,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
-      restaurantID: req.params.id,
+      ID: req.params.id,
     });
     res.send(restaurant.toObject());
   } catch (error) {
@@ -66,17 +66,17 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/related", async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
-      restaurantID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!restaurant)
       return res
         .status(400)
-        .send({ error: `No restaurant found with ID:  ${restaurantID}` });
+        .send({ error: `No restaurant found with ID:  ${ID}` });
 
     const related_restaurants = await Restaurant.find({
       $and: [
-        { restaurantID: { $ne: restaurant.restaurantID } },
+        { ID: { $ne: restaurant.ID } },
         {
           $or: [
             { name: { $regex: new RegExp(restaurant.name, "i") } },
@@ -161,7 +161,7 @@ router.post(
         closingTime: closingTime,
         numReviews: numReviews,
         totalBooks: totalBooks,
-        restaurantID: uid(16),
+        ID: uid(16),
       });
 
       await restaurant.save();
@@ -195,7 +195,7 @@ router.put(
       } = req.body;
 
       const restaurant = await Restaurant.findOne({
-        restaurantID: req.params.id,
+        ID: req.params.id,
       });
 
       if (!restaurant)
@@ -265,7 +265,7 @@ router.put(
 router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
-      restaurantID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!restaurant) return res.status(404).send("restaurant not found");

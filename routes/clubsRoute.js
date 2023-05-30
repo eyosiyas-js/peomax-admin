@@ -52,7 +52,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const club = await Club.findOne({
-      clubID: req.params.id,
+      ID: req.params.id,
     });
     res.send(club.toObject());
   } catch (error) {
@@ -66,17 +66,15 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/related", async (req, res) => {
   try {
     const club = await Club.findOne({
-      clubID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!club)
-      return res
-        .status(400)
-        .send({ error: `No club found with ID:  ${clubID}` });
+      return res.status(400).send({ error: `No club found with ID:  ${ID}` });
 
     const related_clubs = await Club.find({
       $and: [
-        { clubID: { $ne: club.clubID } },
+        { ID: { $ne: club.ID } },
         {
           $or: [
             { name: { $regex: new RegExp(club.name, "i") } },
@@ -161,7 +159,7 @@ router.post(
         closingTime: closingTime,
         numReviews: numReviews,
         totalBooks: totalBooks,
-        clubID: uid(16),
+        ID: uid(16),
       });
 
       await club.save();
@@ -195,7 +193,7 @@ router.put(
       } = req.body;
 
       const club = await Club.findOne({
-        clubID: req.params.id,
+        ID: req.params.id,
       });
 
       if (!club)
@@ -262,7 +260,7 @@ router.put(
 router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const club = await Club.findOne({
-      clubID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!club) return res.status(404).send("club not found");

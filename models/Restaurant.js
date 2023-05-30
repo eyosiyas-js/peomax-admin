@@ -75,7 +75,7 @@ const restaurantSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  restaurantID: {
+  ID: {
     type: String,
     require: true,
   },

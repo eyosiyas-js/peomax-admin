@@ -52,7 +52,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
-      hotelID: req.params.id,
+      ID: req.params.id,
     });
     res.send(hotel.toObject());
   } catch (error) {
@@ -66,17 +66,15 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/related", async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
-      hotelID: req.params.id,
+      ID: req.params.id,
     });
 
     if (!hotel)
-      return res
-        .status(400)
-        .send({ error: `No hotel found with ID:  ${hotelID}` });
+      return res.status(400).send({ error: `No hotel found with ID:  ${ID}` });
 
     const related_hotels = await Hotel.find({
       $and: [
-        { hotelID: { $ne: hotel.hotelID } },
+        { ID: { $ne: hotel.ID } },
         {
           $or: [
             { name: { $regex: new RegExp(hotel.name, "i") } },
@@ -164,7 +162,7 @@ router.post(
         restaurants: req.body.restaurants ? req.body.restaurants : [],
         numReviews: numReviews,
         totalBooks: totalBooks,
-        hotelID: uid(16),
+        ID: uid(16),
       });
 
       await hotel.save();
@@ -198,7 +196,7 @@ router.put(
       } = req.body;
 
       const hotel = await Hotel.findOne({
-        hotelID: req.params.id,
+        ID: req.params.id,
       });
 
       if (!hotel)
@@ -269,7 +267,7 @@ router.put(
 router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
-      hotelID: req.params.id,
+      ID: req.params.id,
       managerID: req.user.userID,
     });
 

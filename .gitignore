@@ -5,4 +5,5 @@ images
 serviceAccountKey.json
 package-lock.json
 test.js
+script.js
 app.html

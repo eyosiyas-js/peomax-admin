@@ -49,7 +49,6 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
         button: {
           color: "#22BC66",
           text: code,
-          // link: 'https://mailgen.js/confirm?s=d9729feb74992cc3482b350163a1a010'
         },
       },
       outro: "If you did not request this action simply ignore this email.",

@@ -85,7 +85,7 @@ const hotelSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  restaurantsRoute: {
+  restaurants: {
     type: Array,
     required: false,
   },

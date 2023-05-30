@@ -5,7 +5,7 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  restaurantID: {
+  category: {
     type: String,
     required: true,
   },

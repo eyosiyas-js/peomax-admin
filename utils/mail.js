@@ -21,16 +21,24 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
     },
   });
 
-  const template = {
-    intro:
-      type == "emailVerification"
-        ? "Welcome to Reserve ET! We're very excited to have you on board."
-        : "Their has been a request from you to change your account password",
-    instruction:
-      type == "emailVerification"
-        ? "Please copy and paste the following code to verify your email:"
-        : "Please copy and paste the following code to reset your password:",
-  };
+  const template = {};
+
+  if (type == "emailVerification") {
+    template.intro =
+      "Welcome to Reserve ET! We're very excited to have you on board.";
+    template.instruction =
+      "Please copy and paste the following code to verify your email:";
+  } else if (type == "resetPassword") {
+    template.intro =
+      "Their has been a request from you to change your account password";
+    template.instruction =
+      "Please copy and paste the following code to reset your password:";
+  } else if (type == "reserveEmail") {
+    template.intro =
+      "This email has been sent to inform you about your reservation.";
+    template.instruction =
+      "This email has been sent to inform you about your reservation.";
+  }
 
   const email = {
     body: {

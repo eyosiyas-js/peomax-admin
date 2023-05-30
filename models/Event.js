@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
 const reservationSchema = new mongoose.Schema({
-  userID: {
+  category: {
     type: String,
     required: true,
   },
-  restaurantID: {
-    type: String,
-    required: true,
+  availableSpots: {
+    type: Number,
+    default: 1,
   },
-  spots: {
+  totalSpots: {
     type: Number,
     default: 1,
   },
@@ -28,12 +28,16 @@ const reservationSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "confirmed", "", "cancelled"],
+    enum: ["pending", "confirmed", "cancelled"],
     default: "pending",
   },
   isPaid: {
     type: Boolean,
     default: false,
+  },
+  managerID: {
+    type: String,
+    required: true,
   },
   eventID: {
     type: String,

@@ -18,6 +18,7 @@ const allRoute = require("./routes/allRoute.js");
 const topRatedRoute = require("./routes/topRatedRoute.js");
 const featuredRoute = require("./routes/featuredRoute.js");
 const reserveRoute = require("./routes/reserveRoute.js");
+const eventsRoute = require("./routes/eventsRoute.js");
 const qrCodeRoute = require("./routes/qrCodeRoute.js");
 
 // const reserveRoute = require("./routes/reserveRoute.js");
@@ -60,6 +61,8 @@ app.use("/api/search", searchRoute);
 app.use("/api/all", allRoute);
 app.use("/api/featured", featuredRoute);
 app.use("/api/top-rated", topRatedRoute);
+
+app.use("/api/events", eventsRoute);
 app.use("/api/reserve", reserveRoute);
 
 app.use("/api/qrcode", qrCodeRoute);

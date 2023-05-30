@@ -1,5 +1,6 @@
 const express = require("express");
 const Restaurant = require("../models/Restaurant");
+const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
 
@@ -281,6 +282,23 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error deleting restaurant" });
+  }
+});
+
+router.get("/:id/events", async (req, res) => {
+  try {
+    if (!req.params.id)
+      return res.status(404).send({ error: "No id provided" });
+
+    const events = await Event.find({
+      ID: req.params.id,
+      category: "restaurant",
+    });
+
+    res.send(events);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error fetching events" });
   }
 });
 

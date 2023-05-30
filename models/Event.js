@@ -1,6 +1,20 @@
 const mongoose = require("mongoose");
 
-const reservationSchema = new mongoose.Schema({
+const eventSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
   category: {
     type: String,
     required: true,
@@ -17,11 +31,24 @@ const reservationSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  totalBooks: {
+    type: Number,
+    default: 1,
+  },
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
-  time: {
+  isFullDay: {
+    type: Boolean,
+    default: false,
+  },
+  eventStart: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  eventEnd: {
     type: String,
     required: true,
     trim: true,
@@ -30,14 +57,9 @@ const reservationSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  status: {
-    type: String,
-    enum: ["pending", "confirmed", "cancelled"],
-    default: "pending",
-  },
-  isPaid: {
-    type: Boolean,
-    default: false,
+  premiumPrice: {
+    type: Number,
+    required: true,
   },
   managerID: {
     type: String,
@@ -53,6 +75,6 @@ const reservationSchema = new mongoose.Schema({
   },
 });
 
-const Reservation = mongoose.model("Reservation", reservationSchema);
+const Event = mongoose.model("Event", eventSchema);
 
-module.exports = Reservation;
+module.exports = Event;

@@ -1,6 +1,7 @@
 node_modules
 uploads
 images
+qrcodes
 .env
 serviceAccountKey.json
 package-lock.json

@@ -15,6 +15,10 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  image: {
+    type: Array,
+    default: [],
+  },
   category: {
     type: String,
     required: true,
@@ -26,14 +30,16 @@ const eventSchema = new mongoose.Schema({
   availableSpots: {
     type: Number,
     default: 1,
+    min: 0,
   },
   totalSpots: {
     type: Number,
     default: 1,
+    min: 1,
   },
   totalBooks: {
     type: Number,
-    default: 1,
+    default: 0,
   },
   date: {
     type: String,

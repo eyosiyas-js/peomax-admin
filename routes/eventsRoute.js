@@ -136,7 +136,7 @@ router.post(
 
       res.send(event);
     } catch (error) {
-      res.status(500).send({ error: "Error adding restaurant" });
+      res.status(500).send({ error: "Error creating an event" });
       console.log(error);
     }
   }

@@ -60,11 +60,15 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
   let message = {
     from: process.env.email,
     to: clientEmail,
-    subject:
-      type == "emailVerification"
-        ? "Account email verification"
-        : "Account password reset",
-    html: emailBody,
+    subject: type,
+    html: type !== "qrCode" ? emailBody : code,
+    attachments: [
+      {
+        filename: "qrcode.png",
+        cid: "unique@kreata.ee",
+        path: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACECAYAAABRRIOnAAAAAklEQVR4AewaftIAAAOFSURBVO3BQY4jRwADwWSh///l9B584KkAQdJ41mBE/IOZfx1mymGmHGbKYaYcZsphphxmymGmHGbKYaYcZsphphxmymGmHGbKw5uS8JNUWhJuVFoSPknlJgk/SeUdh5lymCmHmfLwYSqflIR3JOFGpSXhm1Q+KQmfdJgph5lymCkPX5aEV6i8Q6Ul4ZNUPikJr1D5psNMOcyUw0x5+Mup3Ki0JNyotCS0JNyo/M0OM+UwUw4z5eEvl4QblVckoam0JDSV/5PDTDnMlMNMefgylW9SeUcSbpLQVFoSmsorVH6Tw0w5zJTDTHn4sCT8pCQ0lZaEptKS0FRaEj4pCb/ZYaYcZsphpjy8SeW/pNKS8Juo/E0OM+UwUw4zJf7BG5LQVG6S8JNUWhJ+kspNEppKS8IrVN5xmCmHmXKYKfEPPigJNyotCU3lFUm4UblJQlNpSWgqN0l4hcorknCj8o7DTDnMlMNMeXhTEprKTRKayk0SmkpTeYfKT1JpSfhNDjPlMFMOM+Xhw5LQVG6ScKPyjiQ0lZaEpvKKJLxD5SYJP+kwUw4z5TBTHr4sCU3lJgktCU2lJaGpNJUblZaEd6jcJOFGpam0JHzTYaYcZsphpjx8mUpLQlO5UWlJaCotCU3lJglN5RUqN0loKjdJ+C8dZsphphxmysMvl4SbJDSVV6jcJKGp3CShqbQkNJWm0pLQVFoSPukwUw4z5TBTHj5M5UblFSrvSEJTaUn4piTcJOFGpSXhmw4z5TBTDjPl4cuS0FRaEppKS8IrVJpKS8KNyk0Svknlv3SYKYeZcpgpD29SuVG5UblRuUnCO1Q+SeUVSbhJwo3KJx1mymGmHGbKw5uS8JNU3qHSkvBNSWgqN0loKjdJaCrvOMyUw0w5zJSHD1P5pCR8UhKaSktCU7lJwo3KJyXhmw4z5TBTDjPl4cuS8AqVT0rCT0rCO1RaEppKS8InHWbKYaYcZsrD/0wSblRaEl6RhBuVVyThNznMlMNMOcyUh7+cyk0SWhKaSkvCjcpNEm5UmkpLQlNpSfimw0w5zJTDTHn4MpWflISm0pLQkvCOJDSVloSWhKbSVFoSftJhphxmymGmPHxYEn5SEppKS8I3qbQk3Ki0JNyo3CThkw4z5TBTDjMl/sHMvw4z5TBTDjPlMFMOM+UwUw4z5TBTDjPlMFMOM+UwUw4z5TBTDjPlHwrmfywqF9OrAAAAAElFTkSuQmCC",
+      },
+    ],
   };
 
   // send mail

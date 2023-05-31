@@ -3,19 +3,14 @@ const Restaurant = require("../models/Restaurant");
 const Hotel = require("../models/Hotel");
 const Bar = require("../models/Bar");
 const Club = require("../models/Club");
-const sendEmail = require("../utils/mail");
+const reserveMail = require("../utils/reserveMail");
 const userChecker = require("../middleware/userChecker");
 
 const router = express.Router();
 
 router.post("/", userChecker, async (req, res) => {
   try {
-    await sendEmail(
-      req.user.name,
-      req.user.email,
-      "reserveEmail",
-      "This email has been sent to inform you about your reservation."
-    );
+    await reserveMail(req.user.firstName, req.user.email);
 
     res.send({ message: "Email sent" });
   } catch (error) {

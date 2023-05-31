@@ -39,7 +39,7 @@ router.post("/", userChecker, async (req, res) => {
       ticketID: uid(16),
     });
 
-    event.totalSpots = event.totalSpots - people;
+    event.availableSpots = event.availableSpots - people;
     await event.save();
 
     await ticket.save();

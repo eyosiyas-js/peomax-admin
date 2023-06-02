@@ -44,7 +44,13 @@ router.post("/", userChecker, async (req, res) => {
 
     await ticket.save();
 
-    await qrCode(ticket.ticketID, req.user.firstName, req.user.email);
+    await qrCode(
+      ticket.ticketID,
+      req.user.firstName,
+      req.user.email,
+      ticket.toObject(),
+      event.toObject()
+    );
 
     res.send({ message: "Virtual Ticket is sent to your email" });
   } catch (error) {

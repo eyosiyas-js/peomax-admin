@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Virtual Ticket</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333333;
+      }
+      p {
+        color: #666666;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+      .qrcode-container {
+        text-align: center;
+        margin-top: 40px;
+      }
+      .qrcode-image {
+        max-width: 200px;
+        height: auto;
+      }
+      .note {
+        font-style: italic;
+        font-size: 14px;
+        color: #999999;
+        text-align: center;
+      }
+      .footer {
+        margin-top: 40px;
+        text-align: center;
+        color: #666666;
+      }
+      .premium {
+        color: rgb(218, 187, 12);
+      }
+      .regular {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Virtual Ticket</h1>
+      <p>Hello {{clientName}},</p>
+      <p>
+        Thank you for booking a ticket through the ReserveET service. To verify
+        your virtual ticket, scan the QR code below at the site of the event.
+      </p>
+      <div class="qrcode-container">
+        <img
+          class="qrcode-image"
+          src="cid:unique3423423@kre234234ata.e234234e"
+          alt="QR Code"
+        />
+      </div>
+      <ul>
+        <br />
+        <h3>ticket detail</h3>
+        <li><strong>People: </strong> {{people}}</li>
+        <li><strong>Date: </strong> {{date}}</li>
+        <li><strong>Time: </strong> {{time}}</li>
+        <li><strong>Type: </strong> {{premium}}</li>
+      </ul>
+      <p class="note">
+        Note: The QR code is unique to your ticket and should not be shared with
+        anyone.
+      </p>
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, please contact our
+          support team.
+        </p>
+        <p>Thank you,</p>
+        <p>ReserveET</p>
+      </div>
+    </div>
+  </body>
+</html>

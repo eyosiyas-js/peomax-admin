@@ -1,90 +1,13 @@
 const nodemailer = require("nodemailer");
+const { readFileSync } = require("fs");
+
+let reserveEmail = readFileSync("./emails/reserve.html", "utf-8");
 
 require("dotenv").config();
 
 async function reserveMail(clientName, clientEmail) {
   try {
-    const code = `
-    <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Reservation Successful</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
-      }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: #ffffff;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        text-align: center;
-        color: #333333;
-      }
-      p {
-        color: #666666;
-        line-height: 1.5;
-        margin-bottom: 20px;
-      }
-      .qrcode-container {
-        text-align: center;
-        margin-top: 40px;
-      }
-      .qrcode-image {
-        max-width: 200px;
-        height: auto;
-      }
-      .note {
-        font-style: italic;
-        font-size: 14px;
-        color: #999999;
-        text-align: center;
-      }
-      .footer {
-        margin-top: 40px;
-        text-align: center;
-        color: #666666;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Reservation Successful!</h1>
-      <p>Hello ${clientName},</p>
-      <p>
-        Thank you for making a reservation through the ReserveET service. 
-        A table will be prepared for your arrival at your destination.
-      </p>
-      <div class="qrcode-container">
-        <img
-          class="qrcode-image"
-            src="cid:uniqzzue3423423@kre234234ata.e234234e"
-          alt="QR Code"
-        />
-      </div>
-      <p class="note">
-        Note: If you do not attend at your reserved spot in time, your reservation might be cancelled.
-      </p>
-      <div class="footer">
-        <p>
-          If you have any questions or need assistance, please contact our
-          support team.
-        </p>
-        <p>Thank you,</p>
-        <p>ReserveET</p>
-      </div>
-    </div>
-  </body>
-</html>
-
-    `;
+    const code = reserveEmail.replace("{{clientName}}", clientName);
 
     let transporter = nodemailer.createTransport({
       service: "gmail",

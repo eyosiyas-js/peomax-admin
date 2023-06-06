@@ -8,6 +8,13 @@ const Club = require("../models/Club");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+  const hotels = await Hotel.find({});
+  const restaurants = await Restaurant.find({});
+  const clubs = await Club.find({});
+  const bars = await Bar.find({});
+
+  const items = hotels.concat(restaurants, clubs, bars);
+
   try {
   } catch (error) {
     console.log(error);

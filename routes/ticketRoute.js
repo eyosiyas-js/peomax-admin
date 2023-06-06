@@ -30,7 +30,7 @@ router.post("/", userChecker, async (req, res) => {
 
     const ticket = new Ticket({
       userID: req.user.userID,
-      people: people,
+      people: parseInt(people),
       date: event.date,
       time: event.eventStart,
       isPremium: isPremium == true ? true : false,
@@ -39,7 +39,8 @@ router.post("/", userChecker, async (req, res) => {
       ticketID: uid(16),
     });
 
-    event.availableSpots = event.availableSpots - people;
+    event.availableSpots = event.availableSpots - parseInt(people);
+    event.totalBooks = parseInt(event.totalBooks) + 1;
     await event.save();
 
     await ticket.save();

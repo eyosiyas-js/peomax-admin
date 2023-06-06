@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const reservationSchema = new mongoose.Schema({
+  ID: {
+    type: String,
+    required: true,
+  },
   userID: {
     type: String,
     required: true,
@@ -9,7 +13,7 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  spots: {
+  people: {
     type: Number,
     default: 1,
   },
@@ -26,15 +30,9 @@ const reservationSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  type: {
-    type: String,
-    enum: ["regular", "event"],
-    default: "regular",
-  },
-  status: {
-    type: String,
-    enum: ["pending", "confirmed", "cancelled"],
-    default: "pending",
+  expired: {
+    type: Boolean,
+    default: false,
   },
   isPaid: {
     type: Boolean,

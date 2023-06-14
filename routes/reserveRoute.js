@@ -12,41 +12,50 @@ const router = express.Router();
 
 router.post("/", userChecker, async (req, res) => {
   try {
-    const { ID, people, date, time } = req.body;
+    const { ID, category, people, date, time } = req.body;
 
-    const hotels = await Restaurant.find({});
-    const restaurants = await Hotel.find({});
-    const clubs = await Club.find({});
-    const bars = await Bar.find({});
+    let place;
 
-    const items = hotels.concat(restaurants, clubs, bars);
+    if (category == "hotel") {
+      place = await Hotel.findOne({ ID: ID });
 
-    const spot = await items.filter((item) => item.ID == ID);
+      if (!place) return res.status(400).send({ error: "Hotel not found" });
+    } else if (category == "club") {
+      place = await Club.findOne({ ID: ID });
 
-    if (spot.length == 0) {
-      return res.status(404).send({ error: `No place found with ID: ${ID}` });
+      if (!place) return res.status(400).send({ error: "Club not found" });
+    } else if (category == "bar") {
+      place = await Bar.findOne({ ID: ID });
+
+      if (!place) return res.status(400).send({ error: "Bar not found" });
+    } else if (category == "restaurant") {
+      place = await Restaurant.findOne({ ID: ID });
+
+      if (!place)
+        return res.status(400).send({ error: "Restaurant not found" });
+    } else {
+      return res.status(400).send({ error: "Invalid category" });
     }
 
-    if (parseInt(people) > spot[0].availableSpots) {
+    if (parseInt(people) > place.availableSpots) {
       return res.status(400).send({ error: `Insufficient spots` });
     }
 
     const reservation = new Reservation({
       ID: ID,
       userID: req.user.userID,
-      category: spot[0].category,
+      category: place.category,
       people: people,
       date: date,
       time: time,
-      price: parseInt(spot[0].price) * parseInt(people),
+      price: parseInt(place.price) * parseInt(people),
       reservationID: uid(16),
     });
 
-    spot[0].availableSpots =
-      parseInt(spot[0].availableSpots) - parseInt(people);
-    spot[0].totalBooks = parseInt(spot[0].totalBooks) + 1;
+    place.availableSpots = parseInt(place.availableSpots) - parseInt(people);
+    place.totalBooks = parseInt(place.totalBooks) + 1;
 
-    await spot[0].save();
+    await place.save();
 
     await reservation.save();
     await reserveMail(req.user.firstName, req.user.email);

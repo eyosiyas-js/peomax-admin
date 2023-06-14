@@ -60,8 +60,20 @@ router.post("/", userChecker, async (req, res) => {
   }
 });
 
-router.post("/verify/:id", userChecker, async (req, res) => {
+router.post("/verify/:id", managerChecker, async (req, res) => {
   try {
+    const ticket = await Ticket.findOne({ ticketID: req.params.id });
+
+    if (!ticket)
+      return res.status(404).send({ error: "Invalid virtual ticket" });
+    if (ticket.expired)
+      return res.status(404).send({ error: "Ticket expired" });
+
+    ticket.expired = true;
+
+    await ticket.save();
+
+    res.send({ message: "Ticket verified!" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't book a ticket" });

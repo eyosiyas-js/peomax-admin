@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Email Body Styles */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Container Styles */
+      .container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Logo Styles */
+      .logo {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .logo img {
+        max-width: 100px;
+      }
+
+      /* Verification Code Styles */
+      .verification-code {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .verification-code h2 {
+        color: #333333;
+        font-size: 20px;
+        margin: 0;
+      }
+
+      .verification-code p {
+        color: #777777;
+        font-size: 16px;
+        margin: 10px 0;
+      }
+
+      .verification-code .code {
+        background-color: #33ea70;
+        color: white;
+        font-size: 32px;
+        padding: 10px;
+        margin: 10px 0;
+        letter-spacing: 5px;
+        display: inline-block;
+        border-radius: 4px;
+      }
+
+      /* Greetings Styles */
+      .greetings {
+        text-align: center;
+        color: #777777;
+        font-size: 14px;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <img src="cid:6044075355" alt="Peomax Logo" />
+      </div>
+      <div class="verification-code">
+        <h2>Your Verification Code:</h2>
+        <p class="code">{{code}}</p>
+      </div>
+      <div class="greetings">{{text}}</div>
+
+      <p class="greetings">
+        For more info please head to
+        <a href="https://peomax.com">@peomax.com</a>
+      </p>
+    </div>
+  </body>
+</html>

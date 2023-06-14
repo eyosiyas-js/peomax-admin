@@ -130,11 +130,11 @@ router.post("/reset-password", async (req, res) => {
     const otp = new OTP({
       userID: user.userID,
       code: code,
-      type: "resetPassword",
+      type: "reset password",
     });
     otp.save();
 
-    const response = await sendEmail(user.name, email, "resetPassword", code);
+    const response = await sendEmail(user.name, email, "reset password", code);
 
     if (!response.success)
       return res.status(400).send({ error: response.error });
@@ -149,7 +149,7 @@ router.post("/reset-password", async (req, res) => {
 // router.post("/verify-code", async (req, res) => {
 //   try {
 //     const { code } = req.body;
-//     const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+//     const otp = await OTP.findOne({ code: code, type: "reset password" });
 
 //     if (!otp)
 //       return res.status(400).send({ error: "Incorrect or expired code" });
@@ -165,7 +165,7 @@ router.put("/change-password", async (req, res) => {
   const { code, newPassword, confirmNewPassword } = req.body;
 
   try {
-    const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+    const otp = await OTP.findOne({ code: code, type: "reset password" });
     if (!otp)
       return res.status(404).send({ error: "Incorrect or expired code" });
 

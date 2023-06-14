@@ -1,9 +1,46 @@
-const mailgen = require("mailgen");
 const nodemailer = require("nodemailer");
+const { readFileSync } = require("fs");
 
 require("dotenv").config();
 
-const sendEmail = async (clientName, clientEmail, type, code) => {
+const logo = readFileSync("./assets/logo.jpg", "base64");
+let verificationEmail = readFileSync("./emails/verification.html", "utf-8");
+
+async function sendEmail(clientName, clientEmail, subject, verificationCode) {
+  const emailVerificationText = `
+<p>Welcome to Peomax Reservation!</p>
+<br/>
+  Thank you for choosing our services. We are excited to have you as
+  part of our community. With Peomax Reservation, you can discover and
+  book the finest accommodations, creating unforgettable experiences for
+  your travels.
+  <br />
+  Enter the verification code provided above to complete your account
+  setup and unlock the full potential of Peomax Reservation.
+</p>
+`;
+
+  const resetPasswordText = `
+<p>Peomax Reservation</p>
+<br/>
+  Dear ${clientName},
+  <br/>
+  There has been a request from your email to change your
+  peomax account password.
+  <br />
+  Enter the verification code provided above to change your account password.
+
+  if you did not request this message simply ignore it.
+</p> 
+`;
+
+  let subjectText =
+    subject == "email verification" ? emailVerificationText : resetPasswordText;
+
+  verificationEmail = verificationEmail.replace("{{text}}", subjectText);
+  verificationEmail = verificationEmail.replace("{{code}}", verificationCode);
+
+  const code = verificationEmail;
   let transporter = nodemailer.createTransport({
     service: "gmail",
     port: 587,
@@ -13,65 +50,33 @@ const sendEmail = async (clientName, clientEmail, type, code) => {
     },
   });
 
-  let MailGenerator = new mailgen({
-    theme: "default",
-    product: {
-      name: "Reserve ET",
-      link: "https://reserveet.onrender.com",
-    },
-  });
-
-  const template = {};
-
-  if (type == "emailVerification") {
-    template.intro =
-      "Welcome to Reserve ET! We're very excited to have you on board.";
-    template.instruction =
-      "Please copy and paste the following code to verify your email:";
-  } else if (type == "resetPassword") {
-    template.intro =
-      "Their has been a request from you to change your account password";
-    template.instruction =
-      "Please copy and paste the following code to reset your password:";
-  } else if (type == "reserveEmail") {
-    template.intro =
-      "This email has been sent to inform you about your reservation.";
-    template.instruction =
-      "This email has been sent to inform you about your reservation.";
-  }
-
-  const email = {
-    body: {
-      name: clientName,
-      intro: template.intro,
-      action: {
-        instructions: template.instruction,
-        button: {
-          color: "#22BC66",
-          text: code,
-        },
-      },
-      outro: "If you did not request this action simply ignore this email.",
-    },
-  };
-
-  const emailBody = MailGenerator.generate(email);
-
   let message = {
     from: process.env.email,
     to: clientEmail,
-    subject: type,
-    html: type !== "qrCode" ? emailBody : code,
+    subject: subject,
+    html: code,
+    attachments: [
+      {
+        filename: "logo.png",
+        cid: "6044075355",
+        path: `data:image/jpeg;base64,${logo}`,
+      },
+    ],
   };
 
-  // send mail
   try {
     await transporter.sendMail(message);
-    return { success: true, message: `We've sent an email to ${clientEmail}.` };
+    return {
+      success: true,
+      message: `We've sent an email to ${clientEmail}.`,
+    };
   } catch (error) {
     console.log(error);
-    return { success: false, error: `Could not send email to ${clientEmail}` };
+    return {
+      success: false,
+      error: `Could not send email to ${clientEmail}`,
+    };
   }
-};
+}
 
 module.exports = sendEmail;

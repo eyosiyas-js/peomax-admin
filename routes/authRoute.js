@@ -28,7 +28,7 @@ router.post("/signup", async (req, res) => {
     if (existingUser) {
       const prevOtp = await OTP.findOne({
         userID: existingUser.userID,
-        type: "emailVerification",
+        type: "email verification",
       });
 
       if (prevOtp) {
@@ -67,14 +67,14 @@ router.post("/signup", async (req, res) => {
     const otp = new OTP({
       userID: userData.userID,
       code: code,
-      type: "emailVerification",
+      type: "email verification",
     });
     await otp.save();
 
     const response = await sendEmail(
       firstName,
       email,
-      "emailVerification",
+      "email verification",
       code
     );
 
@@ -94,7 +94,7 @@ router.post("/signup", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   try {
     const { code } = req.body;
-    const otp = await OTP.findOne({ code: code, type: "emailVerification" });
+    const otp = await OTP.findOne({ code: code, type: "email verification" });
     if (!otp)
       return res.status(400).send({ error: "Incorrect or expired code" });
 
@@ -309,14 +309,14 @@ router.post("/reset-password", async (req, res) => {
     const otp = new OTP({
       userID: user.userID,
       code: code,
-      type: "resetPassword",
+      type: "reset password",
     });
     otp.save();
 
     const response = await sendEmail(
       user.firstName,
       email,
-      "resetPassword",
+      "reset password",
       code
     );
 
@@ -333,7 +333,7 @@ router.post("/reset-password", async (req, res) => {
 // router.post("/verify-code", async (req, res) => {
 //   try {
 //     const { code } = req.body;
-//     const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+//     const otp = await OTP.findOne({ code: code, type: "reset password" });
 
 //     if (!otp)
 //       return res.status(400).send({ error: "Incorrect or expired code" });
@@ -349,7 +349,7 @@ router.put("/change-password", async (req, res) => {
   const { code, newPassword, confirmNewPassword } = req.body;
 
   try {
-    const otp = await OTP.findOne({ code: code, type: "resetPassword" });
+    const otp = await OTP.findOne({ code: code, type: "reset password" });
     if (!otp)
       return res.status(404).send({ error: "Incorrect or expired code" });
 

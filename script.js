@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Club = require("./models/Club.js");
+const Item = require("./models/Ticket.js");
 
 require("dotenv").config();
 
@@ -10,22 +10,21 @@ mongoose
   .connect(mongo_url, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
     try {
-      const restaurants = await Club.find({}); // Retrieve all restaurants
+      const items = await Item.find({});
 
-      for (let i = 0; i < restaurants.length; i++) {
-        const restaurant = restaurants[i]; // Convert the object to a Mongoose document
-        restaurantObj = restaurant.toObject();
-        restaurant.ID = restaurantObj.restaurantID; // Assign the value of restaurantID to ID
-        restaurant.restaurantID = undefined; // Remove the restaurantID field
-        await restaurant.save(); // Save the updated restaurant document
-        console.log(`${restaurant.restaurantID} updated`);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        itemObj = item.toObject();
+        item.managerID = "23bcc06a43d2b554";
+        await item.save();
+        console.log(`Item ${items.indexOf(item)} updated`);
       }
 
-      console.log("Club IDs updated successfully!");
+      console.log("Items updated successfully!");
     } catch (error) {
-      console.error("Error updating restaurant IDs:", error);
+      console.error("Error updating item IDs:", error);
     } finally {
-      mongoose.disconnect(); // Close the database connection
+      mongoose.disconnect();
     }
   })
   .catch((err) => console.error(err));

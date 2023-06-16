@@ -6,6 +6,30 @@ const { uid } = require("uid");
 
 const router = express.Router();
 
+router.get("/", managerChecker, async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const reservationsCount = await Reservation.countDocuments({
+      ID: req.params.id,
+    });
+    const totalPages = Math.ceil(reservationsCount / count);
+    const reservations = await Reservation.find({ managerID: req.params.id })
+      .skip(skip)
+      .limit(count);
+    res.send({
+      page,
+      totalPages,
+      reservationsCount,
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
 router.post("/:id/accept", managerChecker, async (req, res) => {
   try {
     const reservation = await Reservation.findOne({ ID: req.params.id });

@@ -5,7 +5,6 @@ const Token = require("../models/Token.js");
 const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
-const otpGenerator = require("otp-generator");
 
 const {
   validateSignupData,
@@ -16,6 +15,16 @@ const { uid } = require("uid");
 require("dotenv").config();
 
 const router = express.Router();
+
+function generateOTP() {
+  const chars = "0123456789";
+  let otp = "";
+  for (let i = 0; i < 6; i++) {
+    const index = Math.floor(Math.random() * chars.length);
+    otp += chars[index];
+  }
+  return otp;
+}
 
 router.post("/signup", async (req, res) => {
   try {
@@ -58,11 +67,7 @@ router.post("/signup", async (req, res) => {
 
     const user = new User(userData);
 
-    const code = await otpGenerator.generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
+    const code = await generateOTP();
 
     const otp = new OTP({
       userID: userData.userID,
@@ -292,11 +297,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/reset-password", async (req, res) => {
   try {
-    const code = await otpGenerator.generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
+    const code = await generateOTP();
 
     const { email } = req.body;
     const user = await User.findOne({ email: email });

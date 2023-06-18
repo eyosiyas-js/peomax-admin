@@ -3,44 +3,44 @@ const { readFileSync } = require("fs");
 
 require("dotenv").config();
 
-const logo = readFileSync("./assets/logo.jpg", "base64");
-let verificationEmail = readFileSync("./emails/verification.html", "utf-8");
-
 async function sendEmail(clientName, clientEmail, subject, verificationCode) {
+  const logo = readFileSync("./assets/logo.jpg", "base64");
+  let verificationEmail = readFileSync("./emails/verification.html", "utf-8");
+
   const emailVerificationText = `
-<p>Welcome to Peomax Reservation!</p>
-<br/>
-  Thank you for choosing our services. We are excited to have you as
-  part of our community. With Peomax Reservation, you can discover and
-  book the finest accommodations, creating unforgettable experiences for
-  your travels.
-  <br />
-  Enter the verification code provided above to complete your account
-  setup and unlock the full potential of Peomax Reservation.
-</p>
-`;
+    <p>Welcome to Peomax Reservation!</p>
+    <br/>
+    Thank you for choosing our services. We are excited to have you as
+    part of our community. With Peomax Reservation, you can discover and
+    book the finest accommodations, creating unforgettable experiences for
+    your travels.
+    <br />
+    Enter the verification code provided above to complete your account
+    setup and unlock the full potential of Peomax Reservation.
+  `;
 
   const resetPasswordText = `
-<p>Peomax Reservation</p>
-<br/>
-  Dear ${clientName},
-  <br/>
-  There has been a request from your email to change your
-  peomax account password.
-  <br />
-  Enter the verification code provided above to change your account password.
+    <p>Peomax Reservation</p>
+    <br/>
+    Dear ${clientName},
+    <br/>
+    There has been a request from your email to change your
+    peomax account password.
+    <br />
+    Enter the verification code provided above to change your account password.
 
-  if you did not request this message simply ignore it.
-</p> 
-`;
+    if you did not request this message simply ignore it.
+  </p> 
+  `;
 
   let subjectText =
-    subject == "email verification" ? emailVerificationText : resetPasswordText;
+    subject === "email verification"
+      ? emailVerificationText
+      : resetPasswordText;
 
-  verificationEmail = verificationEmail.replace("{{text}}", subjectText);
-  verificationEmail = verificationEmail.replace("{{code}}", verificationCode);
+  let modifiedEmail = verificationEmail.replace("{{text}}", subjectText);
+  modifiedEmail = modifiedEmail.replace("{{code}}", verificationCode);
 
-  const code = verificationEmail;
   let transporter = nodemailer.createTransport({
     service: "gmail",
     port: 587,
@@ -54,7 +54,7 @@ async function sendEmail(clientName, clientEmail, subject, verificationCode) {
     from: process.env.email,
     to: clientEmail,
     subject: subject,
-    html: code,
+    html: modifiedEmail,
     attachments: [
       {
         filename: "logo.png",

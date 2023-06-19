@@ -347,20 +347,27 @@ router.post("/reset-password", async (req, res) => {
 // });
 
 router.put("/change-password", async (req, res) => {
-  const { code, newPassword, confirmNewPassword } = req.body;
+  const { code, newPassword, confirmPassword } = req.body;
+
+  if (!code) return res.status(400).send({ error: "Code is required" });
+  if (!newPassword || !confirmPassword)
+    return res.status(400).send({ error: "Passwords required" });
 
   try {
     const otp = await OTP.findOne({ code: code, type: "reset password" });
     if (!otp)
       return res.status(404).send({ error: "Incorrect or expired code" });
 
-    if (newPassword !== confirmNewPassword)
+    if (newPassword !== confirmPassword)
       return res.status(404).send({ error: "Passwords do not match" });
+
     const user = await User.findOne({ userID: otp.userID });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);
     const newhashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = newhashedPassword; // Update the user's password
 
     const userData = {
       firstName: user.firstName,
@@ -371,7 +378,7 @@ router.put("/change-password", async (req, res) => {
       role: user.role,
     };
 
-    await user.save();
+    await user.save(); // Save the user with the updated password
 
     const token1 = await jwt.sign(
       userData,

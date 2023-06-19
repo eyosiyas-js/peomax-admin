@@ -43,8 +43,6 @@ router.post("/signup", async (req, res) => {
       if (prevOtp) {
         return res.status(400).send({ error: "Please verify your email" });
       }
-
-      await existingUser.remove();
     }
 
     if (existingUser && existingUser.verified)

@@ -405,6 +405,9 @@ router.put("/change-password", async (req, res) => {
     });
     await newRefreshToken.save();
 
+    delete userData.password;
+    delete userData.email;
+
     res.send({ token, refresh_token, userData });
   } catch (error) {
     console.log(error);

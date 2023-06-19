@@ -406,7 +406,6 @@ router.put("/change-password", async (req, res) => {
     await newRefreshToken.save();
 
     delete userData.password;
-    delete userData.email;
 
     res.send({ token, refresh_token, userData });
   } catch (error) {
@@ -454,7 +453,7 @@ router.delete("/logout", async (req, res) => {
       token: req.body.refresh_token,
     });
     if (!refresh_token)
-      return res.status(401).send({ error: "Inavliad/Expired refresh token" });
+      return res.status(401).send({ error: "Invalid/Expired refresh token" });
 
     await refresh_token.remove();
 

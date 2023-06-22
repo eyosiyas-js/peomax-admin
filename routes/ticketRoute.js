@@ -11,6 +11,12 @@ const router = express.Router();
 router.post("/", userChecker, async (req, res) => {
   try {
     const { eventID, isPremium, people } = req.body;
+
+    if (!eventID) return res.status(400).send({ error: "eventID is required" });
+
+    if (people)
+      return res.status(400).send({ error: "No of people is required" });
+
     const event = await Event.findOne({ eventID: eventID });
     if (!event)
       return res

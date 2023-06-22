@@ -14,6 +14,12 @@ router.post("/", userChecker, async (req, res) => {
   try {
     const { ID, category, people, date, time } = req.body;
 
+    if (!people || !date || !time)
+      return res.status(400).send({ error: "Please fill in all the forms" });
+
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID / category missing" });
+
     let place;
 
     if (category == "hotel") {

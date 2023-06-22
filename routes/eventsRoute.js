@@ -1,6 +1,8 @@
 const express = require("express");
 const Event = require("../models/Event");
-const managerChecker = require("../middleware/managerChecker");
+const findPlace = require("../utils/findPlace");
+const checkAuthorization = require("../utils/checkAuthorization");
+const employeeChecker = require("../middleware/employeeChecker");
 const { uid } = require("uid");
 
 const multer = require("multer");
@@ -70,7 +72,7 @@ router.get("/:id", async (req, res) => {
 
 router.post(
   "/create",
-  managerChecker,
+  employeeChecker,
   uploads.array("images", 5),
   async (req, res) => {
     try {
@@ -112,6 +114,16 @@ router.post(
       } = req.body;
 
       const managerID = req.user.userID;
+
+      const place = await findPlace(ID, category);
+
+      if (!place)
+        return res.status(400).send({ error: `${category} not found` });
+
+      const isAuthorized = checkAuthorization(managerID, place);
+
+      if (!isAuthorized)
+        return res.status(401).send({ error: "Unauthorized action" });
 
       const event = new Event({
         name: name,

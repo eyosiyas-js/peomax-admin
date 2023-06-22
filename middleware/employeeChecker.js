@@ -18,7 +18,11 @@ module.exports = async (req, res, next) => {
 
       req.user = decoded;
 
-      if (decoded.role == "employee" || decoded.role == "manager") {
+      if (
+        decoded.role == "employee" ||
+        decoded.role == "supervisor" ||
+        decoded.role == "manager"
+      ) {
         next();
       } else {
         res.status(403).send({ error: "Action not allowed" });

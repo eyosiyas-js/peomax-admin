@@ -1,23 +1,31 @@
 const express = require("express");
-const Reservation = require("../models/Reservation");
-const reserveMail = require("../utils/reserveMail");
-const managerChecker = require("../middleware/managerChecker");
-const { uid } = require("uid");
-
 const router = express.Router();
+const Reservation = require("../models/Reservation");
+const findPlace = require("../utils/findPlace");
+const checkAuthorization = require("../utils/checkAuthorization");
+const reserveMail = require("../utils/reserveMail");
+const employeeChecker = require("../middleware/employeeChecker");
 
-router.get("/", managerChecker, async (req, res) => {
+router.get("/:id/", employeeChecker, async (req, res) => {
   try {
+    const { ID, category } = req.body;
+    const place = await findPlace(ID, category);
+
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const isAuthorized = checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    const reservationsCount = await Reservation.countDocuments({
-      ID: req.params.id,
-    });
+    const reservationsCount = await Reservation.countDocuments({ ID: ID });
     const totalPages = Math.ceil(reservationsCount / count);
-    const reservations = await Reservation.find({ managerID: req.params.id })
+    const reservations = await Reservation.find({ ID: ID })
       .skip(skip)
       .limit(count);
+
     res.send({
       page,
       totalPages,
@@ -30,40 +38,58 @@ router.get("/", managerChecker, async (req, res) => {
   }
 });
 
-router.post("/:id/accept", managerChecker, async (req, res) => {
+router.post("/accept", employeeChecker, async (req, res) => {
   try {
-    const reservation = await Reservation.findOne({ ID: req.params.id });
+    const { reservationID, ID, category } = req.body;
+    const place = await findPlace(ID, category);
+
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const isAuthorized = checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
+    const reservation = await Reservation.findOne({
+      reservationID: reservationID,
+    });
     if (!reservation)
       return res
         .status(404)
-        .send({ error: `No reservation with ID: ${req.params.id}` });
-
-    if (req.user.userID !== reservation.managerID)
-      return res.status(400).send({ error: "Access denied" });
+        .send({ error: `No reservation with ID: ${reservationID}` });
 
     reservation.status = "accepted";
-
     await reservation.save();
+
+    res.send({ message: "Reservation accepted" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't accept reservation" });
   }
 });
 
-router.post("/:id/reject", managerChecker, async (req, res) => {
+router.post("/reject", employeeChecker, async (req, res) => {
   try {
-    const reservation = await Reservation.findOne({ ID: req.params.id });
+    const { reservationID, ID, category } = req.body;
+    const place = await findPlace(ID, category);
+
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const isAuthorized = checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
+    const reservation = await Reservation.findOne({
+      reservationID: reservationID,
+    });
     if (!reservation)
       return res
         .status(404)
-        .send({ error: `No reservation with ID: ${req.params.id}` });
-
-    if (req.user.userID !== reservation.managerID)
-      return res.status(400).send({ error: "Access denied" });
+        .send({ error: `No reservation with ID: ${reservationID}` });
 
     reservation.status = "rejected";
-
     await reservation.save();
+
+    res.send({ message: "Reservation rejected" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't reject reservation" });

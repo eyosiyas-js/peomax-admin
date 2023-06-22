@@ -43,8 +43,14 @@ router.delete("/:id/ban", adminChecker, async (req, res) => {
 
     if (!user) return res.status(403).send({ error: "User not found" });
 
-    await user.remove();
-    res.send({ message: `User removed` });
+    if (user.isBanned)
+      return res.status(400).send({ error: "User already banned" });
+
+    user.isBanned = true;
+
+    await user.save();
+
+    res.send({ message: `User Banned` });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Couldn't ban user" });

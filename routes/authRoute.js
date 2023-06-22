@@ -45,8 +45,12 @@ router.post("/signup", async (req, res) => {
       }
     }
 
-    if (existingUser && existingUser.verified)
-      return res.status(400).send({ error: "User already exists." });
+    if (existingUser && existingUser.isBanned)
+      return res.status(400).send({ error: "User is banned" });
+
+    if (existingUser && !existingUser.isBanned && existingUser.verified)
+      return res.status(400).send({ error: "User already exists" });
+
     if (password !== confirmPassword)
       return res.status(400).send({ error: "Passwords do not match" });
 
@@ -151,6 +155,9 @@ router.post("/auth-provider", async (req, res) => {
 
     const existingUser = await User.findOne({ email: email });
 
+    if (existingUser.isBanned)
+      return res.status(403).send({ error: "User is banned" });
+
     if (existingUser) {
       const userData = {
         userID: existingUser.userID,
@@ -245,6 +252,9 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email: email, role: "client" });
 
     if (!user) return res.status(404).send({ error: "User not found" });
+
+    if (user.isBanned) return res.status(403).send({ error: "User is banned" });
+
     if (!user.verified)
       return res.status(404).send({ error: "User not verified" });
 

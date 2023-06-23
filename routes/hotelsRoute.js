@@ -1,6 +1,5 @@
 const express = require("express");
 const Hotel = require("../models/Hotel");
-const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
@@ -11,17 +10,7 @@ const { join } = require("path");
 const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/bmp",
-  "image/webp",
-  "image/avif",
-  "image/tiff",
-  "image/svg+xml",
-  "image/x-icon",
-];
+const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -101,31 +90,6 @@ router.get("/:id/related", async (req, res) => {
   }
 });
 
-router.get("/:id/restaurants", async (req, res) => {
-  try {
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
-    const hotel = await Hotel.findOne({ ID: req.params.id });
-    const restaurantsCount = await Restaurant.countDocuments({
-      managerID: hotel.managerID,
-    });
-    const totalPages = Math.ceil(restaurantsCount / count);
-    const restaurants = await Restaurant.find({ managerID: hotel.managerID })
-      .skip(skip)
-      .limit(count);
-    res.send({
-      page,
-      totalPages,
-      restaurantsCount,
-      restaurants,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting restaurants" });
-  }
-});
-
 router.post(
   "/create",
   managerChecker,
@@ -157,7 +121,6 @@ router.post(
       const {
         name,
         description,
-        price,
         location,
         tables,
         availableSpots,
@@ -166,6 +129,16 @@ router.post(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -173,7 +146,6 @@ router.post(
       const hotel = new Hotel({
         name: name,
         description: description,
-        price: price,
         location: location,
         branches: req.body.branches ? req.body.branches : [],
         image: images[0],
@@ -186,10 +158,19 @@ router.post(
         totalSpots: totalBooks,
         openingTime: openingTime,
         closingTime: closingTime,
-        restaurants: req.body.restaurants ? req.body.restaurants : [],
         numReviews: numReviews,
         totalBooks: totalBooks,
         ID: uid(16),
+
+        crossStreet: crossStreet,
+        neighborhood: neighborhood,
+        cuisines: cuisines,
+        diningStyle: diningStyle,
+        dressCode: dressCode,
+        parkingDetails: parkingDetails,
+        publicTransit: publicTransit,
+        paymentOptions: paymentOptions,
+        additional: additional,
       });
 
       await hotel.save();
@@ -220,6 +201,16 @@ router.put(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const hotel = await Hotel.findOne({
@@ -228,7 +219,7 @@ router.put(
 
       if (!hotel)
         return res
-          .status(404)
+          .status(403)
           .send({ error: `No hotel with ID: ${req.params.id} found` });
 
       if (hotel.managerID !== req.user.userID)
@@ -247,9 +238,18 @@ router.put(
       hotel.totalBooks = totalBooks ?? hotel.totalSpots;
       hotel.openingTime = openingTime ?? hotel.openingTime;
       hotel.closingTime = closingTime ?? hotel.closingTime;
-      hotel.restaurants = req.body.restaurants || [];
       hotel.numReviews = numReviews ?? hotel.numReviews;
       hotel.totalBooks = totalBooks ?? hotel.totalBooks;
+
+      hotel.crossStreet = crossStreet ?? hotel.crossStreet;
+      hotel.neighborhood = neighborhood ?? hotel.neighborhood;
+      hotel.cuisines = cuisines ?? hotel.cuisines;
+      hotel.diningStyle = diningStyle ?? hotel.diningStyle;
+      hotel.dressCode = dressCode ?? hotel.dressCode;
+      hotel.parkingDetails = parkingDetails ?? hotel.parkingDetails;
+      hotel.publicTransit = publicTransit ?? hotel.publicTransit;
+      hotel.paymentOptions = paymentOptions ?? hotel.paymentOptions;
+      hotel.additional = additional ?? hotel.additional;
 
       await hotel.save();
 
@@ -295,7 +295,6 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
       ID: req.params.id,
-      managerID: req.user.userID,
     });
 
     if (!hotel) return res.status(404).send("hotel not found");
@@ -321,7 +320,7 @@ router.get("/:id/events", async (req, res) => {
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "hotel",
+      category: "hotels",
     });
 
     res.send(events);

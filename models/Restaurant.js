@@ -79,6 +79,46 @@ const restaurantSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+
+  // Extra fields
+
+  crossStreet: {
+    type: String,
+    require: true,
+  },
+  neighborhood: {
+    type: String,
+    require: true,
+  },
+  cuisines: {
+    type: String,
+    require: true,
+  },
+  diningStyle: {
+    type: String,
+    require: true,
+  },
+  dressCode: {
+    type: String,
+    require: true,
+  },
+  parkingDetails: {
+    type: String,
+    require: true,
+  },
+  publicTransit: {
+    type: String,
+    require: true,
+  },
+  paymentOptions: {
+    type: Array,
+    default: ["oncash"],
+  },
+  additional: {
+    type: String,
+    require: true,
+  },
+
   managerID: {
     type: String,
     require: true,

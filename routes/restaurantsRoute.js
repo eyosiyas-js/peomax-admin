@@ -10,17 +10,7 @@ const { join } = require("path");
 const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/bmp",
-  "image/webp",
-  "image/avif",
-  "image/tiff",
-  "image/svg+xml",
-  "image/x-icon",
-];
+const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -141,6 +131,16 @@ router.post(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -163,6 +163,16 @@ router.post(
         numReviews: numReviews,
         totalBooks: totalBooks,
         ID: uid(16),
+
+        crossStreet: crossStreet,
+        neighborhood: neighborhood,
+        cuisines: cuisines,
+        diningStyle: diningStyle,
+        dressCode: dressCode,
+        parkingDetails: parkingDetails,
+        publicTransit: publicTransit,
+        paymentOptions: paymentOptions,
+        additional: additional,
       });
 
       await restaurant.save();
@@ -193,6 +203,16 @@ router.put(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const restaurant = await Restaurant.findOne({
@@ -222,6 +242,16 @@ router.put(
       restaurant.closingTime = closingTime ?? restaurant.closingTime;
       restaurant.numReviews = numReviews ?? restaurant.numReviews;
       restaurant.totalBooks = totalBooks ?? restaurant.totalBooks;
+
+      restaurant.crossStreet = crossStreet ?? restaurant.crossStreet;
+      restaurant.neighborhood = neighborhood ?? restaurant.neighborhood;
+      restaurant.cuisines = cuisines ?? restaurant.cuisines;
+      restaurant.diningStyle = diningStyle ?? restaurant.diningStyle;
+      restaurant.dressCode = dressCode ?? restaurant.dressCode;
+      restaurant.parkingDetails = parkingDetails ?? restaurant.parkingDetails;
+      restaurant.publicTransit = publicTransit ?? restaurant.publicTransit;
+      restaurant.paymentOptions = paymentOptions ?? restaurant.paymentOptions;
+      restaurant.additional = additional ?? restaurant.additional;
 
       await restaurant.save();
 
@@ -292,7 +322,7 @@ router.get("/:id/events", async (req, res) => {
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "restaurant",
+      category: "restaurants",
     });
 
     res.send(events);

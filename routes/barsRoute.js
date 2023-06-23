@@ -10,17 +10,7 @@ const { join } = require("path");
 const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/bmp",
-  "image/webp",
-  "image/avif",
-  "image/tiff",
-  "image/svg+xml",
-  "image/x-icon",
-];
+const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -139,6 +129,16 @@ router.post(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -161,6 +161,16 @@ router.post(
         numReviews: numReviews,
         totalBooks: totalBooks,
         ID: uid(16),
+
+        crossStreet: crossStreet,
+        neighborhood: neighborhood,
+        cuisines: cuisines,
+        diningStyle: diningStyle,
+        dressCode: dressCode,
+        parkingDetails: parkingDetails,
+        publicTransit: publicTransit,
+        paymentOptions: paymentOptions,
+        additional: additional,
       });
 
       await bar.save();
@@ -191,6 +201,16 @@ router.put(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const bar = await Bar.findOne({
@@ -220,6 +240,16 @@ router.put(
       bar.closingTime = closingTime ?? bar.closingTime;
       bar.numReviews = numReviews ?? bar.numReviews;
       bar.totalBooks = totalBooks ?? bar.totalBooks;
+
+      bar.crossStreet = crossStreet ?? bar.crossStreet;
+      bar.neighborhood = neighborhood ?? bar.neighborhood;
+      bar.cuisines = cuisines ?? bar.cuisines;
+      bar.diningStyle = diningStyle ?? bar.diningStyle;
+      bar.dressCode = dressCode ?? bar.dressCode;
+      bar.parkingDetails = parkingDetails ?? bar.parkingDetails;
+      bar.publicTransit = publicTransit ?? bar.publicTransit;
+      bar.paymentOptions = paymentOptions ?? bar.paymentOptions;
+      bar.additional = additional ?? bar.additional;
 
       await bar.save();
 

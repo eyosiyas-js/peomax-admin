@@ -1,6 +1,6 @@
 const express = require("express");
-const Event = require("../models/Event");
 const Club = require("../models/Club");
+const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
 
@@ -10,17 +10,7 @@ const { join } = require("path");
 const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/bmp",
-  "image/webp",
-  "image/avif",
-  "image/tiff",
-  "image/svg+xml",
-  "image/x-icon",
-];
+const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -139,6 +129,16 @@ router.post(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -161,6 +161,16 @@ router.post(
         numReviews: numReviews,
         totalBooks: totalBooks,
         ID: uid(16),
+
+        crossStreet: crossStreet,
+        neighborhood: neighborhood,
+        cuisines: cuisines,
+        diningStyle: diningStyle,
+        dressCode: dressCode,
+        parkingDetails: parkingDetails,
+        publicTransit: publicTransit,
+        paymentOptions: paymentOptions,
+        additional: additional,
       });
 
       await club.save();
@@ -191,6 +201,16 @@ router.put(
         closingTime,
         numReviews,
         totalBooks,
+
+        crossStreet,
+        neighborhood,
+        cuisines,
+        diningStyle,
+        dressCode,
+        parkingDetails,
+        publicTransit,
+        paymentOptions,
+        additional,
       } = req.body;
 
       const club = await Club.findOne({
@@ -201,6 +221,9 @@ router.put(
         return res
           .status(403)
           .send({ error: `No club with ID: ${req.params.id} found` });
+
+      if (club.managerID !== req.user.userID)
+        return res.status(403).send({ error: "Unauthorized" });
 
       club.name = name ?? club.name;
       club.description = description ?? club.description;
@@ -217,6 +240,16 @@ router.put(
       club.closingTime = closingTime ?? club.closingTime;
       club.numReviews = numReviews ?? club.numReviews;
       club.totalBooks = totalBooks ?? club.totalBooks;
+
+      club.crossStreet = crossStreet ?? club.crossStreet;
+      club.neighborhood = neighborhood ?? club.neighborhood;
+      club.cuisines = cuisines ?? club.cuisines;
+      club.diningStyle = diningStyle ?? club.diningStyle;
+      club.dressCode = dressCode ?? club.dressCode;
+      club.parkingDetails = parkingDetails ?? club.parkingDetails;
+      club.publicTransit = publicTransit ?? club.publicTransit;
+      club.paymentOptions = paymentOptions ?? club.paymentOptions;
+      club.additional = additional ?? club.additional;
 
       await club.save();
 
@@ -266,6 +299,9 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
 
     if (!club) return res.status(404).send("club not found");
 
+    if (club.managerID !== req.user.userID)
+      return res.status(403).send({ error: "Unauthorized" });
+
     await club.remove();
 
     res.send({
@@ -284,7 +320,7 @@ router.get("/:id/events", async (req, res) => {
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "club",
+      category: "clubs",
     });
 
     res.send(events);

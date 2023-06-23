@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Item = require("./models/Ticket.js");
+const Item = require("./models/Bar.js");
 
 require("dotenv").config();
 
@@ -15,7 +15,20 @@ mongoose
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         itemObj = item.toObject();
-        item.managerID = "23bcc06a43d2b554";
+
+        item.crossStreet = "Meskel Square";
+        item.neighborhood = "Gurd Shola";
+        item.cuisines = "Ethiopian";
+        item.diningStyle = "Casual Dining";
+        item.dressCode = "Business Casual";
+        item.parkingDetails =
+          "We recommend parking at Oosterdok parking garage. It takes abount 5 up to 10 minutes to walk to the restaurant";
+        item.publicTransit =
+          "Restaurant 1e Klas on platform 2B is always accessible, even without public transport card. The gates are open, and you can walk right in. Grand Café Restaurant 1e Klas is easily accessible by metro, tram, train, boat or bus - these almost literally stop at the door of the restaurant.";
+        item.paymentOptions = ["oncash"];
+        item.additional =
+          "Gluten-free Options, Outdoor Smoking Area, Private Room, View, Wheelchair Access, Wine";
+
         await item.save();
         console.log(`Item ${items.indexOf(item)} updated`);
       }

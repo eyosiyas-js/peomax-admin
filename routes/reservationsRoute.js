@@ -6,7 +6,7 @@ const checkAuthorization = require("../utils/checkAuthorization");
 const reserveMail = require("../utils/reserveMail");
 const employeeChecker = require("../middleware/employeeChecker");
 
-router.get("/:id/", employeeChecker, async (req, res) => {
+router.get("/", employeeChecker, async (req, res) => {
   try {
     const { ID, category } = req.body;
     const place = await findPlace(ID, category);
@@ -15,7 +15,7 @@ router.get("/:id/", employeeChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized action" });
+      return res.status(401).send({ error: "Unauthorized access" });
 
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;

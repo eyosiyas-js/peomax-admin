@@ -12,21 +12,21 @@ router.get("/", async (req, res) => {
     const restaurants = await Restaurant.find({ rating: { $gt: 4 } });
     const bars = await Bar.find({ rating: { $gt: 4 } });
     const clubs = await Club.find({ rating: { $gt: 4 } });
-    const featured = hotels.concat(restaurants, bars, clubs);
+    const topRated = hotels.concat(restaurants, bars, clubs);
 
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    const featuredCount = featured.length;
-    const totalPages = Math.ceil(featuredCount / count);
+    const topRatedCount = topRated.length;
+    const totalPages = Math.ceil(topRatedCount / count);
 
-    const paginatedData = featured.slice(skip, skip + count);
+    const paginatedData = topRated.slice(skip, skip + count);
 
     res.send({
       page,
       totalPages,
-      featuredCount,
-      featured: paginatedData,
+      topRatedCount,
+      topRated: paginatedData,
     });
   } catch (error) {
     console.log(error);

@@ -139,6 +139,8 @@ router.post(
         publicTransit,
         paymentOptions,
         additional,
+        phoneNumber,
+        website,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -171,6 +173,8 @@ router.post(
         publicTransit: publicTransit,
         paymentOptions: paymentOptions,
         additional: additional,
+        phoneNumber: phoneNumber,
+        website: website,
       });
 
       await bar.save();
@@ -211,6 +215,8 @@ router.put(
         publicTransit,
         paymentOptions,
         additional,
+        phoneNumber,
+        website,
       } = req.body;
 
       const bar = await Bar.findOne({
@@ -250,6 +256,8 @@ router.put(
       bar.publicTransit = publicTransit ?? bar.publicTransit;
       bar.paymentOptions = paymentOptions ?? bar.paymentOptions;
       bar.additional = additional ?? bar.additional;
+      bar.phoneNumber = phoneNumber ?? bar.phoneNumber;
+      bar.website = website ?? bar.website;
 
       await bar.save();
 

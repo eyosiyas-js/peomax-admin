@@ -1,6 +1,5 @@
 const express = require("express");
 const Hotel = require("../models/Hotel");
-const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
@@ -165,6 +164,8 @@ router.post(
         publicTransit,
         paymentOptions,
         additional,
+        phoneNumber,
+        website,
       } = req.body;
 
       const managerID = req.user.userID;
@@ -197,6 +198,8 @@ router.post(
         publicTransit: publicTransit,
         paymentOptions: paymentOptions,
         additional: additional,
+        phoneNumber: phoneNumber,
+        website: website,
       });
 
       await hotel.save();
@@ -237,6 +240,8 @@ router.put(
         publicTransit,
         paymentOptions,
         additional,
+        phoneNumber,
+        website,
       } = req.body;
 
       const hotel = await Hotel.findOne({
@@ -276,6 +281,8 @@ router.put(
       hotel.publicTransit = publicTransit ?? hotel.publicTransit;
       hotel.paymentOptions = paymentOptions ?? hotel.paymentOptions;
       hotel.additional = additional ?? hotel.additional;
+      hotel.phoneNumber = phoneNumber ?? hotel.phoneNumber;
+      hotel.website = website ?? hotel.website;
 
       await hotel.save();
 

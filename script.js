@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Item = require("./models/Reservation");
+const Item = require("./models/Restaurant");
 
 require("dotenv").config();
 
@@ -28,6 +28,8 @@ mongoose
         item.paymentOptions = ["oncash"];
         item.additional =
           "Gluten-free Options, Outdoor Smoking Area, Private Room, View, Wheelchair Access, Wine";
+        item.phoneNumber = "+251931528565";
+        item.website = "https://peomax.com";
 
         await item.save();
         console.log(`Item ${items.indexOf(item)} updated`);

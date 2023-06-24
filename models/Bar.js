@@ -138,6 +138,14 @@ const barSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  phoneNumber: {
+    type: String,
+    require: true,
+  },
+  website: {
+    type: String,
+    require: true,
+  },
 
   managerID: {
     type: String,

@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get("/", userChecker, async (req, res) => {
   try {
+    if (!req.user.userID) return res.status(404).send({ error: "No user" });
+
     const user = await User.findOne(
       { userID: req.user.userID },
       { password: 0 }
@@ -19,6 +21,8 @@ router.get("/", userChecker, async (req, res) => {
 
 router.put("/update", userChecker, async (req, res) => {
   try {
+    if (!req.user.userID) return res.status(404).send({ error: "No user" });
+
     const user = await User.findOne(
       { userID: req.user.userID },
       { password: 0 }

@@ -8,12 +8,14 @@ const employeeChecker = require("../middleware/employeeChecker");
 
 router.get("/", employeeChecker, async (req, res) => {
   try {
-    const { ID, category } = req.body;
+    const { ID, category } = req.query;
     const place = await findPlace(ID, category);
 
     if (!place) return res.status(400).send({ error: `${category} not found` });
 
+    console.log(req.user.userID);
     const isAuthorized = checkAuthorization(req.user.userID, place);
+    console.log(isAuthorized);
     if (!isAuthorized)
       return res.status(401).send({ error: "Unauthorized access" });
 
@@ -38,6 +40,24 @@ router.get("/", employeeChecker, async (req, res) => {
   }
 });
 
+router.get("/:id", employeeChecker, async (req, res) => {
+  try {
+    const reservation = await Reservation.findOne({
+      reservationID: req.params.id,
+    });
+
+    if (!reservation)
+      return res
+        .status(404)
+        .send({ error: `No reservation with ID: ${req.params.id}` });
+
+    res.send(reservation);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
 router.post("/accept", employeeChecker, async (req, res) => {
   try {
     const { reservationID, ID, category } = req.body;
@@ -56,6 +76,11 @@ router.post("/accept", employeeChecker, async (req, res) => {
       return res
         .status(404)
         .send({ error: `No reservation with ID: ${reservationID}` });
+
+    if (reservation.status == "rejected")
+      return res.status(400).send({ error: "Reservation already rejected" });
+    if (reservation.status == "accepted")
+      return res.status(400).send({ error: "Reservation already accepted" });
 
     reservation.status = "accepted";
     await reservation.save();
@@ -85,6 +110,11 @@ router.post("/reject", employeeChecker, async (req, res) => {
       return res
         .status(404)
         .send({ error: `No reservation with ID: ${reservationID}` });
+
+    if (reservation.status == "accepted")
+      return res.status(400).send({ error: "Reservation already accepted" });
+    if (reservation.status == "rejected")
+      return res.status(400).send({ error: "Reservation already rejected" });
 
     reservation.status = "rejected";
     await reservation.save();

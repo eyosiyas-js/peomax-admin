@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Item = require("./models/Bar.js");
+const Item = require("./models/Reservation");
 
 require("dotenv").config();
 

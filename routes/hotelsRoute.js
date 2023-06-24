@@ -1,5 +1,6 @@
 const express = require("express");
 const Hotel = require("../models/Hotel");
+const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");
@@ -51,6 +52,31 @@ router.get("/:id", async (req, res) => {
     res.status(500).send({
       error: `Couldn't find a hotel with the ID: ${req.params.id}`,
     });
+  }
+});
+
+router.get("/:id/restaurants", async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const hotel = await Hotel.findOne({ ID: req.params.id });
+    const restaurantsCount = await Restaurant.countDocuments({
+      managerID: hotel.managerID,
+    });
+    const totalPages = Math.ceil(restaurantsCount / count);
+    const restaurants = await Restaurant.find({ managerID: hotel.managerID })
+      .skip(skip)
+      .limit(count);
+    res.send({
+      page,
+      totalPages,
+      restaurantsCount,
+      restaurants,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting restaurants" });
   }
 });
 

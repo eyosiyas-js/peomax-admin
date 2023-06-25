@@ -1,3 +1,17 @@
+const Joi = require("joi");
+
+const reservationSchema = Joi.object({
+  ID: Joi.string().required(),
+  people: Joi.number().integer().min(1).required(),
+  category: Joi.string().valid("hotel").required(),
+  time: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .required(),
+  date: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .required(),
+});
+
 const isEmail = (email) => {
   const regEx =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -62,4 +76,20 @@ function validateLoginData(data) {
   };
 }
 
-module.exports = { validateSignupData, validateLoginData };
+function validateReservation(data) {
+  const output = reservationSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return { success: false, message: error.details[0].message };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+module.exports = {
+  validateSignupData,
+  validateLoginData,
+  isPhoneNumber,
+  validateReservation,
+};

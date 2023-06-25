@@ -21,6 +21,7 @@
     "firebase-admin": "^11.8.0",
     "haversine": "^1.1.1",
     "helmet": "^6.1.5",
+    "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
     "mailgen": "^2.0.27",
     "mongoose": "^6.9.2",

@@ -14,9 +14,7 @@ router.get("/", employeeChecker, async (req, res) => {
 
     if (!place) return res.status(400).send({ error: `${category} not found` });
 
-    console.log(req.user.userID);
     const isAuthorized = checkAuthorization(req.user.userID, place);
-    console.log(isAuthorized);
     if (!isAuthorized)
       return res.status(401).send({ error: "Unauthorized access" });
 

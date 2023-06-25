@@ -54,7 +54,7 @@ router.post("/", userChecker, async (req, res) => {
       people: people,
       date: date,
       time: time,
-      price: parseInt(place.price) * parseInt(people),
+      // price: parseInt(place.price) * parseInt(people),
       reservationID: uid(16),
     });
 

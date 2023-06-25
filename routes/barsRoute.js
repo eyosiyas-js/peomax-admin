@@ -328,7 +328,7 @@ router.get("/:id/events", async (req, res) => {
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "bars",
+      category: "bar",
     });
 
     res.send(events);

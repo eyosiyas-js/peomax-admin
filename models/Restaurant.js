@@ -16,6 +16,10 @@ const restaurantSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  price: {
+    type: Number,
+    default: 1500,
+  },
   branches: {
     type: Array,
     default: [],
@@ -125,6 +129,10 @@ const restaurantSchema = new mongoose.Schema({
   website: {
     type: String,
     require: true,
+  },
+  subHotel: {
+    type: Boolean,
+    default: false,
   },
 
   managerID: {

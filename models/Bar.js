@@ -33,8 +33,7 @@ const barSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: true,
-    min: 0,
+    default: 1500,
   },
   branches: {
     type: Array,
@@ -145,6 +144,10 @@ const barSchema = new mongoose.Schema({
   website: {
     type: String,
     require: true,
+  },
+  subHotel: {
+    type: Boolean,
+    default: false,
   },
 
   managerID: {

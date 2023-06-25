@@ -9,6 +9,18 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  phoneNumber: {
+    type: String,
+  },
   category: {
     type: String,
     required: true,
@@ -18,7 +30,7 @@ const reservationSchema = new mongoose.Schema({
     default: 1,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
   time: {

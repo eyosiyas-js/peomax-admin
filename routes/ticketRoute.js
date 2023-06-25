@@ -14,7 +14,7 @@ router.post("/", userChecker, async (req, res) => {
 
     if (!eventID) return res.status(400).send({ error: "eventID is required" });
 
-    if (people)
+    if (!people)
       return res.status(400).send({ error: "No of people is required" });
 
     const event = await Event.findOne({ eventID: eventID });

@@ -29,30 +29,63 @@ function generateOTP() {
 router.post("/signup", async (req, res) => {
   try {
     const { valid, errors } = await validateSignupData(req.body);
-    if (!valid) return res.status(400).json(errors);
+    if (!valid) {
+      return res.status(400).json(errors);
+    }
 
     const { firstName, lastName, password, confirmPassword, email } = req.body;
 
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email });
+
     if (existingUser) {
+      if (existingUser.isBanned) {
+        return res.status(400).send({ error: "User is banned" });
+      }
+
+      if (existingUser.verified) {
+        return res.status(400).send({ error: "User already exists" });
+      }
+
       const prevOtp = await OTP.findOne({
         userID: existingUser.userID,
         type: "email verification",
       });
 
       if (prevOtp) {
-        return res.status(400).send({ error: "Please verify your email" });
+        return res
+          .status(400)
+          .send({ error: "Please check your email for verification" });
       }
+
+      const code = await generateOTP();
+
+      const otp = new OTP({
+        userID: existingUser.userID,
+        code,
+        type: "email verification",
+      });
+
+      await otp.save();
+
+      const response = await sendEmail(
+        existingUser.firstName,
+        existingUser.email,
+        "email verification",
+        code
+      );
+
+      if (!response.success) {
+        return res
+          .status(400)
+          .send({ error: `Could not send verification code to ${email}` });
+      }
+
+      return res.send({ message: "Please check your email for verification" });
     }
 
-    if (existingUser && existingUser.isBanned)
-      return res.status(400).send({ error: "User is banned" });
-
-    if (existingUser && !existingUser.isBanned && existingUser.verified)
-      return res.status(400).send({ error: "User already exists" });
-
-    if (password !== confirmPassword)
+    if (password !== confirmPassword) {
       return res.status(400).send({ error: "Passwords do not match" });
+    }
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);
@@ -60,10 +93,10 @@ router.post("/signup", async (req, res) => {
 
     const userData = {
       userID: uid(16),
-      firstName: firstName,
-      lastName: lastName,
+      firstName,
+      lastName,
       password: hashedPassword,
-      email: email,
+      email,
       role: "client",
     };
 
@@ -73,9 +106,10 @@ router.post("/signup", async (req, res) => {
 
     const otp = new OTP({
       userID: userData.userID,
-      code: code,
+      code,
       type: "email verification",
     });
+
     await otp.save();
 
     const response = await sendEmail(
@@ -85,10 +119,11 @@ router.post("/signup", async (req, res) => {
       code
     );
 
-    if (!response.success)
+    if (!response.success) {
       return res
         .status(400)
         .send({ error: `Could not send verification code to ${email}` });
+    }
 
     await user.save();
     res.send({ message: "Verify your email address" });
@@ -105,8 +140,12 @@ router.post("/verify-email", async (req, res) => {
     if (!otp)
       return res.status(400).send({ error: "Incorrect or expired code" });
 
-    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true });
     const user = await User.findOne({ userID: otp.userID });
+    if (!user) return res.status(400).send({ error: "User does not exist" });
+
+    if (user.isBanned) return res.status(403).send({ error: "User is banned" });
+
+    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true });
 
     const userData = {
       firstName: user.firstName,
@@ -164,7 +203,7 @@ router.post("/auth-provider", async (req, res) => {
         firstName: existingUser.firstName,
         lastName: existingUser.lastName,
         email: existingUser.email,
-        verified: !existingUser.verified ? false : true,
+        verified: true,
         role: existingUser.role,
       };
 
@@ -201,7 +240,7 @@ router.post("/auth-provider", async (req, res) => {
         firstName: firstName,
         lastName: lastName,
         email: email,
-        verified: !verified ? false : true,
+        verified: true,
         role: "client",
       };
 
@@ -244,34 +283,70 @@ router.post("/auth-provider", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { valid, errors } = await validateLoginData(req.body);
-
-    if (!valid) return res.status(400).json(errors);
-
     const { email, password } = req.body;
     const user = await User.findOne({ email: email, role: "client" });
 
-    if (!user) return res.status(404).send({ error: "User not found" });
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
 
-    if (user.isBanned) return res.status(403).send({ error: "User is banned" });
+    if (user.isBanned) {
+      return res.status(403).send({ error: "User is banned" });
+    }
 
-    if (!user.verified)
-      return res.status(404).send({ error: "User not verified" });
+    if (!user.verified) {
+      const prevOtp = await OTP.findOne({
+        userID: user.userID,
+        type: "email verification",
+      });
+
+      if (prevOtp) {
+        return res.status(400).send({
+          error: "User unverified",
+        });
+      } else {
+        const code = await generateOTP();
+        const otp = new OTP({
+          userID: user.userID,
+          code: code,
+          type: "email verification",
+        });
+        await otp.save();
+
+        const response = await sendEmail(
+          user.firstName,
+          user.email,
+          "email verification",
+          code
+        );
+
+        if (!response.success) {
+          return res.status(400).send({
+            error: `Could not send verification code to ${email}`,
+          });
+        }
+
+        return res.send({
+          message: "User unverified",
+        });
+      }
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).send({ error: "Incorrect password" });
+    }
 
     const userData = {
       firstName: user.firstName,
       lastName: user.lastName,
-      password: user.password,
       email: user.email,
       userID: user.userID,
       role: user.role,
     };
 
-    const userPassword = user.password;
-    const isMatch = await bcrypt.compare(password, userPassword);
-    if (!isMatch) return res.status(400).send({ error: "password incorrect!" });
-
-    const token1 = await jwt.sign(
+    const accessToken = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
@@ -279,7 +354,7 @@ router.post("/login", async (req, res) => {
       }
     );
 
-    const token2 = await jwt.sign(
+    const refreshToken = await jwt.sign(
       userData,
       process.env.refresh_token_secret_key,
       {
@@ -287,19 +362,20 @@ router.post("/login", async (req, res) => {
       }
     );
 
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
+    const token = `Bearer ${accessToken}`;
+    const refresh_token = `Bearer ${refreshToken}`;
 
     const newRefreshToken = new Token({
       userID: userData.userID,
       token: refresh_token,
     });
+
     await newRefreshToken.save();
 
     res.send({ token, refresh_token, userData });
   } catch (error) {
-    res.status(500).send({ error: "Could not loggin user." });
-    console.log(error);
+    console.error(error);
+    res.status(500).send({ error: "Could not log in user" });
   }
 });
 

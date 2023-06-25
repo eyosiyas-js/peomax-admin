@@ -1,5 +1,6 @@
 const express = require("express");
 const Hotel = require("../models/Hotel");
+const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
 const managerChecker = require("../middleware/managerChecker");
 const { uid } = require("uid");

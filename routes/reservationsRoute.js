@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Reservation = require("../models/Reservation");
+const User = require("../models/User");
 const findPlace = require("../utils/findPlace");
 const checkAuthorization = require("../utils/checkAuthorization");
 const reserveMail = require("../utils/reserveMail");
@@ -42,14 +43,27 @@ router.get("/", employeeChecker, async (req, res) => {
 
 router.get("/:id", employeeChecker, async (req, res) => {
   try {
-    const reservation = await Reservation.findOne({
+    const reservation_data = await Reservation.findOne({
       reservationID: req.params.id,
     });
 
-    if (!reservation)
+    if (!reservation_data)
       return res
         .status(404)
         .send({ error: `No reservation with ID: ${req.params.id}` });
+
+    const user = await User.findOne(
+      { userID: reservation_data.userID },
+      { password: 0 }
+    );
+
+    if (!user) return res.status(400).send({ error: "User not found" });
+
+    const reservation = Object.assign(
+      {},
+      reservation_data.toObject(),
+      user.toObject()
+    );
 
     res.send(reservation);
   } catch (error) {

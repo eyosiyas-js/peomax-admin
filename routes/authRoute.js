@@ -52,9 +52,7 @@ router.post("/signup", async (req, res) => {
       });
 
       if (prevOtp) {
-        return res
-          .status(400)
-          .send({ error: "Please check your email for verification" });
+        return res.status(400).send({ error: "Please verify your email" });
       }
 
       const code = await generateOTP();
@@ -80,7 +78,7 @@ router.post("/signup", async (req, res) => {
           .send({ error: `Could not send verification code to ${email}` });
       }
 
-      return res.send({ message: "Please check your email for verification" });
+      return res.send({ message: "Please verify your email" });
     }
 
     if (password !== confirmPassword) {

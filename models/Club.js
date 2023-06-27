@@ -25,10 +25,6 @@ const clubSchema = new mongoose.Schema({
     type: Number,
     default: 1500,
   },
-  branches: {
-    type: Array,
-    default: [],
-  },
   image: {
     type: String,
     required: true,
@@ -43,10 +39,6 @@ const clubSchema = new mongoose.Schema({
     default: 0,
     min: 0,
     max: 5,
-  },
-  tables: {
-    type: Number,
-    required: false,
   },
   availableSpots: {
     type: Number,

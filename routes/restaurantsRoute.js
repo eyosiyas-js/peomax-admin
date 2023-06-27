@@ -1,16 +1,15 @@
 const express = require("express");
 const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
+const createDiningService = require("../controllers/createDiningService");
+const editDiningService = require("../controllers/editDiningService");
 const managerChecker = require("../middleware/managerChecker");
-const { uid } = require("uid");
 
 const multer = require("multer");
-const { unlinkSync, existsSync, mkdirSync } = require("fs");
+const { existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
-const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -97,95 +96,7 @@ router.post(
   managerChecker,
   uploads.array("images", 10),
   async (req, res) => {
-    try {
-      const files = await req.files;
-      let hasInvalidFile = false;
-      const images = await Promise.all(
-        files.map(async (file) => {
-          const { path, filename, mimetype } = file;
-          if (!formats.includes(mimetype)) {
-            unlinkSync(path);
-            hasInvalidFile = true;
-            return;
-          } else {
-            const response = await uploadFile(path, filename, mimetype);
-            if (response.status !== "error") return response.url;
-            if (response.status !== "error") return "none";
-          }
-        })
-      );
-
-      if (hasInvalidFile)
-        return res.status(400).send({ error: "Invalid file type detected" });
-
-      files.map((file) => unlinkSync(file.path));
-
-      const {
-        name,
-        description,
-        location,
-        tables,
-        availableSpots,
-        totalSpots,
-        openingTime,
-        closingTime,
-        numReviews,
-        totalBooks,
-
-        crossStreet,
-        neighborhood,
-        cuisines,
-        diningStyle,
-        dressCode,
-        parkingDetails,
-        publicTransit,
-        paymentOptions,
-        additional,
-        phoneNumber,
-        website,
-      } = req.body;
-
-      const managerID = req.user.userID;
-
-      const restaurant = new Restaurant({
-        name: name,
-        description: description,
-        location: location,
-        branches: req.body.branches ? req.body.branches : [],
-        image: images[0],
-        images: images,
-        rating: req.body.rating ? req.body.rating : 0,
-        tables: tables,
-        managerID: managerID,
-        availableSpots: availableSpots,
-        totalSpots: totalSpots,
-        totalSpots: totalBooks,
-        openingTime: openingTime,
-        closingTime: closingTime,
-        numReviews: numReviews,
-        totalBooks: totalBooks,
-        ID: uid(16),
-
-        crossStreet: crossStreet,
-        neighborhood: neighborhood,
-        cuisines: cuisines,
-        diningStyle: diningStyle,
-        dressCode: dressCode,
-        parkingDetails: parkingDetails,
-        publicTransit: publicTransit,
-        paymentOptions: paymentOptions,
-        additional: additional,
-        phoneNumber: phoneNumber,
-        website: website,
-      });
-
-      await restaurant.save();
-
-      res.send(restaurant);
-    } catch (error) {
-      res.status(500).send({ error: "Error adding restaurant" });
-      console.log(error);
-    }
+    await createDiningService(req, res, Restaurant);
   }
 );
 
@@ -194,110 +105,7 @@ router.put(
   managerChecker,
   uploads.array("images", 10),
   async (req, res) => {
-    async function update(req, res, images) {
-      const urls = images || [];
-      const {
-        name,
-        description,
-        location,
-        tables,
-        availableSpots,
-        totalSpots,
-        openingTime,
-        closingTime,
-        numReviews,
-        totalBooks,
-
-        crossStreet,
-        neighborhood,
-        cuisines,
-        diningStyle,
-        dressCode,
-        parkingDetails,
-        publicTransit,
-        paymentOptions,
-        additional,
-        phoneNumber,
-        website,
-      } = req.body;
-
-      const restaurant = await Restaurant.findOne({
-        ID: req.params.id,
-      });
-
-      if (!restaurant)
-        return res
-          .status(403)
-          .send({ error: `No restaurant with ID: ${req.params.id} found` });
-
-      if (restaurant.managerID !== req.user.userID)
-        return res.status(403).send({ error: "Unauthorized" });
-
-      restaurant.name = name ?? restaurant.name;
-      restaurant.description = description ?? restaurant.description;
-      restaurant.location = location ?? restaurant.location;
-      restaurant.branches = req.body.branches || [];
-      restaurant.image = urls.length !== 0 ? urls[0] : restaurant.image;
-      restaurant.images = urls.length !== 0 ? urls : restaurant.images;
-      restaurant.rating = req.body.rating || 0;
-      restaurant.tables = tables ?? restaurant.tables;
-      restaurant.availableSpots = availableSpots ?? restaurant.availableSpots;
-      restaurant.totalSpots = totalSpots ?? restaurant.totalSpots;
-      restaurant.totalBooks = totalBooks ?? restaurant.totalSpots;
-      restaurant.openingTime = openingTime ?? restaurant.openingTime;
-      restaurant.closingTime = closingTime ?? restaurant.closingTime;
-      restaurant.numReviews = numReviews ?? restaurant.numReviews;
-      restaurant.totalBooks = totalBooks ?? restaurant.totalBooks;
-
-      restaurant.crossStreet = crossStreet ?? restaurant.crossStreet;
-      restaurant.neighborhood = neighborhood ?? restaurant.neighborhood;
-      restaurant.cuisines = cuisines ?? restaurant.cuisines;
-      restaurant.diningStyle = diningStyle ?? restaurant.diningStyle;
-      restaurant.dressCode = dressCode ?? restaurant.dressCode;
-      restaurant.parkingDetails = parkingDetails ?? restaurant.parkingDetails;
-      restaurant.publicTransit = publicTransit ?? restaurant.publicTransit;
-      restaurant.paymentOptions = paymentOptions ?? restaurant.paymentOptions;
-      restaurant.additional = additional ?? restaurant.additional;
-      restaurant.phoneNumber = phoneNumber ?? restaurant.phoneNumber;
-      restaurant.website = website ?? restaurant.website;
-
-      await restaurant.save();
-
-      res.send(restaurant.toObject());
-    }
-
-    try {
-      if (req.query.files == "true") {
-        const files = await req.files;
-        let hasInvalidFile = false;
-        urls = await Promise.all(
-          files.map(async (file) => {
-            const { path, filename, mimetype } = file;
-            if (!formats.includes(mimetype)) {
-              unlinkSync(path);
-              hasInvalidFile = true;
-              return "none";
-            } else {
-              const response = await uploadFile(path, filename, mimetype);
-              if (response.status !== "error") return response.url;
-              if (response.status !== "error") return "none";
-            }
-          })
-        );
-
-        if (hasInvalidFile) {
-          return res.status(400).send({ error: "Invalid file type" });
-        }
-
-        files.map((file) => unlinkSync(file.path));
-        update(req, res, urls);
-      } else {
-        update(req, res);
-      }
-    } catch (error) {
-      res.status(500).send({ error: "Error updating restaurant" });
-      console.log(error);
-    }
+    await editDiningService(req, res, Restaurant);
   }
 );
 

@@ -28,9 +28,9 @@ function generateOTP() {
 
 router.post("/signup", async (req, res) => {
   try {
-    const { valid, errors } = await validateSignupData(req.body);
-    if (!valid) {
-      return res.status(400).json(errors);
+    const valid = await validateSignupData(req.body);
+    if (!valid.success) {
+      return res.status(400).send({ error: valid.message });
     }
 
     const { firstName, lastName, password, confirmPassword, email } = req.body;
@@ -52,7 +52,7 @@ router.post("/signup", async (req, res) => {
       });
 
       if (prevOtp) {
-        return res.status(400).send({ error: "Please verify your email" });
+        return res.send({ message: "Verify your email address" });
       }
 
       const code = await generateOTP();
@@ -78,7 +78,7 @@ router.post("/signup", async (req, res) => {
           .send({ error: `Could not send verification code to ${email}` });
       }
 
-      return res.send({ message: "Please verify your email" });
+      return res.send({ message: "Verify your email address" });
     }
 
     if (password !== confirmPassword) {
@@ -281,6 +281,10 @@ router.post("/auth-provider", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
+    const valid = await validateLoginData(req.body);
+    if (!valid.success) {
+      return res.status(400).send({ error: valid.message });
+    }
     const { email, password } = req.body;
     const user = await User.findOne({ email: email, role: "client" });
 

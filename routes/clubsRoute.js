@@ -1,16 +1,15 @@
 const express = require("express");
 const Club = require("../models/Club");
 const Event = require("../models/Event");
+const createDiningService = require("../controllers/createDiningService");
+const editDiningService = require("../controllers/editDiningService");
 const managerChecker = require("../middleware/managerChecker");
-const { uid } = require("uid");
 
 const multer = require("multer");
-const { unlinkSync, existsSync, mkdirSync } = require("fs");
+const { existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
-const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -95,95 +94,7 @@ router.post(
   managerChecker,
   uploads.array("images", 10),
   async (req, res) => {
-    try {
-      const files = await req.files;
-      let hasInvalidFile = false;
-      const images = await Promise.all(
-        files.map(async (file) => {
-          const { path, filename, mimetype } = file;
-          if (!formats.includes(mimetype)) {
-            unlinkSync(path);
-            hasInvalidFile = true;
-            return;
-          } else {
-            const response = await uploadFile(path, filename, mimetype);
-            if (response.status !== "error") return response.url;
-            if (response.status !== "error") return "none";
-          }
-        })
-      );
-
-      if (hasInvalidFile)
-        return res.status(400).send({ error: "Invalid file type detected" });
-
-      files.map((file) => unlinkSync(file.path));
-
-      const {
-        name,
-        description,
-        location,
-        tables,
-        availableSpots,
-        totalSpots,
-        openingTime,
-        closingTime,
-        numReviews,
-        totalBooks,
-
-        crossStreet,
-        neighborhood,
-        cuisines,
-        diningStyle,
-        dressCode,
-        parkingDetails,
-        publicTransit,
-        paymentOptions,
-        additional,
-        phoneNumber,
-        website,
-      } = req.body;
-
-      const managerID = req.user.userID;
-
-      const club = new Club({
-        name: name,
-        description: description,
-        location: location,
-        branches: req.body.branches ? req.body.branches : [],
-        image: images[0],
-        images: images,
-        rating: req.body.rating ? req.body.rating : 0,
-        tables: tables,
-        managerID: managerID,
-        availableSpots: availableSpots,
-        totalSpots: totalSpots,
-        totalSpots: totalBooks,
-        openingTime: openingTime,
-        closingTime: closingTime,
-        numReviews: numReviews,
-        totalBooks: totalBooks,
-        ID: uid(16),
-
-        crossStreet: crossStreet,
-        neighborhood: neighborhood,
-        cuisines: cuisines,
-        diningStyle: diningStyle,
-        dressCode: dressCode,
-        parkingDetails: parkingDetails,
-        publicTransit: publicTransit,
-        paymentOptions: paymentOptions,
-        additional: additional,
-        phoneNumber: phoneNumber,
-        website: website,
-      });
-
-      await club.save();
-
-      res.send(club);
-    } catch (error) {
-      res.status(500).send({ error: "Error adding club" });
-      console.log(error);
-    }
+    await createDiningService(req, res, Club);
   }
 );
 
@@ -192,110 +103,7 @@ router.put(
   managerChecker,
   uploads.array("images", 10),
   async (req, res) => {
-    async function update(req, res, images) {
-      const urls = images || [];
-      const {
-        name,
-        description,
-        location,
-        tables,
-        availableSpots,
-        totalSpots,
-        openingTime,
-        closingTime,
-        numReviews,
-        totalBooks,
-
-        crossStreet,
-        neighborhood,
-        cuisines,
-        diningStyle,
-        dressCode,
-        parkingDetails,
-        publicTransit,
-        paymentOptions,
-        additional,
-        phoneNumber,
-        website,
-      } = req.body;
-
-      const club = await Club.findOne({
-        ID: req.params.id,
-      });
-
-      if (!club)
-        return res
-          .status(403)
-          .send({ error: `No club with ID: ${req.params.id} found` });
-
-      if (club.managerID !== req.user.userID)
-        return res.status(403).send({ error: "Unauthorized" });
-
-      club.name = name ?? club.name;
-      club.description = description ?? club.description;
-      club.location = location ?? club.location;
-      club.branches = req.body.branches || [];
-      club.image = urls.length !== 0 ? urls[0] : club.image;
-      club.images = urls.length !== 0 ? urls : club.images;
-      club.rating = req.body.rating || 0;
-      club.tables = tables ?? club.tables;
-      club.availableSpots = availableSpots ?? club.availableSpots;
-      club.totalSpots = totalSpots ?? club.totalSpots;
-      club.totalBooks = totalBooks ?? club.totalSpots;
-      club.openingTime = openingTime ?? club.openingTime;
-      club.closingTime = closingTime ?? club.closingTime;
-      club.numReviews = numReviews ?? club.numReviews;
-      club.totalBooks = totalBooks ?? club.totalBooks;
-
-      club.crossStreet = crossStreet ?? club.crossStreet;
-      club.neighborhood = neighborhood ?? club.neighborhood;
-      club.cuisines = cuisines ?? club.cuisines;
-      club.diningStyle = diningStyle ?? club.diningStyle;
-      club.dressCode = dressCode ?? club.dressCode;
-      club.parkingDetails = parkingDetails ?? club.parkingDetails;
-      club.publicTransit = publicTransit ?? club.publicTransit;
-      club.paymentOptions = paymentOptions ?? club.paymentOptions;
-      club.additional = additional ?? club.additional;
-      club.phoneNumber = phoneNumber ?? club.phoneNumber;
-      club.website = website ?? club.website;
-
-      await club.save();
-
-      res.send(club.toObject());
-    }
-
-    try {
-      if (req.query.files == "true") {
-        const files = await req.files;
-        let hasInvalidFile = false;
-        urls = await Promise.all(
-          files.map(async (file) => {
-            const { path, filename, mimetype } = file;
-            if (!formats.includes(mimetype)) {
-              unlinkSync(path);
-              hasInvalidFile = true;
-              return "none";
-            } else {
-              const response = await uploadFile(path, filename, mimetype);
-              if (response.status !== "error") return response.url;
-              if (response.status !== "error") return "none";
-            }
-          })
-        );
-
-        if (hasInvalidFile) {
-          return res.status(400).send({ error: "Invalid file type" });
-        }
-
-        files.map((file) => unlinkSync(file.path));
-        update(req, res, urls);
-      } else {
-        update(req, res);
-      }
-    } catch (error) {
-      res.status(500).send({ error: "Error updating club" });
-      console.log(error);
-    }
+    await editDiningService(req, res, Club);
   }
 );
 

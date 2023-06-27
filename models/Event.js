@@ -52,12 +52,10 @@ const eventSchema = new mongoose.Schema({
   eventStart: {
     type: String,
     required: true,
-    trim: true,
   },
   eventEnd: {
     type: String,
     required: true,
-    trim: true,
   },
   price: {
     type: Number,

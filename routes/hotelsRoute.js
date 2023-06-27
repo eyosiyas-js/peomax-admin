@@ -2,19 +2,15 @@ const express = require("express");
 const Hotel = require("../models/Hotel");
 const Restaurant = require("../models/Restaurant");
 const Event = require("../models/Event");
-const {
-  createDiningService,
-} = require("../controllers/diningServiceController");
+const createDiningService = require("../controllers/createDiningService");
+const editDiningService = require("../controllers/editDiningService");
 const managerChecker = require("../middleware/managerChecker");
-const { uid } = require("uid");
 
 const multer = require("multer");
-const { unlinkSync, existsSync, mkdirSync } = require("fs");
+const { existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
-const uploadFile = require("../utils/upload");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -133,110 +129,7 @@ router.put(
   managerChecker,
   uploads.array("images", 10),
   async (req, res) => {
-    async function update(req, res, images) {
-      const urls = images || [];
-      const {
-        name,
-        description,
-        location,
-        tables,
-        availableSpots,
-        totalSpots,
-        openingTime,
-        closingTime,
-        numReviews,
-        totalBooks,
-
-        crossStreet,
-        neighborhood,
-        cuisines,
-        diningStyle,
-        dressCode,
-        parkingDetails,
-        publicTransit,
-        paymentOptions,
-        additional,
-        phoneNumber,
-        website,
-      } = req.body;
-
-      const hotel = await Hotel.findOne({
-        ID: req.params.id,
-      });
-
-      if (!hotel)
-        return res
-          .status(403)
-          .send({ error: `No hotel with ID: ${req.params.id} found` });
-
-      if (hotel.managerID !== req.user.userID)
-        return res.status(403).send({ error: "Unauthorized" });
-
-      hotel.name = name ?? hotel.name;
-      hotel.description = description ?? hotel.description;
-      hotel.location = location ?? hotel.location;
-      hotel.branches = req.body.branches || [];
-      hotel.image = urls.length !== 0 ? urls[0] : hotel.image;
-      hotel.images = urls.length !== 0 ? urls : hotel.images;
-      hotel.rating = req.body.rating || 0;
-      hotel.tables = tables ?? hotel.tables;
-      hotel.availableSpots = availableSpots ?? hotel.availableSpots;
-      hotel.totalSpots = totalSpots ?? hotel.totalSpots;
-      hotel.totalBooks = totalBooks ?? hotel.totalSpots;
-      hotel.openingTime = openingTime ?? hotel.openingTime;
-      hotel.closingTime = closingTime ?? hotel.closingTime;
-      hotel.numReviews = numReviews ?? hotel.numReviews;
-      hotel.totalBooks = totalBooks ?? hotel.totalBooks;
-
-      hotel.crossStreet = crossStreet ?? hotel.crossStreet;
-      hotel.neighborhood = neighborhood ?? hotel.neighborhood;
-      hotel.cuisines = cuisines ?? hotel.cuisines;
-      hotel.diningStyle = diningStyle ?? hotel.diningStyle;
-      hotel.dressCode = dressCode ?? hotel.dressCode;
-      hotel.parkingDetails = parkingDetails ?? hotel.parkingDetails;
-      hotel.publicTransit = publicTransit ?? hotel.publicTransit;
-      hotel.paymentOptions = paymentOptions ?? hotel.paymentOptions;
-      hotel.additional = additional ?? hotel.additional;
-      hotel.phoneNumber = phoneNumber ?? hotel.phoneNumber;
-      hotel.website = website ?? hotel.website;
-
-      await hotel.save();
-
-      res.send(hotel.toObject());
-    }
-
-    try {
-      if (req.query.files == "true") {
-        const files = await req.files;
-        let hasInvalidFile = false;
-        urls = await Promise.all(
-          files.map(async (file) => {
-            const { path, filename, mimetype } = file;
-            if (!formats.includes(mimetype)) {
-              unlinkSync(path);
-              hasInvalidFile = true;
-              return "none";
-            } else {
-              const response = await uploadFile(path, filename, mimetype);
-              if (response.status !== "error") return response.url;
-              if (response.status !== "error") return "none";
-            }
-          })
-        );
-
-        if (hasInvalidFile) {
-          return res.status(400).send({ error: "Invalid file type" });
-        }
-
-        files.map((file) => unlinkSync(file.path));
-        update(req, res, urls);
-      } else {
-        update(req, res);
-      }
-    } catch (error) {
-      res.status(500).send({ error: "Error updating hotel" });
-      console.log(error);
-    }
+    await editDiningService(req, res, Hotel);
   }
 );
 

@@ -5,17 +5,17 @@ const managerChecker = require("../middleware/managerChecker");
 const userChecker = require("../middleware/userChecker");
 const qrCode = require("../utils/qrCode");
 const { uid } = require("uid");
+const { validateTicket } = require("../utils/validator.js");
 
 const router = express.Router();
 
 router.post("/", userChecker, async (req, res) => {
   try {
+    const valid = validateTicket(req.body);
+
+    if (!valid.success) return res.status(400).send({ error: valid.message });
+
     const { eventID, isPremium, people } = req.body;
-
-    if (!eventID) return res.status(400).send({ error: "eventID is required" });
-
-    if (!people)
-      return res.status(400).send({ error: "No of people is required" });
 
     const event = await Event.findOne({ eventID: eventID });
     if (!event)

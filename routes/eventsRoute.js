@@ -9,19 +9,10 @@ const multer = require("multer");
 const { unlinkSync, existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
 const uploadFile = require("../utils/upload");
+const { validateEvent } = require("../utils/validator");
 
 const storage = join(process.cwd(), "./uploads");
-const formats = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/bmp",
-  "image/webp",
-  "image/avif",
-  "image/tiff",
-  "image/svg+xml",
-  "image/x-icon",
-];
+const formats = require("../utils/formats");
 
 if (!existsSync(storage)) {
   mkdirSync(storage);
@@ -76,6 +67,10 @@ router.post(
   uploads.array("images", 5),
   async (req, res) => {
     try {
+      const valid = await validateEvent(req.body);
+
+      if (!valid.success) return res.status(400).send({ error: valid.message });
+
       const files = await req.files;
       let hasInvalidFile = false;
       const images = await Promise.all(
@@ -105,7 +100,6 @@ router.post(
         ID,
         date,
         totalSpots,
-        totalBooks,
         isFullDay,
         eventStart,
         eventEnd,
@@ -140,7 +134,6 @@ router.post(
         eventEnd: eventEnd,
         price: price,
         premiumPrice: premiumPrice,
-        totalBooks: totalBooks,
         eventID: uid(16),
       });
 

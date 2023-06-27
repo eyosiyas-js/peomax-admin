@@ -9,9 +9,9 @@ const otpGenerator = require("otp-generator");
 const adminChecker = require("../middleware/adminChecker.js");
 
 const {
-  validateSignupData,
+  validateManagerSignupData,
   validateLoginData,
-} = require("../utils/managerValidator.js");
+} = require("../utils/validator.js");
 const { uid } = require("uid");
 
 require("dotenv").config();
@@ -20,8 +20,8 @@ const router = express.Router();
 
 router.post("/register", adminChecker, async (req, res) => {
   try {
-    const { valid, errors } = await validateSignupData(req.body);
-    if (!valid) return res.status(400).json(errors);
+    const valid = await validateManagerSignupData(req.body);
+    if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { name, password, confirmPassword, email } = req.body;
 
@@ -56,9 +56,8 @@ router.post("/register", adminChecker, async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { valid, errors } = await validateLoginData(req.body);
-
-    if (!valid) return res.status(400).json(errors);
+    const valid = await validateLoginData(req.body);
+    if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { email, password } = req.body;
     const user = await User.findOne({ email: email, role: "manager" });

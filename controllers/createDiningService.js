@@ -2,9 +2,16 @@ const { uid } = require("uid");
 const { unlinkSync } = require("fs");
 const uploadFile = require("../utils/upload");
 const formats = require("../utils/formats");
+const { validateDiningPlace } = require("../utils/validator");
 
-async function createDiningService(req, res, diningPlaceModule) {
+async function createDiningService(req, res, diningPlaceModel) {
   try {
+    const validation = validateDiningPlace(req.body);
+
+    if (!validation.success) {
+      return res.status(400).send({ error: validation.message });
+    }
+
     const files = await req.files;
     let hasInvalidFile = false;
     const images = await Promise.all(
@@ -31,13 +38,10 @@ async function createDiningService(req, res, diningPlaceModule) {
       name,
       description,
       location,
-      tables,
       availableSpots,
       totalSpots,
       openingTime,
       closingTime,
-      numReviews,
-      totalBooks,
 
       crossStreet,
       neighborhood,
@@ -54,7 +58,7 @@ async function createDiningService(req, res, diningPlaceModule) {
 
     const managerID = req.user.userID;
 
-    const diningPlace = new diningPlaceModule({
+    const diningPlace = new diningPlaceModel({
       name: name,
       description: description,
       location: location,
@@ -62,15 +66,11 @@ async function createDiningService(req, res, diningPlaceModule) {
       image: images[0],
       images: images,
       rating: req.body.rating ? req.body.rating : 0,
-      tables: tables,
       managerID: managerID,
       availableSpots: availableSpots,
       totalSpots: totalSpots,
-      totalSpots: totalBooks,
       openingTime: openingTime,
       closingTime: closingTime,
-      numReviews: numReviews,
-      totalBooks: totalBooks,
       ID: uid(16),
 
       crossStreet: crossStreet,
@@ -91,10 +91,10 @@ async function createDiningService(req, res, diningPlaceModule) {
     res.send(diningPlace);
   } catch (error) {
     res.status(500).send({
-      error: `Error adding ${diningPlaceModule.modelName.toLowerCase()}`,
+      error: `Error adding ${diningPlaceModel.modelName.toLowerCase()}`,
     });
     console.log(error);
   }
 }
 
-module.exports = { createDiningService };
+module.exports = createDiningService;

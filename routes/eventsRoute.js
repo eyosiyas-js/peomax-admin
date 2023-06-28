@@ -2,14 +2,14 @@ const express = require("express");
 const Event = require("../models/Event");
 const findPlace = require("../utils/findPlace");
 const checkAuthorization = require("../utils/checkAuthorization");
-const employeeChecker = require("../middleware/employeeChecker");
+const superVisorChecker = require("../middleware/superVisorChecker");
 const { uid } = require("uid");
 
 const multer = require("multer");
 const { unlinkSync, existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
 const uploadFile = require("../utils/upload");
-const { validateEvent } = require("../utils/validator");
+const { validateEvent, validateEditEvent } = require("../utils/validator");
 
 const storage = join(process.cwd(), "./uploads");
 const formats = require("../utils/formats");
@@ -63,13 +63,22 @@ router.get("/:id", async (req, res) => {
 
 router.post(
   "/create",
-  employeeChecker,
+  superVisorChecker,
   uploads.array("images", 5),
   async (req, res) => {
     try {
       const valid = await validateEvent(req.body);
-
       if (!valid.success) return res.status(400).send({ error: valid.message });
+
+      const managerID = req.user.userID;
+
+      const place = await findPlace(req.body.ID, req.body.category);
+      if (!place)
+        return res.status(400).send({ error: `${category} not found` });
+
+      const isAuthorized = checkAuthorization(managerID, place);
+      if (!isAuthorized)
+        return res.status(401).send({ error: "Unauthorized action" });
 
       const files = await req.files;
       let hasInvalidFile = false;
@@ -107,18 +116,6 @@ router.post(
         premiumPrice,
       } = req.body;
 
-      const managerID = req.user.userID;
-
-      const place = await findPlace(ID, category);
-
-      if (!place)
-        return res.status(400).send({ error: `${category} not found` });
-
-      const isAuthorized = checkAuthorization(managerID, place);
-
-      if (!isAuthorized)
-        return res.status(401).send({ error: "Unauthorized action" });
-
       const event = new Event({
         name: name,
         description: description,
@@ -136,6 +133,86 @@ router.post(
         premiumPrice: premiumPrice,
         eventID: uid(16),
       });
+
+      await event.save();
+
+      res.send(event);
+    } catch (error) {
+      res.status(500).send({ error: "Error creating an event" });
+      console.log(error);
+    }
+  }
+);
+
+router.put(
+  "/:id/edit",
+  superVisorChecker,
+  uploads.array("images", 5),
+  async (req, res) => {
+    try {
+      const valid = validateEditEvent(req.body);
+      if (!valid.success) return res.status(400).send({ error: valid.message });
+
+      const managerID = req.user.userID;
+      const place = await findPlace(req.body.ID, req.body.category);
+      if (!place)
+        return res.status(400).send({ error: `${category} not found` });
+
+      const isAuthorized = checkAuthorization(managerID, place);
+      if (!isAuthorized)
+        return res.status(401).send({ error: "Unauthorized action" });
+
+      let urls = [];
+      if (req.query.files == "true") {
+        const files = await req.files;
+        let hasInvalidFile = false;
+        urls = await Promise.all(
+          files.map(async (file) => {
+            const { path, filename, mimetype } = file;
+            if (!formats.includes(mimetype)) {
+              unlinkSync(path);
+              hasInvalidFile = true;
+              return "none";
+            } else {
+              const response = await uploadFile(path, filename, mimetype);
+              if (response.status !== "error") return response.url;
+              if (response.status !== "error") return "none";
+            }
+          })
+        );
+
+        if (hasInvalidFile) {
+          return res.status(400).send({ error: "Invalid file type" });
+        }
+
+        files.map((file) => unlinkSync(file.path));
+      }
+
+      const {
+        name,
+        description,
+        date,
+        totalSpots,
+        availableSpots,
+        eventStart,
+        eventEnd,
+        price,
+        premiumPrice,
+      } = req.body;
+
+      const event = await Event.findOne({ eventID: req.params.id });
+
+      event.name = name ?? event.name;
+      event.description = description ?? event.description;
+      event.date = date ?? event.date;
+      event.image = urls.length !== 0 ? urls[0] : event.image;
+      event.images = urls.length !== 0 ? urls : event.images;
+      event.availableSpots = availableSpots ?? event.availableSpots;
+      event.totalSpots = totalSpots ?? event.totalSpots;
+      event.eventStart = eventStart ?? event.eventStart;
+      event.price = price ?? event.price;
+      event.eventEnd = eventEnd ?? event.eventEnd;
+      event.premiumPrice = premiumPrice ?? event.premiumPrice;
 
       await event.save();
 

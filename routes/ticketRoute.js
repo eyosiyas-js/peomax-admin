@@ -1,7 +1,7 @@
 const express = require("express");
 const Event = require("../models/Event");
 const Ticket = require("../models/Ticket");
-const managerChecker = require("../middleware/managerChecker");
+const employeeChecker = require("../middleware/employeeChecker");
 const userChecker = require("../middleware/userChecker");
 const qrCode = require("../utils/qrCode");
 const { uid } = require("uid");
@@ -66,7 +66,7 @@ router.post("/", userChecker, async (req, res) => {
   }
 });
 
-router.post("/verify/:id", managerChecker, async (req, res) => {
+router.post("/verify/:id", employeeChecker, async (req, res) => {
   try {
     const ticket = await Ticket.findOne({ ticketID: req.params.id });
 

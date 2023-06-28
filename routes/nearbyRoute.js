@@ -7,13 +7,34 @@ const Club = require("../models/Club");
 
 const router = express.Router();
 
+async function isUnderOneKM(start, end) {
+  const result = haversine(start, end, { threshold: 1000, unit: "meter" });
+  return result;
+}
+
 router.get("/", async (req, res) => {
   const hotels = await Hotel.find({});
-  const restaurants = await Restaurant.find({});
-  const clubs = await Club.find({});
-  const bars = await Bar.find({});
+  const { latitude, longitude } = req.query;
 
-  const items = hotels.concat(restaurants, clubs, bars);
+  if (!latitude || !longitude)
+    return res.status(400).send({ error: "Invalid geolocation data" });
+
+  const start = {
+    latitude,
+    longitude,
+  };
+
+  const items = hotels;
+  const nearbyItems = [];
+
+  for (const item of items) {
+    const end = item.geoLocation;
+    const isNearby = await isUnderOneKM(start, end);
+
+    if (isNearby) nearbyItems.push(item);
+  }
+
+  res.send(nearbyItems);
 
   try {
   } catch (error) {

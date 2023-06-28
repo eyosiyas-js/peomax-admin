@@ -24,7 +24,12 @@ router.get("/", async (req, res) => {
     longitude,
   };
 
-  const items = hotels;
+  const restaurants = await Restaurant.find({});
+  const clubs = await Club.find({});
+  const bars = await Bar.find({});
+
+  const items = hotels.concat(restaurants, clubs, bars);
+
   const nearbyItems = [];
 
   for (const item of items) {

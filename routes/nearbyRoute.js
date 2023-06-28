@@ -13,7 +13,7 @@ async function isUnderOneKM(start, end) {
 }
 
 router.get("/", async (req, res) => {
-  const hotels = await Hotel.find({});
+  const hotelsPromise = Hotel.find({});
   const { latitude, longitude } = req.query;
 
   if (!latitude || !longitude)
@@ -24,22 +24,28 @@ router.get("/", async (req, res) => {
     longitude,
   };
 
-  const restaurants = await Restaurant.find({});
-  const clubs = await Club.find({});
-  const bars = await Bar.find({});
+  const restaurantsPromise = Restaurant.find({});
+  const clubsPromise = Club.find({});
+  const barsPromise = Bar.find({});
+
+  const [hotels, restaurants, clubs, bars] = await Promise.all([
+    hotelsPromise,
+    restaurantsPromise,
+    clubsPromise,
+    barsPromise,
+  ]);
 
   const items = hotels.concat(restaurants, clubs, bars);
 
-  const nearbyItems = [];
+  const nearbyItems = await Promise.all(
+    items.map(async (item) => {
+      const end = item.geoLocation;
+      const isNearby = await isUnderOneKM(start, end);
+      if (isNearby) return item;
+    })
+  );
 
-  for (const item of items) {
-    const end = item.geoLocation;
-    const isNearby = await isUnderOneKM(start, end);
-
-    if (isNearby) nearbyItems.push(item);
-  }
-
-  res.send(nearbyItems);
+  res.send(nearbyItems.filter((item) => item));
 
   try {
   } catch (error) {

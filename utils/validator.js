@@ -67,6 +67,92 @@ const dinningPlaceSchema = Joi.object({
   website: Joi.string().required(),
 });
 
+const editDinningPlaceSchema = Joi.object({
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  location: Joi.string().optional(),
+  availableSpots: Joi.number().integer().optional(),
+  totalSpots: Joi.number().integer().optional(),
+  openingTime: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  closingTime: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  crossStreet: Joi.string().optional(),
+  neighborhood: Joi.string().optional(),
+  cuisines: Joi.string().optional(),
+  diningStyle: Joi.string().optional(),
+  dressCode: Joi.string().optional(),
+  parkingDetails: Joi.string().optional(),
+  publicTransit: Joi.string().optional(),
+  paymentOptions: Joi.array().items(Joi.string()).optional(),
+  additional: Joi.string().optional(),
+  phoneNumber: Joi.string().optional(),
+  website: Joi.string().optional(),
+});
+
+const eventSchema = Joi.object({
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+  category: Joi.string()
+    .valid("bar", "club", "hotel", "restaurant", "other")
+    .required(),
+  ID: Joi.string().required(),
+  date: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
+  isFullDay: Joi.boolean().optional(),
+  eventStart: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  eventEnd: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  price: Joi.number().positive().required(),
+  premiumPrice: Joi.number().positive().required(),
+});
+
+const editEventSchema = Joi.object({
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  date: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
+  eventStart: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  eventEnd: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  price: Joi.number().positive().optional(),
+  premiumPrice: Joi.number().positive().optional(),
+});
+
 const reservationSchema = Joi.object({
   ID: Joi.string().required(),
   people: Joi.number().integer().min(1).required(),
@@ -105,36 +191,6 @@ function validateSignupData(data) {
   }
 }
 
-const eventSchema = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().required(),
-  category: Joi.string()
-    .valid("bar", "club", "hotel", "restaurant", "other")
-    .required(),
-  ID: Joi.string().required(),
-  date: Joi.string()
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
-    .required()
-    .messages({
-      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
-    }),
-  isFullDay: Joi.boolean().optional(),
-  eventStart: Joi.string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
-    .required()
-    .messages({
-      "string.pattern.base": `Time should be in the format 0:00 PM`,
-    }),
-  eventEnd: Joi.string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
-    .required()
-    .messages({
-      "string.pattern.base": `Time should be in the format 0:00 PM`,
-    }),
-  price: Joi.number().positive().required(),
-  premiumPrice: Joi.number().positive().required(),
-});
-
 function validateLoginData(data) {
   const output = userLoginSchema.validate(data);
   const { error } = output;
@@ -151,6 +207,62 @@ function validateLoginData(data) {
 
 function validateManagerSignupData(data) {
   const output = managerSignupSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateDiningPlace(data) {
+  const output = dinningPlaceSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateEditDiningPlace(data) {
+  const output = editDinningPlaceSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateEvent(data) {
+  const output = eventSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateEditEvent(data) {
+  const output = editEventSchema.validate(data);
   const { error } = output;
 
   if (error) {
@@ -191,34 +303,6 @@ function validateTicket(data) {
   }
 }
 
-function validateEvent(data) {
-  const output = eventSchema.validate(data);
-  const { error } = output;
-
-  if (error) {
-    return {
-      success: false,
-      message: error.details[0].message.replaceAll('"', ""),
-    };
-  } else {
-    return { success: true, message: "Validation successful" };
-  }
-}
-
-function validateDiningPlace(data) {
-  const output = dinningPlaceSchema.validate(data);
-  const { error } = output;
-
-  if (error) {
-    return {
-      success: false,
-      message: error.details[0].message.replaceAll('"', ""),
-    };
-  } else {
-    return { success: true, message: "Validation successful" };
-  }
-}
-
 module.exports = {
   validateSignupData,
   validateLoginData,
@@ -227,4 +311,6 @@ module.exports = {
   validateDiningPlace,
   validateTicket,
   validateEvent,
+  validateEditDiningPlace,
+  validateEditEvent,
 };

@@ -1,9 +1,32 @@
 const { unlinkSync } = require("fs");
 const uploadFile = require("../utils/upload");
 const formats = require("../utils/formats");
+const { checkAuthorization } = require("../utils/checkAuthorization");
+const { validateEditDiningPlace } = require("../utils/validator");
 
 async function editDiningService(req, res, diningPlaceModel) {
   try {
+    const valid = validateEditDiningPlace(req.body);
+    if (!valid.success) return res.status(400).send({ error: valid.message });
+
+    const managerID = req.user.userID;
+
+    const diningPlace = await diningPlaceModel.findOne({
+      ID: req.params.id,
+    });
+
+    if (!diningPlace)
+      return res.status(403).send({
+        error: `No ${diningPlaceModel.modelName.toLowerCase()} place with ID: ${
+          req.params.id
+        } found`,
+      });
+
+    const isAuthorized = checkAuthorization(managerID, diningPlace);
+
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
     let urls = [];
     if (req.query.files == "true") {
       const files = await req.files;
@@ -51,18 +74,6 @@ async function editDiningService(req, res, diningPlaceModel) {
       phoneNumber,
       website,
     } = req.body;
-
-    const diningPlace = await diningPlaceModel.findOne({
-      ID: req.params.id,
-    });
-
-    if (!diningPlace)
-      return res
-        .status(403)
-        .send({ error: `No dining place with ID: ${req.params.id} found` });
-
-    if (diningPlace.managerID !== req.user.userID)
-      return res.status(403).send({ error: "Unauthorized" });
 
     diningPlace.name = name ?? diningPlace.name;
     diningPlace.description = description ?? diningPlace.description;

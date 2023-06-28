@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
   const hotelsPromise = Hotel.find({});
   const { latitude, longitude } = req.query;
 
-  if (!latitude || !longitude)
+  if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude))
     return res.status(400).send({ error: "Invalid geolocation data" });
 
   const start = {

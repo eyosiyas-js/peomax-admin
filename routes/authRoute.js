@@ -134,6 +134,9 @@ router.post("/signup", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   try {
     const { code } = req.body;
+
+    if (!code) return res.status(400).send({ error: "Code not provided" });
+
     const otp = await OTP.findOne({ code: code, type: "email verification" });
     if (!otp)
       return res.status(400).send({ error: "Incorrect or expired code" });
@@ -188,7 +191,10 @@ router.post("/verify-email", async (req, res) => {
 
 router.post("/auth-provider", async (req, res) => {
   try {
-    const { firstName, lastName, email, verified } = req.body;
+    const { firstName, lastName, email } = req.body;
+
+    if (!firstName || !lastName || !email)
+      return res.status(400).send({ error: "Please fill the required fields" });
 
     const existingUser = await User.findOne({ email: email });
 
@@ -386,6 +392,9 @@ router.post("/reset-password", async (req, res) => {
     const code = await generateOTP();
 
     const { email } = req.body;
+
+    if (!email) return res.status(400).send({ error: "Email not provided" });
+
     const user = await User.findOne({ email: email });
 
     if (!user)
@@ -502,6 +511,9 @@ router.put("/change-password", async (req, res) => {
 
 router.get("/refresh-token", async (req, res) => {
   try {
+    if (!req.body.refreshToken)
+      return res.status(400).send({ error: "Refresh token not provided" });
+
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });
@@ -535,6 +547,9 @@ router.get("/refresh-token", async (req, res) => {
 
 router.delete("/logout", async (req, res) => {
   try {
+    if (!req.body.refreshToken)
+      return res.status(400).send({ error: "Refresh token not provided" });
+
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });

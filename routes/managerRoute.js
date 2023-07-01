@@ -105,7 +105,7 @@ router.post("/login", async (req, res) => {
 
     res.send({ token, refresh_token, userData });
   } catch (error) {
-    res.status(500).send({ error: "Could not loggin user." });
+    res.status(500).send({ error: "Could not login user." });
     console.log(error);
   }
 });
@@ -119,6 +119,9 @@ router.post("/reset-password", async (req, res) => {
     });
 
     const { email } = req.body;
+
+    if (!email) return res.status(400).send({ error: "Email not provided" });
+
     const user = await User.findOne({ email: email });
 
     if (!user)
@@ -162,6 +165,10 @@ router.post("/reset-password", async (req, res) => {
 
 router.put("/change-password", async (req, res) => {
   const { code, newPassword, confirmNewPassword } = req.body;
+
+  if (!code) return res.status(400).send({ error: "Code is required" });
+  if (!newPassword || !confirmPassword)
+    return res.status(400).send({ error: "Passwords required" });
 
   try {
     const otp = await OTP.findOne({ code: code, type: "reset password" });
@@ -220,6 +227,9 @@ router.put("/change-password", async (req, res) => {
 
 router.get("/refresh-token", async (req, res) => {
   try {
+    if (!req.body.refreshToken)
+      return res.status(400).send({ error: "Refresh token not provided" });
+
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });
@@ -253,11 +263,14 @@ router.get("/refresh-token", async (req, res) => {
 
 router.delete("/logout", async (req, res) => {
   try {
+    if (!req.body.refreshToken)
+      return res.status(400).send({ error: "Refresh token not provided" });
+
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });
     if (!refresh_token)
-      return res.status(401).send({ error: "Inavliad/Expired refresh token" });
+      return res.status(401).send({ error: "Invalid/Expired refresh token" });
 
     await refresh_token.remove();
 

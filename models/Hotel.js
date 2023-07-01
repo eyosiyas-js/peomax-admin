@@ -150,14 +150,14 @@ const hotelSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
-  // supervisorID: {
-  //   type: String,
-  //   require: true,
-  // },
-  // employeeID: {
-  //   type: String,
-  //   require: true,
-  // },
+  supervisorID: {
+    type: String,
+    require: false,
+  },
+  employeeID: {
+    type: String,
+    require: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

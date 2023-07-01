@@ -49,6 +49,12 @@ router.get("/:id", async (req, res) => {
     const hotel = await Hotel.findOne({
       ID: req.params.id,
     });
+
+    if (!hotel)
+      return res
+        .status(404)
+        .send({ error: `No hotel with ID: ${req.params.id}` });
+
     res.send(hotel.toObject());
   } catch (error) {
     console.error(error);

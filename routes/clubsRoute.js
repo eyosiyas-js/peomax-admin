@@ -46,6 +46,12 @@ router.get("/:id", async (req, res) => {
     const club = await Club.findOne({
       ID: req.params.id,
     });
+
+    if (!club)
+      return res
+        .status(404)
+        .send({ error: `No club with ID: ${req.params.id}` });
+
     res.send(club.toObject());
   } catch (error) {
     console.error(error);

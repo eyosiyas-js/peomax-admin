@@ -18,6 +18,7 @@ const allRoute = require("./routes/allRoute.js");
 const topRatedRoute = require("./routes/topRatedRoute.js");
 const featuredRoute = require("./routes/featuredRoute.js");
 const nearbyRoute = require("./routes/nearbyRoute.js");
+const geolocationRoute = require("./routes/geolocationRoute.js");
 const reserveRoute = require("./routes/reserveRoute.js");
 const reservationsRoute = require("./routes/reservationsRoute.js");
 const eventsRoute = require("./routes/eventsRoute.js");
@@ -58,6 +59,7 @@ app.use("/api/all", allRoute);
 app.use("/api/featured", featuredRoute);
 app.use("/api/top-rated", topRatedRoute);
 app.use("/api/nearby", nearbyRoute);
+app.use("/api/geolocation", geolocationRoute);
 
 app.use("/api/events", eventsRoute);
 app.use("/api/reserve", reserveRoute);

@@ -5,6 +5,7 @@ const User = require("../models/User.js");
 const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
 const adminChecker = require("../middleware/adminChecker.js");
+const findPlace = require("../utils/findPlace.js");
 const router = express.Router();
 
 const dotenv = require("dotenv");
@@ -12,9 +13,8 @@ dotenv.config();
 
 router.post("/login", async (req, res) => {
   try {
-    const { valid, errors } = await validateLoginData(req.body);
-
-    if (!valid) return res.status(400).json(errors);
+    const valid = await validateLoginData(req.body);
+    if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { email, password } = req.body;
     const user = await User.findOne({ email: email, role: "admin" });
@@ -65,6 +65,46 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).send("Could not login to admin");
     console.log(error);
+  }
+});
+
+router.post("/approve", adminChecker, async (req, res) => {
+  try {
+    const { ID, category } = req.body;
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID/category missing" });
+
+    const place = await findPlace(ID, category);
+    if (!place)
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+
+    place.status = "approved";
+    await place.save();
+
+    res.send({ message: `${category} approved` });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Could not approve submission" });
+  }
+});
+
+router.post("/reject", adminChecker, async (req, res) => {
+  try {
+    const { ID, category } = req.body;
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID/category missing" });
+
+    const place = await findPlace(ID, category);
+    if (!place)
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+
+    place.status = "rejected";
+    await place.save();
+
+    res.send({ message: `${category} rejected` });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Could not reject submission" });
   }
 });
 

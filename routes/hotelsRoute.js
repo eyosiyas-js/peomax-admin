@@ -1,6 +1,8 @@
 const express = require("express");
 const Hotel = require("../models/Hotel");
 const Restaurant = require("../models/Restaurant");
+const Bar = require("../models/Bar");
+const Club = require("../models/Club");
 const Event = require("../models/Event");
 const createDiningService = require("../controllers/createDiningService");
 const editDiningService = require("../controllers/editDiningService");
@@ -62,6 +64,11 @@ router.get("/:id/restaurants", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
     const hotel = await Hotel.findOne({ ID: req.params.id });
+    if (!hotel)
+      return res
+        .status(404)
+        .send({ error: `No hotel with ID: ${req.params.id}` });
+
     const restaurantsCount = await Restaurant.countDocuments({
       managerID: hotel.managerID,
     });
@@ -78,6 +85,66 @@ router.get("/:id/restaurants", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting restaurants" });
+  }
+});
+
+router.get("/:id/bars", async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const hotel = await Hotel.findOne({ ID: req.params.id });
+    if (!hotel)
+      return res
+        .status(404)
+        .send({ error: `No hotel with ID: ${req.params.id}` });
+
+    const barsCount = await Bar.countDocuments({
+      managerID: hotel.managerID,
+    });
+    const totalPages = Math.ceil(barsCount / count);
+    const bars = await Bar.find({ managerID: hotel.managerID })
+      .skip(skip)
+      .limit(count);
+    res.send({
+      page,
+      totalPages,
+      barsCount,
+      bars,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting bars" });
+  }
+});
+
+router.get("/:id/clubs", async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const hotel = await Hotel.findOne({ ID: req.params.id });
+    if (!hotel)
+      return res
+        .status(404)
+        .send({ error: `No hotel with ID: ${req.params.id}` });
+
+    const clubsCount = await Club.countDocuments({
+      managerID: hotel.managerID,
+    });
+    const totalPages = Math.ceil(clubsCount / count);
+    const clubs = await Club.find({ managerID: hotel.managerID })
+      .skip(skip)
+      .limit(count);
+    res.send({
+      page,
+      totalPages,
+      clubsCount,
+      clubs,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting clubs" });
   }
 });
 

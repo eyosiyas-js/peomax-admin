@@ -24,9 +24,13 @@ router.get("/", async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    const restaurantsCount = await Restaurant.countDocuments({});
+    const restaurantsCount = await Restaurant.countDocuments({
+      status: "approved",
+    });
     const totalPages = Math.ceil(restaurantsCount / count);
-    const restaurants = await Restaurant.find({}).skip(skip).limit(count);
+    const restaurants = await Restaurant.find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
     res.send({
       page,
       totalPages,

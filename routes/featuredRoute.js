@@ -8,12 +8,22 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const hotels = await Hotel.find({ isPremium: true }).sort({ name: 1 });
-    const restaurants = await Restaurant.find({ isPremium: true }).sort({
+    const hotels = await Hotel.find({
+      isPremium: true,
+      status: "approved",
+    }).sort({ name: 1 });
+    const restaurants = await Restaurant.find({
+      isPremium: true,
+      status: "approved",
+    }).sort({
       name: 1,
     });
-    const bars = await Bar.find({ isPremium: true }).sort({ name: 1 });
-    const clubs = await Club.find({ isPremium: true }).sort({ name: 1 });
+    const bars = await Bar.find({ isPremium: true, status: "approved" }).sort({
+      name: 1,
+    });
+    const clubs = await Club.find({ isPremium: true, status: "approved" }).sort(
+      { name: 1 }
+    );
     const featured = hotels.concat(restaurants, bars, clubs);
 
     const count = parseInt(req.query.count) || 20;

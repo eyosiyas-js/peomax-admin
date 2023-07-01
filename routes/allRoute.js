@@ -8,10 +8,10 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const hotels = await Hotel.find();
-    const restaurants = await Restaurant.find();
-    const bars = await Bar.find();
-    const clubs = await Club.find();
+    const hotels = await Hotel.find({ status: "approved" });
+    const restaurants = await Restaurant.find({ status: "approved" });
+    const bars = await Bar.find({ status: "approved" });
+    const clubs = await Club.find({ status: "approved" });
     const items = hotels.concat(restaurants, bars, clubs);
 
     const count = parseInt(req.query.count) || 20;

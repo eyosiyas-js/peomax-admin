@@ -18,10 +18,15 @@ router.get("/", async (req, res) => {
       return res.status(404).send({ error: "No text proivded" });
 
     const restaurants = await Restaurant.find({
-      $or: [
-        { category: { $regex: regex } },
-        { name: { $regex: regex } },
-        { location: { $regex: regex } },
+      $and: [
+        {
+          $or: [
+            { category: { $regex: regex } },
+            { name: { $regex: regex } },
+            { location: { $regex: regex } },
+          ],
+        },
+        { status: "approved" },
       ],
     })
       .sort({ name: 1 })
@@ -29,11 +34,15 @@ router.get("/", async (req, res) => {
       .limit(limit);
 
     const hotels = await Hotel.find({
-      $or: [
-        { category: { $regex: regex } },
-        { name: { $regex: regex } },
-        { description: { $regex: regex } },
-        { location: { $regex: regex } },
+      $and: [
+        {
+          $or: [
+            { category: { $regex: regex } },
+            { name: { $regex: regex } },
+            { location: { $regex: regex } },
+          ],
+        },
+        { status: "approved" },
       ],
     })
       .sort({ name: 1 })
@@ -41,11 +50,15 @@ router.get("/", async (req, res) => {
       .limit(limit);
 
     const bars = await Bar.find({
-      $or: [
-        { category: { $regex: regex } },
-        { name: { $regex: regex } },
-        { description: { $regex: regex } },
-        { location: { $regex: regex } },
+      $and: [
+        {
+          $or: [
+            { category: { $regex: regex } },
+            { name: { $regex: regex } },
+            { location: { $regex: regex } },
+          ],
+        },
+        { status: "approved" },
       ],
     })
       .sort({ name: 1 })
@@ -53,11 +66,15 @@ router.get("/", async (req, res) => {
       .limit(limit);
 
     const clubs = await Club.find({
-      $or: [
-        { category: { $regex: regex } },
-        { name: { $regex: regex } },
-        { description: { $regex: regex } },
-        { location: { $regex: regex } },
+      $and: [
+        {
+          $or: [
+            { category: { $regex: regex } },
+            { name: { $regex: regex } },
+            { location: { $regex: regex } },
+          ],
+        },
+        { status: "approved" },
       ],
     })
       .sort({ name: 1 })

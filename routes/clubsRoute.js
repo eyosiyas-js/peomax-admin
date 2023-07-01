@@ -24,9 +24,11 @@ router.get("/", async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    const clubsCount = await Club.countDocuments({});
+    const clubsCount = await Club.countDocuments({ status: "approved" });
     const totalPages = Math.ceil(clubsCount / count);
-    const clubs = await Club.find({}).skip(skip).limit(count);
+    const clubs = await Club.find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
     res.send({
       page,
       totalPages,

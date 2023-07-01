@@ -13,7 +13,6 @@ async function isUnderOneKM(start, end) {
 }
 
 router.get("/", async (req, res) => {
-  const hotelsPromise = Hotel.find({});
   const { latitude, longitude } = req.query;
 
   if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude))
@@ -24,9 +23,10 @@ router.get("/", async (req, res) => {
     longitude,
   };
 
-  const restaurantsPromise = Restaurant.find({});
-  const clubsPromise = Club.find({});
-  const barsPromise = Bar.find({});
+  const hotelsPromise = Hotel.find({ status: "approved" });
+  const restaurantsPromise = Restaurant.find({ status: "approved" });
+  const clubsPromise = Club.find({ status: "approved" });
+  const barsPromise = Bar.find({ status: "approved" });
 
   const [hotels, restaurants, clubs, bars] = await Promise.all([
     hotelsPromise,

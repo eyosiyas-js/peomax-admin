@@ -4,12 +4,17 @@ const Reservation = require("../models/Reservation");
 const User = require("../models/User");
 const findPlace = require("../utils/findPlace");
 const checkAuthorization = require("../utils/checkAuthorization");
-const reserveMail = require("../utils/reserveMail");
+const acceptMail = require("../utils/acceptMail");
+const rejectMail = require("../utils/rejectMail");
 const employeeChecker = require("../middleware/employeeChecker");
 
 router.get("/", employeeChecker, async (req, res) => {
   try {
     const { ID, category } = req.query;
+
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID/category is missing" });
+
     const place = await findPlace(ID, category);
 
     if (!place) return res.status(400).send({ error: `${category} not found` });
@@ -73,6 +78,12 @@ router.get("/:id", employeeChecker, async (req, res) => {
 router.post("/accept", employeeChecker, async (req, res) => {
   try {
     const { reservationID, ID, category } = req.body;
+
+    if (!reservationID || !ID || !category)
+      return res
+        .status(400)
+        .send({ error: "Please fill all the required info" });
+
     const place = await findPlace(ID, category);
 
     if (!place) return res.status(400).send({ error: `${category} not found` });
@@ -97,7 +108,10 @@ router.post("/accept", employeeChecker, async (req, res) => {
     reservation.status = "accepted";
     await reservation.save();
 
-    res.send({ message: "Reservation accepted" });
+    const user = await User.findOne({ userID: reservation.userID });
+    acceptMail(user.firstName, user.email);
+
+    res.send({ message: "Acceptance email sent" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't accept reservation" });
@@ -107,6 +121,12 @@ router.post("/accept", employeeChecker, async (req, res) => {
 router.post("/reject", employeeChecker, async (req, res) => {
   try {
     const { reservationID, ID, category } = req.body;
+
+    if (!reservationID || !ID || !category)
+      return res
+        .status(400)
+        .send({ error: "Please fill all the required info" });
+
     const place = await findPlace(ID, category);
 
     if (!place) return res.status(400).send({ error: `${category} not found` });
@@ -131,7 +151,10 @@ router.post("/reject", employeeChecker, async (req, res) => {
     reservation.status = "rejected";
     await reservation.save();
 
-    res.send({ message: "Reservation rejected" });
+    const user = await User.findOne({ userID: reservation.userID });
+    rejectMail(user.firstName, user.email);
+
+    res.send({ message: "Rejection email sent" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't reject reservation" });

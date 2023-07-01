@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const { readFileSync } = require("fs");
 
-let reserveEmail = readFileSync("./emails/reserve.html", "utf-8");
+let reserveEmail = readFileSync("./emails/accepted.html", "utf-8");
 const logo = readFileSync("./assets/logo.jpg", "base64");
 
 require("dotenv").config();
@@ -22,7 +22,7 @@ async function reserveMail(clientName, clientEmail) {
     let message = {
       from: process.env.email,
       to: clientEmail,
-      subject: "Reservation Submitted",
+      subject: "Reservation Successful",
       html: code,
       attachments: [
         {

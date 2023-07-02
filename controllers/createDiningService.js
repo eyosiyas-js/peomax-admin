@@ -4,14 +4,15 @@ const { unlinkSync } = require("fs");
 const uploadFile = require("../utils/upload");
 const formats = require("../utils/formats");
 const { validateDiningPlace } = require("../utils/validator");
+const extractMain = require("../utils/extractMain");
 
 async function createDiningService(req, res, diningPlaceModel) {
   try {
-    const existingHotel = await Hotel.findOne({ managerID: req.user.userID });
-    if (existingHotel)
-      return res.status(400).send({
-        error: "You have exceeded the maximum number of hotels allowed",
-      });
+    const exists = await extractMain(req.user.userID);
+    if (exists !== [])
+      return res
+        .status(400)
+        .send({ error: "You have exceeded the allowed amount of creations" });
 
     const validation = validateDiningPlace(req.body);
     if (!validation.success) {

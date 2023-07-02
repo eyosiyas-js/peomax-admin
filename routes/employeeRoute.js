@@ -6,30 +6,35 @@ const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
-const adminChecker = require("../middleware/adminChecker.js");
-const extractMain = require("../utils/extractMain.js");
+const managerChecker = require("../middleware/managerChecker.js");
+const findPlace = require("../utils/findPlace.js");
 
-const {
-  validateManagerSignupData,
-  validateLoginData,
-} = require("../utils/validator.js");
+const { validateEmployee } = require("../utils/validator.js");
 const { uid } = require("uid");
 
 require("dotenv").config();
 
 const router = express.Router();
 
-router.post("/register", adminChecker, async (req, res) => {
+router.post("/register", managerChecker, async (req, res) => {
   try {
-    const valid = await validateManagerSignupData(req.body);
+    const valid = await validateEmployee(req.body);
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
-    const { name, password, confirmPassword, email } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      ID,
+      category,
+    } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser)
-      return res.status(400).send({ error: "Manager account already exists." });
+      return res.status(400).send({ error: "Account already exists" });
     if (password !== confirmPassword)
       return res.status(400).send({ error: "Passwords do not match" });
 
@@ -38,16 +43,28 @@ router.post("/register", adminChecker, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const userData = {
+      firstName,
+      lastName,
       userID: uid(16),
-      name: name,
+      email,
       password: hashedPassword,
-      email: email,
-      role: "manager",
+      role: "employee",
     };
 
-    const user = new User(userData);
+    const place = await findPlace(ID, category);
+    if (!place)
+      return res.status(404).send({ error: `No ${category} with ID: ${ID}` });
 
+    const isAuthorized = req.user.userID == place.managerID;
+    if (!isAuthorized)
+      return res.status(403).send({ error: "Unauthorized action" });
+
+    place.employees.push(userData.userID);
+    await place.save();
+
+    const user = new User(userData);
     await user.save();
+
     res.send({ message: "Account created" });
   } catch (err) {
     console.log(err);
@@ -61,12 +78,10 @@ router.post("/login", async (req, res) => {
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email, role: "manager" });
-
+    const user = await User.findOne({ email: email, role: "employee" });
     if (!user) return res.status(404).send({ error: "Account not found" });
 
     const userData = {
-      name: user.name,
       password: user.password,
       email: user.email,
       userID: user.userID,
@@ -104,25 +119,9 @@ router.post("/login", async (req, res) => {
 
     delete userData.password;
 
-    const main = await extractMain(userData.userID);
-
-    if (main[0].ID) {
-      res.send({
-        token,
-        refresh_token,
-        userData,
-        ID: main[0].ID,
-        category: main[0].category,
-      });
-    } else {
-      res.send({
-        token,
-        refresh_token,
-        userData,
-      });
-    }
+    res.send({ token, refresh_token, userData });
   } catch (error) {
-    res.status(500).send({ error: "Could not login user." });
+    res.status(500).send({ error: "Could not login user" });
     console.log(error);
   }
 });
@@ -139,7 +138,7 @@ router.post("/reset-password", async (req, res) => {
 
     if (!email) return res.status(400).send({ error: "Email not provided" });
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email, role: "employee" });
 
     if (!user)
       return res

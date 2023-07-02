@@ -9,6 +9,8 @@ const usersRoute = require("./routes/usersRoute.js");
 const accountRoute = require("./routes/accountRoute.js");
 const adminRoute = require("./routes/adminRoute.js");
 const managerRoute = require("./routes/managerRoute.js");
+const supervisorRoute = require("./routes/supervisorRoute.js");
+const employeeRoute = require("./routes/employeeRoute.js");
 const restaurantsRoute = require("./routes/restaurantsRoute.js");
 const barsRoute = require("./routes/barsRoute.js");
 const clubsRoute = require("./routes/clubsRoute.js");
@@ -48,6 +50,8 @@ app.use("/api/users", usersRoute);
 app.use("/api/account", accountRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/manager", managerRoute);
+app.use("/api/supervisor", supervisorRoute);
+app.use("/api/employee", employeeRoute);
 
 app.use("/api/restaurants", restaurantsRoute);
 app.use("/api/hotels", hotelsRoute);

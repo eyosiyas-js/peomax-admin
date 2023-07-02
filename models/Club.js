@@ -151,13 +151,13 @@ const clubSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
-  supervisorID: {
-    type: String,
-    require: false,
+  supervisors: {
+    type: Array,
+    default: [],
   },
-  employeeID: {
-    type: String,
-    require: false,
+  employees: {
+    type: Array,
+    default: [],
   },
   createdAt: {
     type: Date,

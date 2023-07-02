@@ -7,11 +7,9 @@ const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const managerChecker = require("../middleware/managerChecker.js");
-const checkAuthorization = require("../utils/checkAuthorization.js");
-const findPlace = require("../utils/findPlace.js");
 const fetchAll = require("../utils/fetchAll.js");
 
-const { validateSubManagerSchemaSignupData } = require("../utils/validator.js");
+const { validateSupervisor } = require("../utils/validator.js");
 const { uid } = require("uid");
 
 require("dotenv").config();
@@ -20,20 +18,10 @@ const router = express.Router();
 
 router.post("/register", managerChecker, async (req, res) => {
   try {
-    const valid = await validateSubManagerSchemaSignupData(req.body);
+    const valid = await validateSupervisor(req.body);
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
-    const { email, password, confirmPassword, ID, category } = req.body;
-
-    const place = await findPlace(ID, category);
-    if (!place)
-      return restart
-        .status(400)
-        .send({ error: `No ${category} with ID: ${ID}` });
-
-    const isAuthorized = await checkAuthorization(req.user.userID, place);
-    if (!isAuthorized)
-      return res.status(403).send({ error: "Unauthorized action" });
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
 
     const existingUser = await User.findOne({ email: email });
 
@@ -47,16 +35,28 @@ router.post("/register", managerChecker, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const userData = {
-      supervisorID: uid(16),
-      email: email,
+      firstName,
+      lastName,
+      userID: uid(16),
+      email,
       password: hashedPassword,
       role: "supervisor",
     };
 
+    const places = await fetchAll(req.user.userID);
+
+    if (places == [])
+      return res.status(404).send({ error: "No hotels/restaurants found" });
+
+    for (let i = 0; i < places.length; i++) {
+      const place = places[i];
+      place.supervisors.push(userData.userID);
+      await place.save();
+    }
+
     const user = new User(userData);
     await user.save();
 
-    place.su;
     res.send({ message: "Account created" });
   } catch (err) {
     console.log(err);
@@ -70,10 +70,7 @@ router.post("/login", async (req, res) => {
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { email, password } = req.body;
-    const user = await User.findOne({
-      email: email,
-      role: { $in: ["supervisor", "employee"] },
-    });
+    const user = await User.findOne({ email: email, role: "supervisor" });
     if (!user) return res.status(404).send({ error: "Account not found" });
 
     const userData = {
@@ -133,7 +130,7 @@ router.post("/reset-password", async (req, res) => {
 
     if (!email) return res.status(400).send({ error: "Email not provided" });
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email, role: "supervisor" });
 
     if (!user)
       return res

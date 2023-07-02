@@ -9,11 +9,9 @@ async function createDiningService(req, res, diningPlaceModel) {
   try {
     const existingHotel = await Hotel.findOne({ managerID: req.user.userID });
     if (existingHotel)
-      return res
-        .status(400)
-        .send({
-          error: "You have exceeded the maximum number of hotels allowed",
-        });
+      return res.status(400).send({
+        error: "You have exceeded the maximum number of hotels allowed",
+      });
 
     const validation = validateDiningPlace(req.body);
     if (!validation.success) {
@@ -94,6 +92,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       phoneNumber: phoneNumber,
       website: website,
       subHotel: subHotel ?? false,
+      status: "approved",
     });
 
     await diningPlace.save();

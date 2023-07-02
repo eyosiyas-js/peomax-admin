@@ -35,7 +35,7 @@ const managerSignupSchema = Joi.object({
   email: Joi.string().trim().email().required(),
 });
 
-const subManagerSchema = Joi.object({
+const supervisorSchema = Joi.object({
   firstName: Joi.string().trim().pattern(namePattern).required().messages({
     "string.pattern.base": "firstName must contain only alphabetic characters",
   }),
@@ -45,7 +45,20 @@ const subManagerSchema = Joi.object({
   email: Joi.string().trim().email().required(),
   password: passwordComplexity(complexityOptions),
   confirmPassword: passwordComplexity(complexityOptions),
-  role: Joi.string().valid("supervisor", "employee").required(),
+});
+
+const employeeSchema = Joi.object({
+  firstName: Joi.string().trim().pattern(namePattern).required().messages({
+    "string.pattern.base": "firstName must contain only alphabetic characters",
+  }),
+  lastName: Joi.string().trim().pattern(namePattern).required().messages({
+    "string.pattern.base": "lastName must contain only alphabetic characters",
+  }),
+  email: Joi.string().trim().email().required(),
+  password: passwordComplexity(complexityOptions),
+  confirmPassword: passwordComplexity(complexityOptions),
+  ID: Joi.string().required(),
+  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
 });
 
 const dinningPlaceSchema = Joi.object({
@@ -230,8 +243,22 @@ function validateManagerSignupData(data) {
   }
 }
 
-function validateSubManagerSchemaSignupData(data) {
-  const output = subManagerSchema.validate(data);
+function validateSupervisor(data) {
+  const output = supervisorSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateEmployee(data) {
+  const output = employeeSchema.validate(data);
   const { error } = output;
 
   if (error) {
@@ -332,7 +359,8 @@ module.exports = {
   validateSignupData,
   validateLoginData,
   validateManagerSignupData,
-  validateSubManagerSchemaSignupData,
+  validateSupervisor,
+  validateEmployee,
   validateReservation,
   validateDiningPlace,
   validateTicket,

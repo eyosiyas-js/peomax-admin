@@ -1,26 +1,13 @@
 function checkAuthorization(userID, place) {
-  if (userID !== place.managerID) {
-    console.log(place.managerID);
+  if (place.employees !== [] && place.employees.includes(userID)) {
+    return true;
+  } else if (place.supervisors !== [] && place.supervisors.includes(userID)) {
+    return true;
+  } else if (place.managerID == userID) {
+    return true;
+  } else {
     return false;
   }
-
-  return true;
 }
-
-// function checkAuthorization(userID, place) {
-//   if (
-//     (place.category == "hotel" && userID !== place.managerID) ||
-//     userID !== place.supervisorID ||
-//     userID !== place.employeeID
-//   ) {
-//     return false;
-//   }
-
-//   if (place.category !== "hotel" && userID !== place.managerID) {
-//     return false;
-//   }
-
-//   return true;
-// }
 
 module.exports = checkAuthorization;

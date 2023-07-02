@@ -141,10 +141,6 @@ const hotelSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
-  subHotel: {
-    type: Boolean,
-    default: false,
-  },
   status: {
     type: String,
     enum: ["pending", "approved", "rejected"],

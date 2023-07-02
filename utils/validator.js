@@ -35,6 +35,19 @@ const managerSignupSchema = Joi.object({
   email: Joi.string().trim().email().required(),
 });
 
+const subManagerSchema = Joi.object({
+  firstName: Joi.string().trim().pattern(namePattern).required().messages({
+    "string.pattern.base": "firstName must contain only alphabetic characters",
+  }),
+  lastName: Joi.string().trim().pattern(namePattern).required().messages({
+    "string.pattern.base": "lastName must contain only alphabetic characters",
+  }),
+  email: Joi.string().trim().email().required(),
+  password: passwordComplexity(complexityOptions),
+  confirmPassword: passwordComplexity(complexityOptions),
+  role: Joi.string().valid("supervisor", "employee").required(),
+});
+
 const dinningPlaceSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
@@ -101,9 +114,7 @@ const editDinningPlaceSchema = Joi.object({
 const eventSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
-  category: Joi.string()
-    .valid("bar", "club", "hotel", "restaurant", "other")
-    .required(),
+  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
   ID: Joi.string().required(),
   date: Joi.string()
     .regex(/^\d{2}\/\d{2}\/\d{4}$/)
@@ -156,7 +167,7 @@ const editEventSchema = Joi.object({
 const reservationSchema = Joi.object({
   ID: Joi.string().required(),
   people: Joi.number().integer().min(1).required(),
-  category: Joi.string().valid("hotel").required(),
+  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
   time: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
     .required()
@@ -207,6 +218,20 @@ function validateLoginData(data) {
 
 function validateManagerSignupData(data) {
   const output = managerSignupSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replaceAll('"', ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
+function validateSubManagerSchemaSignupData(data) {
+  const output = subManagerSchema.validate(data);
   const { error } = output;
 
   if (error) {
@@ -307,6 +332,7 @@ module.exports = {
   validateSignupData,
   validateLoginData,
   validateManagerSignupData,
+  validateSubManagerSchemaSignupData,
   validateReservation,
   validateDiningPlace,
   validateTicket,

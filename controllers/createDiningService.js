@@ -1,3 +1,4 @@
+const Hotel = require("../models/Hotel");
 const { uid } = require("uid");
 const { unlinkSync } = require("fs");
 const uploadFile = require("../utils/upload");
@@ -6,8 +7,15 @@ const { validateDiningPlace } = require("../utils/validator");
 
 async function createDiningService(req, res, diningPlaceModel) {
   try {
-    const validation = validateDiningPlace(req.body);
+    const existingHotel = await Hotel.findOne({ managerID: req.user.userID });
+    if (existingHotel)
+      return res
+        .status(400)
+        .send({
+          error: "You have exceeded the maximum number of hotels allowed",
+        });
 
+    const validation = validateDiningPlace(req.body);
     if (!validation.success) {
       return res.status(400).send({ error: validation.message });
     }
@@ -54,6 +62,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       additional,
       phoneNumber,
       website,
+      subHotel,
     } = req.body;
 
     const managerID = req.user.userID;
@@ -84,6 +93,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       additional: additional,
       phoneNumber: phoneNumber,
       website: website,
+      subHotel: subHotel ?? false,
     });
 
     await diningPlace.save();

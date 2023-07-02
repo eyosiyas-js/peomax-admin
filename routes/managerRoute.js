@@ -43,12 +43,13 @@ router.post("/register", adminChecker, async (req, res) => {
       password: hashedPassword,
       email: email,
       role: "manager",
+      verified: true,
     };
 
     const user = new User(userData);
 
     await user.save();
-    res.send({ message: "Account created" });
+    res.send({ message: "Account created", userData });
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error creating Account" });

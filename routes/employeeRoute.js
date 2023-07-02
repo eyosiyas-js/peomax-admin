@@ -49,6 +49,7 @@ router.post("/register", managerChecker, async (req, res) => {
       email,
       password: hashedPassword,
       role: "employee",
+      verified: true,
     };
 
     const place = await findPlace(ID, category);
@@ -65,7 +66,7 @@ router.post("/register", managerChecker, async (req, res) => {
     const user = new User(userData);
     await user.save();
 
-    res.send({ message: "Account created" });
+    res.send({ message: "Account created", userData });
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error creating Account" });

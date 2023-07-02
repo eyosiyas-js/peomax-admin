@@ -7,6 +7,7 @@ const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const adminChecker = require("../middleware/adminChecker.js");
+const extractMain = require("../utils/extractMain.js");
 
 const {
   validateManagerSignupData,
@@ -103,7 +104,15 @@ router.post("/login", async (req, res) => {
 
     delete userData.password;
 
-    res.send({ token, refresh_token, userData });
+    const main = await extractMain(userData.userID);
+
+    res.send({
+      token,
+      refresh_token,
+      userData,
+      ID: main[0].ID,
+      category: main[0].category,
+    });
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);

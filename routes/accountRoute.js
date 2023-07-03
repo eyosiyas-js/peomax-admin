@@ -12,6 +12,9 @@ router.get("/", userChecker, async (req, res) => {
       { userID: req.user.userID },
       { password: 0 }
     );
+
+    if (!user) return res.status(404).send({ error: "User not found" });
+
     res.send(user.toObject());
   } catch (error) {
     console.error(error);
@@ -27,6 +30,9 @@ router.put("/update", userChecker, async (req, res) => {
       { userID: req.user.userID },
       { password: 0 }
     );
+
+    if (!user) return res.status(404).send({ error: "User not found" });
+
     const { firstName, lastName } = req.body;
     user.firstName = firstName;
     user.lastName = lastName;

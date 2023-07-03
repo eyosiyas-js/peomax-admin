@@ -264,7 +264,7 @@ function validateEmployee(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };

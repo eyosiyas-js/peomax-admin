@@ -62,8 +62,10 @@ router.post("/login", async (req, res) => {
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email, role: "manager" });
-
+    const user = await User.findOne({
+      email: email,
+      role: { $in: ["manager", "employee", "supervisor"] },
+    });
     if (!user) return res.status(404).send({ error: "Account not found" });
 
     const userData = {
@@ -140,7 +142,10 @@ router.post("/reset-password", async (req, res) => {
 
     if (!email) return res.status(400).send({ error: "Email not provided" });
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({
+      email: email,
+      role: { $in: ["manager", "employee", "supervisor"] },
+    });
 
     if (!user)
       return res

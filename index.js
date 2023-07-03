@@ -28,20 +28,20 @@ const ticketRoute = require("./routes/ticketRoute.js");
 
 dotenv.config();
 
-// const limiter = rateLimit({
-//   windowMs: 5 * 60 * 1000,
-//   max: 100,
-//   standardHeaders: true,
-//   legacyHeaders: false,
-// });
+const limiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const app = express();
 const port = process.env.PORT || 4000;
 const mongo_url = process.env.mongo_url;
 
-// app.use(helmet());
-// app.use(limiter);
-// app.disable("x-powered-by");
+app.use(helmet());
+app.use(limiter);
+app.disable("x-powered-by");
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 

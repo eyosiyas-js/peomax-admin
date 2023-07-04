@@ -9,7 +9,7 @@ const extractMain = require("../utils/extractMain");
 async function createDiningService(req, res, diningPlaceModel) {
   try {
     const exists = await extractMain(req.user.userID);
-    if (exists !== [] && req.body.subHotel !== "true")
+    if (exists && req.body.subHotel !== "true")
       return res
         .status(400)
         .send({ error: "You have exceeded the allowed amount of creations" });

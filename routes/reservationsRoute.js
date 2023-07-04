@@ -29,6 +29,7 @@ router.get("/", employeeChecker, async (req, res) => {
     const reservationsCount = await Reservation.countDocuments({ ID: ID });
     const totalPages = Math.ceil(reservationsCount / count);
     const reservations = await Reservation.find({ ID: ID })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(count);
 

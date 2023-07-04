@@ -91,6 +91,7 @@ const dinningPlaceSchema = Joi.object({
   additional: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   website: Joi.string().required(),
+  subHotel: Joi.string().optional(),
 });
 
 const editDinningPlaceSchema = Joi.object({
@@ -208,7 +209,7 @@ function validateSignupData(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -222,7 +223,7 @@ function validateLoginData(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -236,7 +237,7 @@ function validateManagerSignupData(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -250,7 +251,7 @@ function validateSupervisor(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -278,7 +279,7 @@ function validateDiningPlace(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -292,7 +293,7 @@ function validateEditDiningPlace(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -306,7 +307,7 @@ function validateEvent(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -320,7 +321,7 @@ function validateEditEvent(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -334,7 +335,7 @@ function validateReservation(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };
@@ -348,7 +349,7 @@ function validateTicket(data) {
   if (error) {
     return {
       success: false,
-      message: error.details[0].message.replaceAll('"', ""),
+      message: error.details[0].message.replace(/"/g, ""),
     };
   } else {
     return { success: true, message: "Validation successful" };

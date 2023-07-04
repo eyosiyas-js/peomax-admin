@@ -109,13 +109,13 @@ router.post("/login", async (req, res) => {
 
     const main = await extractMain(userData.userID);
 
-    if (main[0].ID) {
+    if (main.ID) {
       res.send({
         token,
         refresh_token,
         userData,
-        ID: main[0].ID,
-        category: main[0].category,
+        ID: main.ID,
+        category: main.category,
       });
     } else {
       res.send({

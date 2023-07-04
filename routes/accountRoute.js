@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../models/User.js");
 const userChecker = require("../middleware/userChecker.js");
+const extractMain = require("../utils/extractMain.js");
+const fetchAll = require("../utils/fetchAll.js");
 
 const router = express.Router();
 
@@ -15,7 +17,35 @@ router.get("/", userChecker, async (req, res) => {
 
     if (!user) return res.status(404).send({ error: "User not found" });
 
-    res.send(user.toObject());
+    if (user.role == "manager") {
+      const main = await extractMain(req.user.userID);
+      if (!main) return res.send(user.toObject());
+
+      res.send({
+        ...user.toObject(),
+        ID: main.ID,
+        category: main.category,
+      });
+    } else if (user.role == "supervisor") {
+      const main = await extractMain(req.user.userID, "supervisors");
+      if (!main) return res.send(user.toObject());
+
+      res.send({
+        ...user.toObject(),
+        ID: main.ID,
+        category: main.category,
+      });
+    } else if (user.role == "employee") {
+      const items = await fetchAll(req.user.userID, "employees");
+
+      res.send({
+        ...user.toObject(),
+        ID: items[0].ID,
+        category: items[0].category,
+      });
+    } else {
+      res.send(user.toObject());
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting user" });

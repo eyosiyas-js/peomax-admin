@@ -30,6 +30,8 @@ router.get("/", userChecker, async (req, res) => {
       const main = await extractMain(req.user.userID, "supervisors");
       if (!main) return res.send(user.toObject());
 
+      console.log(main);
+
       res.send({
         ...user.toObject(),
         ID: main.ID,

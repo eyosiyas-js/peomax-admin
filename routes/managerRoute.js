@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const adminChecker = require("../middleware/adminChecker.js");
 const extractMain = require("../utils/extractMain.js");
+const fetchAll = require("../utils/fetchAll.js");
 
 const {
   validateManagerSignupData,
@@ -106,10 +107,9 @@ router.post("/login", async (req, res) => {
     await newRefreshToken.save();
 
     delete userData.password;
-
-    const main = await extractMain(userData.userID);
-
-    if (main.ID) {
+    if (user.role == "supervisor") {
+      const main = await extractMain(user.userID, "supervisors");
+      if (!main) return res.send(user.toObject());
       res.send({
         token,
         refresh_token,
@@ -117,13 +117,44 @@ router.post("/login", async (req, res) => {
         ID: main.ID,
         category: main.category,
       });
-    } else {
+    } else if (user.role == "employee") {
+      const items = await fetchAll(user.userID, "employees");
+
       res.send({
         token,
         refresh_token,
         userData,
+        ID: items[0].ID,
+        category: items[0].category,
+      });
+    } else {
+      const main = await extractMain(user.userID);
+      if (!main) return res.send(user.toObject());
+
+      res.send({
+        token,
+        refresh_token,
+        userData,
+        ID: main.ID,
+        category: main.category,
       });
     }
+
+    // if (main.ID) {
+    //   res.send({
+    //     token,
+    //     refresh_token,
+    //     userData,
+    //     ID: main.ID,
+    //     category: main.category,
+    //   });
+    // } else {
+    //   res.send({
+    //     token,
+    //     refresh_token,
+    //     userData,
+    //   });
+    // }
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);

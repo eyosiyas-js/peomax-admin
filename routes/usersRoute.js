@@ -1,7 +1,5 @@
 const express = require("express");
-const Order = require("../models/Reservation.js");
 const User = require("../models/User.js");
-const userChecker = require("../middleware/userChecker.js");
 const adminChecker = require("../middleware/adminChecker.js");
 
 const router = express.Router();

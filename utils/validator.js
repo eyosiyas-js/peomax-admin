@@ -152,7 +152,6 @@ const eventSchema = Joi.object({
   price: Joi.number().positive().required(),
   premiumPrice: Joi.number().positive().required(),
   totalSpots: Joi.number().positive().required(),
-  images: Joi.array().required(),
 });
 
 const editEventSchema = Joi.object({

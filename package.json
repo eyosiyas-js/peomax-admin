@@ -30,6 +30,7 @@
     "nodemailer": "^6.9.1",
     "otp-generator": "^4.0.1",
     "qrcode": "^1.5.3",
+    "socket.io": "^4.7.1",
     "uid": "^2.0.1"
   },
   "devDependencies": {

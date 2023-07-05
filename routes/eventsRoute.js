@@ -64,7 +64,7 @@ router.get("/:id", async (req, res) => {
 router.post(
   "/create",
   superVisorChecker,
-  uploads.array("images", 5),
+  uploads.array("images", 10),
   async (req, res) => {
     try {
       const valid = await validateEvent(req.body);

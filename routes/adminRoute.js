@@ -202,4 +202,32 @@ router.get("/totals", adminChecker, async (req, res) => {
   }
 });
 
+router.get("/pending", adminChecker, async (req, res) => {
+  try {
+    const hotels = await Hotel.find({ status: "pending" });
+    const restaurants = await Restaurant.find({ status: "pending" });
+    const bars = await Bar.find({ status: "pending" });
+    const clubs = await Club.find({ status: "pending" });
+    const items = hotels.concat(restaurants, bars, clubs);
+
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const itemsCount = items.length;
+    const totalPages = Math.ceil(itemsCount / count);
+
+    const paginatedData = items.slice(skip, skip + count);
+
+    res.send({
+      page,
+      totalPages,
+      itemsCount,
+      items: paginatedData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: `Error` });
+  }
+});
+
 module.exports = router;

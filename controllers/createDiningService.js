@@ -93,7 +93,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       phoneNumber: phoneNumber,
       website: website,
       subHotel: subHotel == "true" ? true : false,
-      status: "approved",
+      status: "pending",
     });
 
     await diningPlace.save();

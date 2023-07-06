@@ -2,6 +2,10 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
+const Bar = require("../models/Hotel");
+const Club = require("../models/Club");
+const Hotel = require("../models/Hotel");
+const Restaurant = require("../models/Restaurant");
 const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
 const adminChecker = require("../middleware/adminChecker.js");
@@ -105,6 +109,96 @@ router.post("/reject", adminChecker, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Could not reject submission" });
+  }
+});
+
+router.get("/totals", adminChecker, async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      bannedUsers,
+      clients,
+      managers,
+      supervisors,
+      employees,
+      totalBars,
+      pendingBars,
+      approvedBars,
+      rejectedBars,
+      totalClubs,
+      pendingClubs,
+      approvedClubs,
+      rejectedClubs,
+      totalHotels,
+      pendingHotels,
+      approvedHotels,
+      rejectedHotels,
+      totalRestaurants,
+      pendingRestaurants,
+      approvedRestaurants,
+      rejectedRestaurants,
+    ] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ isBanned: true }),
+      User.countDocuments({ role: "client" }),
+      User.countDocuments({ role: "manager" }),
+      User.countDocuments({ role: "supervisor" }),
+      User.countDocuments({ role: "employee" }),
+      Bar.countDocuments({}),
+      Bar.countDocuments({ status: "pending" }),
+      Bar.countDocuments({ status: "approved" }),
+      Bar.countDocuments({ status: "rejected" }),
+      Club.countDocuments({}),
+      Club.countDocuments({ status: "pending" }),
+      Club.countDocuments({ status: "approved" }),
+      Club.countDocuments({ status: "rejected" }),
+      Hotel.countDocuments({}),
+      Hotel.countDocuments({ status: "pending" }),
+      Hotel.countDocuments({ status: "approved" }),
+      Hotel.countDocuments({ status: "rejected" }),
+      Restaurant.countDocuments({}),
+      Restaurant.countDocuments({ status: "pending" }),
+      Restaurant.countDocuments({ status: "approved" }),
+      Restaurant.countDocuments({ status: "rejected" }),
+    ]);
+
+    res.send({
+      users: {
+        total: totalUsers,
+        banned: bannedUsers,
+        clients,
+        managers,
+        supervisors,
+        employees,
+      },
+      bars: {
+        total: totalBars,
+        pending: pendingBars,
+        approved: approvedBars,
+        rejected: rejectedBars,
+      },
+      clubs: {
+        total: totalClubs,
+        pending: pendingClubs,
+        approved: approvedClubs,
+        rejected: rejectedClubs,
+      },
+      hotels: {
+        total: totalHotels,
+        pending: pendingHotels,
+        approved: approvedHotels,
+        rejected: rejectedHotels,
+      },
+      restaurants: {
+        total: totalRestaurants,
+        pending: pendingRestaurants,
+        approved: approvedRestaurants,
+        rejected: rejectedRestaurants,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Error getting total items" });
   }
 });
 

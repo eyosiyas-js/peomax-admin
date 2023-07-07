@@ -69,13 +69,26 @@ router.post("/login", async (req, res) => {
     });
     if (!user) return res.status(404).send({ error: "Account not found" });
 
-    const userData = {
-      name: user.name,
-      password: user.password,
-      email: user.email,
-      userID: user.userID,
-      role: user.role,
-    };
+    let userData = {};
+
+    if (user.role == "manager") {
+      userData = {
+        name: user.name,
+        password: user.password,
+        email: user.email,
+        userID: user.userID,
+        role: user.role,
+      };
+    } else {
+      userData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        password: user.password,
+        email: user.email,
+        userID: user.userID,
+        role: user.role,
+      };
+    }
 
     const userPassword = user.password;
     const isMatch = await bcrypt.compare(password, userPassword);
@@ -109,7 +122,7 @@ router.post("/login", async (req, res) => {
     delete userData.password;
     if (user.role == "supervisor") {
       const main = await extractMain(user.userID, "supervisors");
-      if (!main) return res.send(user.toObject());
+      if (!main) return res.send({ token, refresh_token, userData });
       res.send({
         token,
         refresh_token,
@@ -120,6 +133,8 @@ router.post("/login", async (req, res) => {
     } else if (user.role == "employee") {
       const items = await fetchAll(user.userID, "employees");
 
+      if (items == []) return res.send({ token, refresh_token, userData });
+
       res.send({
         token,
         refresh_token,
@@ -129,7 +144,7 @@ router.post("/login", async (req, res) => {
       });
     } else {
       const main = await extractMain(user.userID);
-      if (!main) return res.send(user.toObject());
+      if (!main) return res.send({ token, refresh_token, userData });
 
       res.send({
         token,
@@ -139,22 +154,6 @@ router.post("/login", async (req, res) => {
         category: main.category,
       });
     }
-
-    // if (main.ID) {
-    //   res.send({
-    //     token,
-    //     refresh_token,
-    //     userData,
-    //     ID: main.ID,
-    //     category: main.category,
-    //   });
-    // } else {
-    //   res.send({
-    //     token,
-    //     refresh_token,
-    //     userData,
-    //   });
-    // }
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);

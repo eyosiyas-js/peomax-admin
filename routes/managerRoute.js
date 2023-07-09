@@ -1,12 +1,11 @@
 const express = require("express");
 const User = require("../models/User.js");
-const OTP = require("../models/OTP.js");
+const Reservation = require("../models/Reservation.js");
 const Token = require("../models/Token.js");
 const bcrypt = require("bcrypt");
-const sendEmail = require("../utils/mail.js");
 const jwt = require("jsonwebtoken");
-const otpGenerator = require("otp-generator");
 const adminChecker = require("../middleware/adminChecker.js");
+const supervisorChecker = require("../middleware/superVisorChecker.js");
 const extractMain = require("../utils/extractMain.js");
 const fetchAll = require("../utils/fetchAll.js");
 
@@ -120,21 +119,11 @@ router.post("/login", async (req, res) => {
     await newRefreshToken.save();
 
     delete userData.password;
-    if (user.role == "supervisor") {
-      const main = await extractMain(user.userID, "supervisors");
-      if (!main) return res.send({ token, refresh_token, userData });
-      res.send({
-        token,
-        refresh_token,
-        userData,
-        ID: main.ID,
-        category: main.category,
-      });
-    } else if (user.role == "employee") {
-      const items = await fetchAll(user.userID, "employees");
+
+    if (user.role == "employee") {
+      const items = fetchAll(req.user.userID);
 
       if (items == []) return res.send({ token, refresh_token, userData });
-
       res.send({
         token,
         refresh_token,
@@ -142,195 +131,90 @@ router.post("/login", async (req, res) => {
         ID: items[0].ID,
         category: items[0].category,
       });
-    } else {
-      const main = await extractMain(user.userID);
-      if (!main) return res.send({ token, refresh_token, userData });
-
-      res.send({
-        token,
-        refresh_token,
-        userData,
-        ID: main.ID,
-        category: main.category,
-      });
     }
+
+    const main = await extractMain(user.userID);
+    if (!main) return res.send({ token, refresh_token, userData });
+
+    res.send({
+      token,
+      refresh_token,
+      userData,
+      ID: main.ID,
+      category: main.category,
+    });
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);
   }
 });
 
-router.post("/reset-password", async (req, res) => {
+router.get("/overview", supervisorChecker, async (req, res) => {
   try {
-    const code = await otpGenerator.generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
+    const all = await fetchAll(req.user.userID);
 
-    const { email } = req.body;
+    let totalUsers = 1;
+    let supervisors = 0;
+    let employees = 0;
 
-    if (!email) return res.status(400).send({ error: "Email not provided" });
+    let totalReservations = 0;
+    let pendingReservations = 0;
+    let acceptedReservations = 0;
+    let rejectedReservations = 0;
+    let attendedReservations = 0;
+    let cancelledReservations = 0;
 
-    const user = await User.findOne({
-      email: email,
-      role: { $in: ["manager", "employee", "supervisor"] },
-    });
+    for (let i = 0; i < all.length; i++) {
+      const item = all[i];
+      supervisors = supervisors + item.supervisors.length;
+      employees = supervisors + item.employees.length;
+      totalUsers = totalUsers + supervisors + employees;
 
-    if (!user)
-      return res
-        .status(404)
-        .send({ error: `No Account found with the email ${email}` });
+      totalReservations =
+        totalReservations + (await Reservation.find({ ID: item.ID })).length;
+      pendingReservations =
+        pendingReservations +
+        (await Reservation.find({ ID: item.ID, status: "pending" })).length;
+      acceptedReservations =
+        acceptedReservations +
+        (await Reservation.find({ ID: item.ID, status: "accepted" })).length;
+      rejectedReservations =
+        rejectedReservations +
+        (await Reservation.find({ ID: item.ID, status: "rejected" })).length;
+      attendedReservations =
+        attendedReservations +
+        (await Reservation.find({ ID: item.ID, status: "attended" })).length;
+    }
 
-    const otp = new OTP({
-      userID: user.userID,
-      code: code,
-      type: "reset password",
-    });
-    otp.save();
-
-    const response = await sendEmail(user.name, email, "reset password", code);
-
-    if (!response.success)
-      return res.status(400).send({ error: response.error });
-
-    res.send({ message: response.message });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't change password" });
-  }
-});
-
-// router.post("/verify-code", async (req, res) => {
-//   try {
-//     const { code } = req.body;
-//     const otp = await OTP.findOne({ code: code, type: "reset password" });
-
-//     if (!otp)
-//       return res.status(400).send({ error: "Incorrect or expired code" });
-
-//     res.send({ message: "Code verified", code: code });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({ error: "Could not verify code" });
-//   }
-// });
-
-router.put("/change-password", async (req, res) => {
-  const { code, newPassword, confirmNewPassword } = req.body;
-
-  if (!code) return res.status(400).send({ error: "Code is required" });
-  if (!newPassword || !confirmPassword)
-    return res.status(400).send({ error: "Passwords required" });
-
-  try {
-    const otp = await OTP.findOne({ code: code, type: "reset password" });
-    if (!otp)
-      return res.status(404).send({ error: "Incorrect or expired code" });
-
-    if (newPassword !== confirmNewPassword)
-      return res.status(404).send({ error: "Passwords do not match" });
-    const user = await User.findOne({ userID: otp.userID });
-
-    const saltRounds = parseInt(process.env.saltRounds);
-    const salt = await bcrypt.genSalt(saltRounds);
-    const newhashedPassword = await bcrypt.hash(newPassword, salt);
-
-    const userData = {
-      name: user.name,
-      password: newhashedPassword,
-      email: user.email,
-      userID: user.userID,
-      role: user.role,
-    };
-
-    await user.save();
-
-    const token1 = await jwt.sign(
-      userData,
-      process.env.access_token_secret_key,
-      {
-        expiresIn: "30d",
-      }
+    const bars = await all.filter((item) => item.category !== "bars");
+    const clubs = await all.filter((item) => item.category !== "club");
+    const hotels = await all.filter((item) => item.category !== "hotel");
+    const restaurants = await all.filter(
+      (item) => item.category !== "restaurant"
     );
 
-    const token2 = await jwt.sign(
-      userData,
-      process.env.refresh_token_secret_key,
-      {
-        expiresIn: "60d",
-      }
-    );
-
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
-
-    const newRefreshToken = new Token({
-      userID: userData.userID,
-      token: refresh_token,
+    res.send({
+      users: {
+        total: totalUsers,
+        supervisors,
+        employees,
+      },
+      reservations: {
+        total: totalReservations,
+        pending: pendingReservations,
+        accepted: acceptedReservations,
+        rejected: rejectedReservations,
+        attended: attendedReservations,
+      },
+      subHotels: {
+        bars: bars.length,
+        clubs: clubs.length,
+        restaurants: restaurants.length,
+      },
     });
-    await newRefreshToken.save();
-
-    res.send({ token, refresh_token, userData });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't change password" });
-  }
-});
-
-router.get("/refresh-token", async (req, res) => {
-  try {
-    if (!req.body.refreshToken)
-      return res.status(400).send({ error: "Refresh token not provided" });
-
-    const refresh_token = await Token.findOne({
-      token: req.body.refresh_token,
-    });
-    if (!refresh_token)
-      return res.status(401).send({ error: "Invalid/Expired refresh token" });
-    const userData = await jwt.verify(
-      req.body.refresh_token.slice(7),
-      process.env.refresh_token_secret_key
-    );
-
-    delete userData.exp;
-    delete userData.iat;
-    delete userData.password;
-
-    const jwttoken = await jwt.sign(
-      userData,
-      process.env.access_token_secret_key,
-      {
-        expiresIn: "30d",
-      }
-    );
-
-    const token = `Bearer ${jwttoken}`;
-
-    res.send({ token, userData });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't refresh token" });
-  }
-});
-
-router.delete("/logout", async (req, res) => {
-  try {
-    if (!req.body.refreshToken)
-      return res.status(400).send({ error: "Refresh token not provided" });
-
-    const refresh_token = await Token.findOne({
-      token: req.body.refresh_token,
-    });
-    if (!refresh_token)
-      return res.status(401).send({ error: "Invalid/Expired refresh token" });
-
-    await refresh_token.remove();
-
-    res.send({ message: "Logged out" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't refresh token" });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Could not get overview" });
   }
 });
 

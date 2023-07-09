@@ -3,34 +3,21 @@ const Restaurant = require("../models/Restaurant");
 const Bar = require("../models/Bar");
 const Club = require("../models/Club");
 
-async function extractMain(managerID, role) {
-  if (role) {
-    const bars = await Bar.find({
-      [role]: { $in: [managerID] },
-      subHotel: { $ne: true },
-    });
-    const clubs = await Club.find({
-      [role]: { $in: [managerID] },
-      subHotel: { $ne: true },
-    });
-    const hotels = await Hotel.find({
-      [role]: { $in: [managerID] },
-      subHotel: { $ne: true },
-    });
-    const restaurants = await Restaurant.find({
-      [role]: { $in: [managerID] },
-      subHotel: { $ne: true },
-    });
+async function extractMain(managerID) {
+  const query = {
+    $or: [
+      { supervisors: { $in: [managerID] }, subHotel: false },
+      { employees: { $in: [managerID] }, subHotel: false },
+      { managerID, subHotel: false },
+    ],
+  };
 
-    const all = [...bars, ...clubs, ...hotels, ...restaurants];
-
-    return all[0];
-  }
-
-  const bars = await Bar.find({ managerID, subHotel: false });
-  const clubs = await Club.find({ managerID, subHotel: false });
-  const hotels = await Hotel.find({ managerID });
-  const restaurants = await Restaurant.find({ managerID, subHotel: false });
+  const [bars, clubs, hotels, restaurants] = await Promise.all([
+    Bar.find(query),
+    Club.find(query),
+    Hotel.find(query),
+    Restaurant.find(query),
+  ]);
 
   const all = [...bars, ...clubs, ...hotels, ...restaurants];
 

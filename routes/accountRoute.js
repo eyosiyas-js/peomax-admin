@@ -17,37 +17,25 @@ router.get("/", userChecker, async (req, res) => {
 
     if (!user) return res.status(404).send({ error: "User not found" });
 
-    if (user.role == "manager") {
-      const main = await extractMain(req.user.userID);
-      if (!main) return res.send(user.toObject());
+    if (user.role == "employee") {
+      const items = await fetchAll(req.user.userID);
 
-      res.send({
-        ...user.toObject(),
-        ID: main.ID,
-        category: main.category,
-      });
-    } else if (user.role == "supervisor") {
-      const main = await extractMain(req.user.userID, "supervisors");
-      if (!main) return res.send(user.toObject());
-
-      console.log(main);
-
-      res.send({
-        ...user.toObject(),
-        ID: main.ID,
-        category: main.category,
-      });
-    } else if (user.role == "employee") {
-      const items = await fetchAll(req.user.userID, "employees");
-
+      if (items == []) return res.send(user.toObject());
       res.send({
         ...user.toObject(),
         ID: items[0].ID,
         category: items[0].category,
       });
-    } else {
-      res.send(user.toObject());
     }
+
+    const main = await extractMain(req.user.userID);
+    if (!main) return res.send(user.toObject());
+
+    res.send({
+      ...user.toObject(),
+      ID: main.ID,
+      category: main.category,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting user" });

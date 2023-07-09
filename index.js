@@ -25,6 +25,7 @@ const nearbyRoute = require("./routes/nearbyRoute.js");
 const geolocationRoute = require("./routes/geolocationRoute.js");
 const reserveRoute = require("./routes/reserveRoute.js");
 const reservationsRoute = require("./routes/reservationsRoute.js");
+const overviewRoute = require("./routes/overviewRoute.js");
 const eventsRoute = require("./routes/eventsRoute.js");
 const ticketRoute = require("./routes/ticketRoute.js");
 
@@ -54,6 +55,7 @@ app.use("/api/admin", adminRoute);
 app.use("/api/manager", managerRoute);
 app.use("/api/supervisor", supervisorRoute);
 app.use("/api/employee", employeeRoute);
+app.use("/api/overview", overviewRoute);
 
 app.use("/api/restaurants", restaurantsRoute);
 app.use("/api/hotels", hotelsRoute);

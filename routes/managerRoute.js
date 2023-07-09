@@ -1,11 +1,9 @@
 const express = require("express");
 const User = require("../models/User.js");
-const Reservation = require("../models/Reservation.js");
 const Token = require("../models/Token.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminChecker = require("../middleware/adminChecker.js");
-const supervisorChecker = require("../middleware/superVisorChecker.js");
 const extractMain = require("../utils/extractMain.js");
 const fetchAll = require("../utils/fetchAll.js");
 
@@ -146,75 +144,6 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);
-  }
-});
-
-router.get("/overview", supervisorChecker, async (req, res) => {
-  try {
-    const all = await fetchAll(req.user.userID);
-
-    let totalUsers = 1;
-    let supervisors = 0;
-    let employees = 0;
-
-    let totalReservations = 0;
-    let pendingReservations = 0;
-    let acceptedReservations = 0;
-    let rejectedReservations = 0;
-    let attendedReservations = 0;
-    let cancelledReservations = 0;
-
-    for (let i = 0; i < all.length; i++) {
-      const item = all[i];
-      supervisors = supervisors + item.supervisors.length;
-      employees = supervisors + item.employees.length;
-      totalUsers = totalUsers + supervisors + employees;
-
-      totalReservations =
-        totalReservations + (await Reservation.find({ ID: item.ID })).length;
-      pendingReservations =
-        pendingReservations +
-        (await Reservation.find({ ID: item.ID, status: "pending" })).length;
-      acceptedReservations =
-        acceptedReservations +
-        (await Reservation.find({ ID: item.ID, status: "accepted" })).length;
-      rejectedReservations =
-        rejectedReservations +
-        (await Reservation.find({ ID: item.ID, status: "rejected" })).length;
-      attendedReservations =
-        attendedReservations +
-        (await Reservation.find({ ID: item.ID, status: "attended" })).length;
-    }
-
-    const bars = await all.filter((item) => item.category !== "bars");
-    const clubs = await all.filter((item) => item.category !== "club");
-    const hotels = await all.filter((item) => item.category !== "hotel");
-    const restaurants = await all.filter(
-      (item) => item.category !== "restaurant"
-    );
-
-    res.send({
-      users: {
-        total: totalUsers,
-        supervisors,
-        employees,
-      },
-      reservations: {
-        total: totalReservations,
-        pending: pendingReservations,
-        accepted: acceptedReservations,
-        rejected: rejectedReservations,
-        attended: attendedReservations,
-      },
-      subHotels: {
-        bars: bars.length,
-        clubs: clubs.length,
-        restaurants: restaurants.length,
-      },
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Could not get overview" });
   }
 });
 

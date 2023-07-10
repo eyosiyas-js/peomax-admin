@@ -14,16 +14,6 @@ router.get("/", adminChecker, async (req, res) => {
   }
 });
 
-router.get("/:id", adminChecker, async (req, res) => {
-  try {
-    const user = await User.findOne({ userID: req.params.id }, { password: 0 });
-    res.send(user.toObject());
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting user" });
-  }
-});
-
 router.get("/search", adminChecker, async (req, res) => {
   try {
     const regex = new RegExp(req.query.q, "i");
@@ -46,6 +36,16 @@ router.get("/search", adminChecker, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting users" });
+  }
+});
+
+router.get("/:id", adminChecker, async (req, res) => {
+  try {
+    const user = await User.findOne({ userID: req.params.id }, { password: 0 });
+    res.send(user.toObject());
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting user" });
   }
 });
 

@@ -87,7 +87,9 @@ const dinningPlaceSchema = Joi.object({
   dressCode: Joi.string().required(),
   parkingDetails: Joi.string().required(),
   publicTransit: Joi.string().required(),
-  paymentOptions: Joi.array().items(Joi.string()).optional(),
+  paymentOptions: Joi.alternatives()
+    .try(Joi.string(), Joi.array().items(Joi.string()))
+    .required(),
   additional: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   website: Joi.string().required(),
@@ -119,7 +121,9 @@ const editDinningPlaceSchema = Joi.object({
   dressCode: Joi.string().optional(),
   parkingDetails: Joi.string().optional(),
   publicTransit: Joi.string().optional(),
-  paymentOptions: Joi.array().items(Joi.string()).optional(),
+  paymentOptions: Joi.alternatives()
+    .try(Joi.string(), Joi.array().items(Joi.string()))
+    .required(),
   additional: Joi.string().optional(),
   phoneNumber: Joi.string().optional(),
   website: Joi.string().optional(),

@@ -87,7 +87,7 @@ const dinningPlaceSchema = Joi.object({
   dressCode: Joi.string().required(),
   parkingDetails: Joi.string().required(),
   publicTransit: Joi.string().required(),
-  paymentOptions: Joi.array().items(Joi.string()).required(),
+  paymentOptions: Joi.array().items(Joi.string()).optional(),
   additional: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   website: Joi.string().required(),

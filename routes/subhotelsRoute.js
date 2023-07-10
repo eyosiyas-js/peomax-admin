@@ -11,18 +11,22 @@ router.get("/", managerChecker, async (req, res) => {
     const bars = await Bar.find({
       managerID: req.user.userID,
       subHotel: true,
+      status: "approved",
     });
     const clubs = await Club.find({
       managerID: req.user.userID,
       subHotel: true,
+      status: "approved",
     });
     const hotels = await Hotel.find({
       managerID: req.user.userID,
       subHotel: true,
+      status: "approved",
     });
     const restaurants = await Restaurant.find({
       managerID: req.user.userID,
       subHotel: true,
+      status: "approved",
     });
 
     const items = hotels.concat(restaurants, bars, clubs);

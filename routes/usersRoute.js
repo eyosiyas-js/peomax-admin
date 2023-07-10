@@ -24,11 +24,25 @@ router.get("/:id", adminChecker, async (req, res) => {
   }
 });
 
-router.get("/total", adminChecker, async (req, res) => {
+router.get("/search", adminChecker, async (req, res) => {
   try {
-    const count = await User.countDocuments({});
-    console.log({ count });
-    res.send({ count });
+    const regex = new RegExp(req.query.q, "i");
+
+    const users = await User.find({
+      $and: [
+        {
+          $or: [
+            { email: { $regex: regex } },
+            { firstName: { $regex: regex } },
+            { lastName: { $regex: regex } },
+            { name: { $regex: regex } },
+            { userID: req.query.q },
+          ],
+        },
+      ],
+    });
+
+    res.send(users);
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting users" });

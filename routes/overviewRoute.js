@@ -64,7 +64,9 @@ router.get("/", supervisorChecker, async (req, res) => {
 
     res.send({
       users: {
-        total: all.length,
+        total:
+          all.reduce((count, item) => count + item.supervisors.length, 0) +
+          all.reduce((count, item) => count + item.employees.length, 0),
         supervisors: all.reduce(
           (count, item) => count + item.supervisors.length,
           0

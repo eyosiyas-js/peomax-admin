@@ -1,7 +1,7 @@
 const { unlinkSync } = require("fs");
 const uploadFile = require("../utils/upload");
 const formats = require("../utils/formats");
-const { checkAuthorization } = require("../utils/checkAuthorization");
+const checkAuthorization = require("../utils/checkAuthorization");
 const { validateEditDiningPlace } = require("../utils/validator");
 
 async function editDiningService(req, res, diningPlaceModel) {

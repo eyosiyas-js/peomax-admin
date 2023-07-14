@@ -1,17 +1,26 @@
 const express = require("express");
 const supervisorChecker = require("../middleware/superVisorChecker.js");
 const Reservation = require("../models/Reservation.js");
+const Event = require("../models/Event.js");
+const Ticket = require("../models/Ticket.js");
 const fetchAll = require("../utils/fetchAll.js");
 
 const router = express.Router();
 
+function getReservationsByMonth(reservations) {
+  const reservationsByMonth = Array(12).fill(0);
+  reservations.forEach((reservation) => {
+    const createdAt = new Date(reservation.createdAt);
+    const month = createdAt.getUTCMonth();
+    reservationsByMonth[month]++;
+  });
+
+  return reservationsByMonth;
+}
+
 router.get("/", supervisorChecker, async (req, res) => {
   try {
-    const all = await fetchAll(req.user.userID, [
-      "supervisors",
-      "employees",
-      "category",
-    ]);
+    const all = await fetchAll(req.user.userID);
 
     const statsPromises = [
       Reservation.aggregate([
@@ -52,15 +61,47 @@ router.get("/", supervisorChecker, async (req, res) => {
     ];
 
     const [reservationStats, bars, clubs, hotels, restaurants] =
-      await Promise.all(statsPromises);
+      await Promise.all(statsPromises).catch((err) => {
+        console.log(err);
+        throw new Error("Could not fetch overview data");
+      });
 
     const {
-      reservations,
-      pendingReservations,
-      acceptedReservations,
-      rejectedReservations,
-      attendedReservations,
-    } = reservationStats[0];
+      reservations = 0,
+      pendingReservations = 0,
+      acceptedReservations = 0,
+      rejectedReservations = 0,
+      attendedReservations = 0,
+    } = reservationStats[0] || {};
+
+    const allReservations = await Reservation.aggregate([
+      {
+        $match: {
+          ID: { $in: all.map((item) => item.ID) },
+        },
+      },
+    ]);
+    const reservationsPerMonth = getReservationsByMonth(allReservations);
+
+    const events = await Event.aggregate([
+      {
+        $match: {
+          ID: { $in: all.map((item) => item.ID) },
+        },
+      },
+    ]);
+
+    const tickets = await Ticket.aggregate([
+      {
+        $match: {
+          eventID: { $in: events.map((event) => event.eventID) },
+        },
+      },
+    ]);
+
+    const attendedEvents = tickets.filter((ticket) => ticket.expired);
+
+    const ticketsPerMonth = getReservationsByMonth(tickets);
 
     res.send({
       users: {
@@ -77,11 +118,17 @@ router.get("/", supervisorChecker, async (req, res) => {
         ),
       },
       reservations: {
-        total: reservations || 0,
-        pending: pendingReservations || 0,
-        accepted: acceptedReservations || 0,
-        rejected: rejectedReservations || 0,
-        attended: attendedReservations || 0,
+        total: reservations,
+        pending: pendingReservations,
+        accepted: acceptedReservations,
+        rejected: rejectedReservations,
+        perMonth: reservationsPerMonth,
+      },
+      events: {
+        total: events.length,
+        tickets: tickets.length,
+        attended: attendedEvents.length,
+        perMonth: ticketsPerMonth,
       },
       subHotels: {
         bars: bars.length,

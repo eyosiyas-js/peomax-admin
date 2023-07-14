@@ -6,6 +6,7 @@ const Bar = require("../models/Hotel");
 const Club = require("../models/Club");
 const Hotel = require("../models/Hotel");
 const Restaurant = require("../models/Restaurant");
+const Reservation = require("../models/Reservation.js");
 const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
 const adminChecker = require("../middleware/adminChecker.js");
@@ -114,6 +115,17 @@ router.post("/reject", adminChecker, async (req, res) => {
 
 router.get("/totals", adminChecker, async (req, res) => {
   try {
+    function getReservationsByMonth(reservations) {
+      const reservationsByMonth = Array(12).fill(0);
+      reservations.forEach((reservation) => {
+        const createdAt = new Date(reservation.createdAt);
+        const month = createdAt.getUTCMonth();
+        reservationsByMonth[month]++;
+      });
+
+      return reservationsByMonth;
+    }
+
     const [
       totalUsers,
       bannedUsers,
@@ -162,6 +174,9 @@ router.get("/totals", adminChecker, async (req, res) => {
       Restaurant.countDocuments({ status: "rejected" }),
     ]);
 
+    const reservations = await Reservation.find({});
+    const perMonth = getReservationsByMonth(reservations);
+
     res.send({
       users: {
         total: totalUsers,
@@ -194,6 +209,19 @@ router.get("/totals", adminChecker, async (req, res) => {
         pending: pendingRestaurants,
         approved: approvedRestaurants,
         rejected: rejectedRestaurants,
+      },
+      reservations: {
+        total: reservations.length,
+        pending: reservations.map(
+          (reservation) => reservation.status == "pending"
+        ).length,
+        accepted: reservations.map(
+          (reservation) => reservation.status == "accepted"
+        ).length,
+        rejected: reservations.map(
+          (reservation) => reservation.status == "rejected"
+        ).length,
+        perMonth,
       },
     });
   } catch (err) {

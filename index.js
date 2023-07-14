@@ -1,5 +1,6 @@
 const express = require("express");
 const socket = require("socket.io");
+const subdomain = require("express-subdomain");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -75,6 +76,8 @@ app.use("/api/reserve", reserveRoute);
 app.use("/api/reservations", reservationsRoute);
 app.use("/api/ticket", ticketRoute);
 
+// app.use(subdomain("admin", allRoute));
+
 app.get("/api", (req, res) => {
   res.send(`Hello World! ${req.protocol}://${req.hostname}`);
 });
@@ -89,3 +92,13 @@ mongoose
     );
   })
   .catch((err) => console.error(err));
+
+const adminApp = express();
+
+// Define routes for the admin subdomain app
+adminApp.get("/", (req, res) => {
+  res.send("Hello from the admin subdomain!");
+});
+
+// Mount the admin subdomain app using subdomain middleware
+app.use(subdomain("admin", adminApp));

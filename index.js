@@ -46,6 +46,8 @@ const io = socketIo(server, { cors: { origin: "*" } });
 const port = process.env.PORT || 4000;
 const mongo_url = process.env.mongo_url;
 
+app.use(cors());
+
 app.use((req, res, next) => {
   req.io = io;
   return next();

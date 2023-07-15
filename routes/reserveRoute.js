@@ -77,6 +77,8 @@ router.post("/", userChecker, async (req, res) => {
     await reserveMail(req.user.firstName, req.user.email);
 
     res.send({ message: "Reservation Email sent" });
+
+    req.io.emit("reserve", reservation);
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't reserve a spot" });

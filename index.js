@@ -1,5 +1,6 @@
 const express = require("express");
-const socket = require("socket.io");
+const socketIo = require("socket.io");
+const { createServer } = require("http");
 const subdomain = require("express-subdomain");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
@@ -40,14 +41,20 @@ const limiter = rateLimit({
 });
 
 const app = express();
+const server = createServer(app);
+const io = socketIo(server, { cors: { origin: "*" } });
 const port = process.env.PORT || 4000;
 const mongo_url = process.env.mongo_url;
+
+app.use((req, res, next) => {
+  req.io = io;
+  return next();
+});
 
 app.use(helmet());
 app.use(limiter);
 app.disable("x-powered-by");
 app.use(express.json());
-app.use(cors({ origin: "*" }));
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", usersRoute);
@@ -85,7 +92,7 @@ mongoose
   .connect(mongo_url, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("MongoDB connected!");
-    app.listen(port, () =>
+    server.listen(port, () =>
       console.log(`Listening on: http://localhost:${port}`)
     );
   })

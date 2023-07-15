@@ -21,7 +21,8 @@ module.exports = async (req, res, next) => {
       if (
         decoded.role == "employee" ||
         decoded.role == "supervisor" ||
-        decoded.role == "manager"
+        decoded.role == "manager" ||
+        decoded.role == "admin"
       ) {
         next();
       } else {

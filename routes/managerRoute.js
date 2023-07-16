@@ -65,6 +65,8 @@ router.post("/login", async (req, res) => {
       role: { $in: ["manager", "employee", "supervisor"] },
     });
     if (!user) return res.status(404).send({ error: "Account not found" });
+    if (user.isBanned == true)
+      return res.status(404).send({ error: "Account banned" });
 
     let userData = {};
 

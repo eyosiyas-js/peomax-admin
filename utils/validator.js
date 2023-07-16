@@ -210,6 +210,16 @@ const ticketSchema = Joi.object({
   people: Joi.number().integer().required(),
 });
 
+const menuSchema = Joi.object({
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+  ID: Joi.string().required(),
+  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
+  group: Joi.string().required(),
+  fasting: Joi.boolean().optional(),
+  price: Joi.number().integer().required(),
+});
+
 function validateSignupData(data) {
   const output = userSignupSchema.validate(data);
   const { error } = output;
@@ -364,6 +374,20 @@ function validateTicket(data) {
   }
 }
 
+function validateMenu(data) {
+  const output = menuSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replace(/"/g, ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
 module.exports = {
   validateSignupData,
   validateLoginData,
@@ -376,4 +400,5 @@ module.exports = {
   validateEvent,
   validateEditDiningPlace,
   validateEditEvent,
+  validateMenu,
 };

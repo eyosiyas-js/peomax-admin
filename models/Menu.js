@@ -1,53 +1,46 @@
 const mongoose = require("mongoose");
 
-const mealSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  description: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  category: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  ingredients: {
-    type: Array,
-    default: [],
-  },
-  fasting: {
-    type: Boolean,
-    default: false,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
+const menuSchema = new mongoose.Schema({
   menuID: {
     type: String,
-    require: true,
+    required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const menuSchema = new mongoose.Schema({
   ID: {
     type: String,
     required: true,
   },
-  meals: [mealSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  category: {
+    type: String,
+    required: true,
   },
+  items: [
+    {
+      name: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+        required: true,
+      },
+      group: {
+        type: String,
+        required: true,
+      },
+      price: {
+        type: String,
+        required: true,
+      },
+      image: {
+        type: String,
+        required: true,
+      },
+      fasting: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
 });
 
 const Menu = mongoose.model("Menu", menuSchema);

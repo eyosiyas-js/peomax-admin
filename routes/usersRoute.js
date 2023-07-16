@@ -6,13 +6,31 @@ const fetchAll = require("../utils/fetchAll.js");
 
 const router = express.Router();
 
-router.get("/", adminChecker, async (req, res) => {
+router.get("/", managerChecker, async (req, res) => {
   try {
-    const users = await User.find({ role: "client" }, { password: 0 });
-    if (users.length === 0)
-      return res.status(400).send({ error: "Users not found" });
+    if (req.user.role == "admin") {
+      const users = await User.find({ role: "client" }, { password: 0 });
+      res.send(users);
+    } else {
+      const all = await fetchAll(req.user.userID);
+      const supervisors = all.map((item) => item.supervisors);
+      const employees = all.map((item) => item.employees);
 
-    res.send(users.map((user) => user.toObject()));
+      const users = await User.aggregate([
+        {
+          $match: {
+            userID: { $in: [...supervisors, ...employees] },
+          },
+        },
+        {
+          $project: {
+            password: 0,
+          },
+        },
+      ]);
+
+      re.send(users);
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting users" });
@@ -36,7 +54,7 @@ router.get("/search", managerChecker, async (req, res) => {
             ],
           },
         ],
-      });
+      }).select("-password");
 
       res.send(users);
     } else {
@@ -48,6 +66,11 @@ router.get("/search", managerChecker, async (req, res) => {
         {
           $match: {
             userID: { $in: [...supervisors, ...employees] },
+          },
+        },
+        {
+          $project: {
+            password: 0,
           },
         },
       ]);
@@ -101,6 +124,11 @@ router.delete("/:id/ban", managerChecker, async (req, res) => {
         {
           $match: {
             userID: { $in: [...supervisors, ...employees] },
+          },
+        },
+        {
+          $project: {
+            password: 0,
           },
         },
       ]);

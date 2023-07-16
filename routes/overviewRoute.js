@@ -38,9 +38,6 @@ router.get("/", supervisorChecker, async (req, res) => {
             rejected: {
               $sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] },
             },
-            attended: {
-              $sum: { $cond: [{ $eq: ["$status", "attended"] }, 1, 0] },
-            },
           },
         },
         {
@@ -50,7 +47,6 @@ router.get("/", supervisorChecker, async (req, res) => {
             pendingReservations: { $sum: "$pending" },
             acceptedReservations: { $sum: "$accepted" },
             rejectedReservations: { $sum: "$rejected" },
-            attendedReservations: { $sum: "$attended" },
           },
         },
       ]),
@@ -71,7 +67,6 @@ router.get("/", supervisorChecker, async (req, res) => {
       pendingReservations = 0,
       acceptedReservations = 0,
       rejectedReservations = 0,
-      attendedReservations = 0,
     } = reservationStats[0] || {};
 
     const allReservations = await Reservation.aggregate([

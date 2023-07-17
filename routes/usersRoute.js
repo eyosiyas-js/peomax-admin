@@ -9,12 +9,12 @@ const router = express.Router();
 router.get("/", managerChecker, async (req, res) => {
   try {
     if (req.user.role == "admin") {
-      const users = await User.find({ role: "client" }, { password: 0 });
+      const users = await User.find({}, { password: 0 });
       res.send(users);
     } else {
       const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors);
-      const employees = all.map((item) => item.employees);
+      const supervisors = all.map((item) => item.supervisors).flat();
+      const employees = all.map((item) => item.employees).flat();
 
       const users = await User.aggregate([
         {
@@ -29,7 +29,7 @@ router.get("/", managerChecker, async (req, res) => {
         },
       ]);
 
-      re.send(users);
+      res.send(users);
     }
   } catch (error) {
     console.error(error);
@@ -39,9 +39,9 @@ router.get("/", managerChecker, async (req, res) => {
 
 router.get("/search", managerChecker, async (req, res) => {
   try {
-    if (req.user.role == "admin") {
-      const regex = new RegExp(req.query.q, "i");
+    const regex = new RegExp(req.query.q, "i");
 
+    if (req.user.role == "admin") {
       const users = await User.find({
         $and: [
           {
@@ -59,8 +59,8 @@ router.get("/search", managerChecker, async (req, res) => {
       res.send(users);
     } else {
       const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors);
-      const employees = all.map((item) => item.employees);
+      const supervisors = all.map((item) => item.supervisors).flat();
+      const employees = all.map((item) => item.employees).flat();
 
       const users = await User.aggregate([
         {
@@ -84,7 +84,7 @@ router.get("/search", managerChecker, async (req, res) => {
         );
       });
 
-      re.send(searchResults);
+      res.send(searchResults);
     }
   } catch (error) {
     console.error(error);
@@ -117,8 +117,8 @@ router.delete("/:id/ban", managerChecker, async (req, res) => {
       res.send({ message: `User Banned` });
     } else {
       const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors);
-      const employees = all.map((item) => item.employees);
+      const supervisors = all.map((item) => item.supervisors).flat();
+      const employees = all.map((item) => item.employees).flat();
 
       const users = await User.aggregate([
         {

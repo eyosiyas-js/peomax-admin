@@ -214,7 +214,7 @@ const menuSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
   ID: Joi.string().required(),
-  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
+  category: Joi.string().valid("bar", "club", "restaurant").required(),
   group: Joi.string().required(),
   fasting: Joi.boolean().optional(),
   price: Joi.number().integer().required(),

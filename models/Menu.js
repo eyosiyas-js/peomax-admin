@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
 const menuSchema = new mongoose.Schema({
-  menuID: {
-    type: String,
-    required: true,
-  },
   ID: {
     type: String,
     required: true,
   },
   category: {
+    type: String,
+    required: true,
+  },
+  menuID: {
     type: String,
     required: true,
   },
@@ -23,6 +23,10 @@ const menuSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+      image: {
+        type: String,
+        required: true,
+      },
       group: {
         type: String,
         required: true,
@@ -31,13 +35,13 @@ const menuSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      image: {
-        type: String,
-        required: true,
-      },
       fasting: {
         type: Boolean,
         default: false,
+      },
+      itemID: {
+        type: String,
+        required: true,
       },
     },
   ],

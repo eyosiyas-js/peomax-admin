@@ -24,7 +24,7 @@ const uploads = multer({ dest: storage });
 router.get("/", async (req, res) => {
   try {
     const menus = await Menu.find({});
-    re.send(menus);
+    res.send(menus);
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error" });
@@ -33,9 +33,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const menu = await Menu.findOne({ ID: req.params.id });
+    const menu = await Menu.findOne({ menuID: req.params.id });
     if (!menu) return res.status(404).send({ error: "Menu not found" });
-    re.send(menu.toObject());
+    res.send(menu.toObject());
   } catch (err) {
     console.log(err);
     res.status(400).send({ error: "Error" });
@@ -43,9 +43,9 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post(
-  "/create",
+  "/add",
   superVisorChecker,
-  uploads.array("images", 10),
+  uploads.array("images", 1),
   async (req, res) => {
     try {
       const valid = await validateMenu(req.body);
@@ -83,29 +83,76 @@ router.post(
 
       files.map((file) => unlinkSync(file.path));
 
-      const { name, description, category, group, ID, fasting, price } =
+      const { ID, category, name, description, group, fasting, price } =
         req.body;
 
-      const menu = new Menu({
-        name: name,
-        description: description,
-        image: images[0],
-        group: group,
-        category: category,
-        ID: ID,
-        price: price,
-        fasting: fasting == true ? true : false,
-        menuID: uid(16),
-      });
+      const existingMenu = await Menu.findOne({ ID });
 
-      await menu.save();
+      if (!existingMenu) {
+        const menu = new Menu({
+          ID,
+          category,
+          menuID: uid(16),
+          items: [
+            {
+              name,
+              description,
+              image: images[0],
+              group,
+              fasting: fasting === "true",
+              price,
+              itemID: uid(16),
+            },
+          ],
+        });
 
-      res.send(menu);
+        await menu.save();
+        res.send(menu);
+      } else {
+        existingMenu.items.push({
+          name,
+          description,
+          image: images[0],
+          group,
+          fasting: fasting === "true",
+          price,
+          itemID: uid(16),
+        });
+
+        await existingMenu.save();
+        res.send(existingMenu);
+      }
     } catch (error) {
-      res.status(500).send({ error: "Error creating an menu" });
+      res.status(400).send({ error: "Error adding item to menu" });
       console.log(error);
     }
   }
 );
+
+router.delete("/", superVisorChecker, async (req, res) => {
+  try {
+    const { menuID, itemID } = req.query;
+
+    const menu = await Menu.findOne({ menuID });
+    if (!menu) return res.status(404).send({ error: "Menu not found" });
+
+    const place = await findPlace(menu.ID, menu.category);
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const isAuthorized = checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
+    const newItems = menu.items.filter((item) => item.itemID !== itemID);
+    menu.items = newItems;
+
+    await menu.save();
+
+    res.send(menu);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Error deleting item" });
+  }
+});
 
 module.exports = router;

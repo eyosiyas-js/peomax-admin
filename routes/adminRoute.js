@@ -183,9 +183,6 @@ router.get("/totals", adminChecker, async (req, res) => {
     ]);
 
     const reservations = await Reservation.find({});
-
-    console.log(reservations.length);
-
     const perMonth = getReservationsByMonth(reservations);
 
     res.send({

@@ -104,43 +104,34 @@ router.get("/:id", adminChecker, async (req, res) => {
 
 router.delete("/:id/ban", managerChecker, async (req, res) => {
   try {
-    if (req.user.role == "admin") {
+    if (req.user.role === "admin") {
       const user = await User.findOne({ userID: req.params.id });
-      if (!user) return res.status(403).send({ error: "User not found" });
+      if (!user) return res.status(404).send({ error: "User not found" });
 
       if (user.isBanned)
         return res.status(400).send({ error: "User already banned" });
-      user.isBanned = true;
 
+      user.isBanned = true;
       await user.save();
 
-      res.send({ message: `User Banned` });
+      res.send({ message: "User banned" });
     } else {
       const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors).flat();
-      const employees = all.map((item) => item.employees).flat();
+      const supervisors = all.flatMap((item) => item.supervisors);
+      const employees = all.flatMap((item) => item.employees);
 
-      const users = await User.aggregate([
-        {
-          $match: {
-            userID: { $in: [...supervisors, ...employees] },
-          },
-        },
-        {
-          $project: {
-            password: 0,
-          },
-        },
-      ]);
+      const users = await User.find(
+        { userID: { $in: [...supervisors, ...employees] } },
+        { password: 0 }
+      );
 
-      const user = users.filter((user) => user.userID === req.params.id);
-      if (user.length === 0)
-        return res.status(404).send({ error: "User not found" });
+      const user = users.find((user) => user.userID === req.params.id);
+      if (!user) return res.status(404).send({ error: "User not found" });
 
-      user[0].isBanned = true;
-      await user[0].save();
+      user.isBanned = true;
+      await user.save();
 
-      res.send({ message: "User Banned" });
+      res.send({ message: "User banned" });
     }
   } catch (error) {
     console.error(error);

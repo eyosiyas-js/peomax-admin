@@ -6,9 +6,9 @@ const Club = require("../models/Club");
 async function fetchAll(managerID) {
   const query = {
     $or: [
-      { supervisor: { $in: [managerID] }, subHotel: false },
-      { employees: { $in: [managerID] }, subHotel: false },
-      { managerID, subHotel: false },
+      { supervisors: { $in: [managerID] } },
+      { employees: { $in: [managerID] } },
+      { managerID },
     ],
   };
 

@@ -117,12 +117,12 @@ router.get("/totals", adminChecker, async (req, res) => {
   try {
     function getReservationsByMonth(reservations) {
       const reservationsByMonth = Array(12).fill(0);
-      reservations.forEach((reservation) => {
+      for (let i = 0; i < reservations.length; i++) {
+        const reservation = reservations[i];
         const createdAt = new Date(reservation.createdAt);
         const month = createdAt.getUTCMonth();
         reservationsByMonth[month]++;
-      });
-
+      }
       return reservationsByMonth;
     }
 
@@ -183,6 +183,9 @@ router.get("/totals", adminChecker, async (req, res) => {
     ]);
 
     const reservations = await Reservation.find({});
+
+    console.log(reservations.length);
+
     const perMonth = getReservationsByMonth(reservations);
 
     res.send({

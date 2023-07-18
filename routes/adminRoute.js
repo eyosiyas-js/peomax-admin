@@ -149,6 +149,10 @@ router.get("/totals", adminChecker, async (req, res) => {
       pendingRestaurants,
       approvedRestaurants,
       rejectedRestaurants,
+      totalReservations,
+      pendingReservations,
+      acceptedReservations,
+      rejectedReservations,
     ] = await Promise.all([
       User.countDocuments({}),
       User.countDocuments({ isBanned: true }),
@@ -172,6 +176,10 @@ router.get("/totals", adminChecker, async (req, res) => {
       Restaurant.countDocuments({ status: "pending" }),
       Restaurant.countDocuments({ status: "approved" }),
       Restaurant.countDocuments({ status: "rejected" }),
+      Reservation.countDocuments({}),
+      Reservation.countDocuments({ status: "pending" }),
+      Reservation.countDocuments({ status: "accepted" }),
+      Reservation.countDocuments({ status: "rejected" }),
     ]);
 
     const reservations = await Reservation.find({});
@@ -211,16 +219,10 @@ router.get("/totals", adminChecker, async (req, res) => {
         rejected: rejectedRestaurants,
       },
       reservations: {
-        total: reservations.length,
-        pending: reservations.map(
-          (reservation) => reservation.status == "pending"
-        ).length,
-        accepted: reservations.map(
-          (reservation) => reservation.status == "accepted"
-        ).length,
-        rejected: reservations.map(
-          (reservation) => reservation.status == "rejected"
-        ).length,
+        total: totalReservations,
+        pending: pendingReservations,
+        accepted: acceptedReservations,
+        rejected: rejectedReservations,
         perMonth,
       },
     });

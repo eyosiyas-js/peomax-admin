@@ -65,6 +65,11 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["buffet"],
+    required: false,
+  },
   managerID: {
     type: String,
     required: true,

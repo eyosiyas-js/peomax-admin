@@ -114,6 +114,7 @@ router.post(
         eventEnd,
         price,
         premiumPrice,
+        type,
       } = req.body;
 
       const event = new Event({
@@ -131,6 +132,7 @@ router.post(
         eventEnd: eventEnd,
         price: price,
         premiumPrice: premiumPrice,
+        type: type,
         eventID: uid(16),
       });
 
@@ -213,6 +215,7 @@ router.put(
       event.price = price ?? event.price;
       event.eventEnd = eventEnd ?? event.eventEnd;
       event.premiumPrice = premiumPrice ?? event.premiumPrice;
+      event.type = eventEnd ?? event.type;
 
       await event.save();
 

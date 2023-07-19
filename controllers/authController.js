@@ -49,6 +49,19 @@ async function signup(req, res) {
         return res.send({ message: "Verify your email address" });
       }
 
+      if (password !== confirmPassword) {
+        return res.status(400).send({ error: "Passwords do not match" });
+      }
+
+      const saltRounds = parseInt(process.env.saltRounds);
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      existingUser.firstName = firstName;
+      existingUser.lastName = lastName;
+      existingUser.password = hashedPassword;
+      await existingUser.save();
+
       const code = await generateOTP();
 
       const otp = new OTP({
@@ -288,6 +301,12 @@ async function login(req, res) {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email, role: "client" });
 
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).send({ error: "Incorrect password" });
+    }
+
     if (!user) {
       return res.status(404).send({ error: "User not found" });
     }
@@ -332,12 +351,6 @@ async function login(req, res) {
           message: "User unverified",
         });
       }
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).send({ error: "Incorrect password" });
     }
 
     const userData = {

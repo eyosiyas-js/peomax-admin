@@ -157,6 +157,7 @@ const eventSchema = Joi.object({
   premiumPrice: Joi.number().positive().required(),
   totalSpots: Joi.number().positive().required(),
   images: Joi.array().optional(),
+  type: Joi.string().valid("buffet").optional(),
 });
 
 const editEventSchema = Joi.object({
@@ -184,6 +185,7 @@ const editEventSchema = Joi.object({
   premiumPrice: Joi.number().positive().optional(),
   totalSpots: Joi.number().positive().optional(),
   images: Joi.array().optional(),
+  type: Joi.string().valid("buffet").optional(),
 });
 
 const reservationSchema = Joi.object({
@@ -208,6 +210,7 @@ const ticketSchema = Joi.object({
   eventID: Joi.string().required(),
   isPremium: Joi.boolean(),
   people: Joi.number().integer().required(),
+  phoneNumber: Joi.string().optional(),
 });
 
 const menuSchema = Joi.object({

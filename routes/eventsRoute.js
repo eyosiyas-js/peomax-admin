@@ -10,6 +10,7 @@ const { unlinkSync, existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
 const uploadFile = require("../utils/upload");
 const { validateEvent, validateEditEvent } = require("../utils/validator");
+const { hasDatePassed, hasTimePassed } = require("../utils/hasPassed");
 
 const storage = join(process.cwd(), "./uploads");
 const formats = require("../utils/formats");
@@ -48,6 +49,22 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const event = await Event.find({ eventID: req.params.id });
+
+    if (!event)
+      return res
+        .status(404)
+        .send({ error: `No event found with id: ${req.params.id}` });
+
+    res.send(event);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Couldn't get all spots" });
+  }
+});
+
+router.get("/:id/buffet", async (req, res) => {
+  try {
+    const event = await Event.find({ eventID: req.params.id, type });
 
     if (!event)
       return res
@@ -116,6 +133,11 @@ router.post(
         premiumPrice,
         type,
       } = req.body;
+
+      if (hasDatePassed(date))
+        return res.status(400).send({ error: "Invalid date" });
+      if (hasTimePassed(eventStart) || hasTimePassed(eventEnd))
+        return res.status(400).send({ error: "Invalid time" });
 
       const event = new Event({
         name: name,
@@ -200,9 +222,17 @@ router.put(
         eventEnd,
         price,
         premiumPrice,
+        type,
       } = req.body;
 
       const event = await Event.findOne({ eventID: req.params.id });
+
+      if (date && hasDatePassed(date))
+        return res.status(400).send({ error: "Invalid date" });
+      if (eventStart && hasTimePassed(eventStart))
+        return res.status(400).send({ error: "Invalid time" });
+      if (eventEnd && hasTimePassed(eventEnd))
+        return res.status(400).send({ error: "Invalid time" });
 
       event.name = name ?? event.name;
       event.description = description ?? event.description;
@@ -215,7 +245,7 @@ router.put(
       event.price = price ?? event.price;
       event.eventEnd = eventEnd ?? event.eventEnd;
       event.premiumPrice = premiumPrice ?? event.premiumPrice;
-      event.type = eventEnd ?? event.type;
+      event.type = type ?? event.type;
 
       await event.save();
 
@@ -226,5 +256,32 @@ router.put(
     }
   }
 );
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const event = await Event.find({ eventID: req.params.id });
+    if (!event)
+      return res
+        .status(404)
+        .send({ error: `No event found with id: ${req.params.id}` });
+
+    const place = await findPlace(event.ID, event.category);
+    if (!place)
+      return res
+        .status(400)
+        .send({ error: `No ${event.category} with ID: ${event.ID}` });
+
+    const isAuthorized = await checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(403).send({ error: "Unauthorized action" });
+
+    await event.remove();
+
+    res.send({ message: "Event removed" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Couldn't get all spots" });
+  }
+});
 
 module.exports = router;

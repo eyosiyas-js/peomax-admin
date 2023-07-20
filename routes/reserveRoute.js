@@ -8,41 +8,21 @@ const User = require("../models/User");
 const reserveMail = require("../utils/reserveMail");
 const userChecker = require("../middleware/userChecker");
 const { uid } = require("uid");
+const { validateReservation } = require("../utils/validator");
+const findPlace = require("../utils/findPlace");
+const { hasDatePassed, hasTimePassed } = require("../utils/hasPassed");
 
 const router = express.Router();
 
 router.post("/", userChecker, async (req, res) => {
   try {
+    const valid = await validateReservation(req.body);
+    if (!valid.success) return res.status(400).send({ error: valid.message });
+
     const { ID, category, people, date, time } = req.body;
 
-    if (!people || !date || !time)
-      return res.status(400).send({ error: "Please fill in all the forms" });
-
-    if (!ID || !category)
-      return res.status(400).send({ error: "ID / category missing" });
-
-    let place;
-
-    if (category == "hotel") {
-      place = await Hotel.findOne({ ID: ID });
-
-      if (!place) return res.status(400).send({ error: "Hotel not found" });
-    } else if (category == "club") {
-      place = await Club.findOne({ ID: ID });
-
-      if (!place) return res.status(400).send({ error: "Club not found" });
-    } else if (category == "bar") {
-      place = await Bar.findOne({ ID: ID });
-
-      if (!place) return res.status(400).send({ error: "Bar not found" });
-    } else if (category == "restaurant") {
-      place = await Restaurant.findOne({ ID: ID });
-
-      if (!place)
-        return res.status(400).send({ error: "Restaurant not found" });
-    } else {
-      return res.status(400).send({ error: "Invalid category" });
-    }
+    const place = await findPlace(ID, category);
+    if (!place) return res.status(404).send({ error: `${category} not found` });
 
     if (parseInt(people) > place.availableSpots) {
       return res.status(400).send({ error: `Insufficient spots` });

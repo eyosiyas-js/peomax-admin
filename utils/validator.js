@@ -154,7 +154,7 @@ const eventSchema = Joi.object({
       "string.pattern.base": `Time should be in the format 0:00 PM`,
     }),
   price: Joi.number().positive().required(),
-  premiumPrice: Joi.number().positive().required(),
+  premiumPrice: Joi.number().positive().optional(),
   totalSpots: Joi.number().positive().required(),
   images: Joi.array().optional(),
   program: Joi.string().valid("true", "false").optional(),

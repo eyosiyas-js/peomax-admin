@@ -1,8 +1,10 @@
 const express = require("express");
 const Bar = require("../models/Bar");
 const Event = require("../models/Event");
-const createDiningService = require("../controllers/createDiningService");
-const editDiningService = require("../controllers/editDiningService");
+const {
+  createDiningService,
+  editDiningService,
+} = require("../controllers/diningService");
 const managerChecker = require("../middleware/managerChecker");
 
 const multer = require("multer");
@@ -143,6 +145,24 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "bar",
+    });
+
+    res.send(events);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error fetching events" });
+  }
+});
+
+router.get("/:id/programs", async (req, res) => {
+  try {
+    if (!req.params.id)
+      return res.status(404).send({ error: "No id provided" });
+
+    const events = await Event.find({
+      ID: req.params.id,
+      category: "bar",
+      program: true,
     });
 
     res.send(events);

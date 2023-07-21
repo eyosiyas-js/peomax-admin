@@ -149,11 +149,12 @@ router.post(
         date: date,
         managerID: managerID,
         totalSpots: totalSpots,
+        availableSpots: totalSpots,
         isFullDay: isFullDay ? isFullDay : false,
         eventStart: eventStart,
         eventEnd: eventEnd,
         price: price,
-        premiumPrice: premiumPrice,
+        premiumPrice: premiumPrice ?? null,
         program: program == "true",
         eventID: uid(16),
       });

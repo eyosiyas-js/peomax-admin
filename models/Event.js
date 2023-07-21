@@ -63,7 +63,7 @@ const eventSchema = new mongoose.Schema({
   },
   premiumPrice: {
     type: Number,
-    required: true,
+    required: false,
   },
   program: {
     type: Boolean,

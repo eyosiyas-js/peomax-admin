@@ -34,10 +34,9 @@ const ticketSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  type: {
-    type: String,
-    enum: ["buffet"],
-    required: false,
+  program: {
+    type: Boolean,
+    default: false,
   },
   eventID: {
     type: String,

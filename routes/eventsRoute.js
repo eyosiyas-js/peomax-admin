@@ -131,7 +131,7 @@ router.post(
         eventEnd,
         price,
         premiumPrice,
-        type,
+        program,
       } = req.body;
 
       if (hasDatePassed(date))
@@ -154,7 +154,7 @@ router.post(
         eventEnd: eventEnd,
         price: price,
         premiumPrice: premiumPrice,
-        type: type,
+        program: program == "true",
         eventID: uid(16),
       });
 
@@ -222,17 +222,13 @@ router.put(
         eventEnd,
         price,
         premiumPrice,
-        type,
+        program,
       } = req.body;
 
       const event = await Event.findOne({ eventID: req.params.id });
 
       if (date && hasDatePassed(date))
         return res.status(400).send({ error: "Invalid date" });
-      if (eventStart && hasTimePassed(eventStart))
-        return res.status(400).send({ error: "Invalid time" });
-      if (eventEnd && hasTimePassed(eventEnd))
-        return res.status(400).send({ error: "Invalid time" });
 
       event.name = name ?? event.name;
       event.description = description ?? event.description;
@@ -245,7 +241,7 @@ router.put(
       event.price = price ?? event.price;
       event.eventEnd = eventEnd ?? event.eventEnd;
       event.premiumPrice = premiumPrice ?? event.premiumPrice;
-      event.type = type ?? event.type;
+      event.program = program == "true" ?? event.program;
 
       await event.save();
 
@@ -257,7 +253,7 @@ router.put(
   }
 );
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", superVisorChecker, async (req, res) => {
   try {
     const event = await Event.find({ eventID: req.params.id });
     if (!event)

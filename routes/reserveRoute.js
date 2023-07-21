@@ -1,16 +1,16 @@
 const express = require("express");
 const Reservation = require("../models/Reservation");
-const Restaurant = require("../models/Restaurant");
-const Hotel = require("../models/Hotel");
-const Bar = require("../models/Bar");
-const Club = require("../models/Club");
 const User = require("../models/User");
 const reserveMail = require("../utils/reserveMail");
 const userChecker = require("../middleware/userChecker");
 const { uid } = require("uid");
 const { validateReservation } = require("../utils/validator");
 const findPlace = require("../utils/findPlace");
-const { hasDatePassed, hasTimePassed } = require("../utils/hasPassed");
+const {
+  hasDatePassed,
+  hasTimePassed,
+  isTimeBetween,
+} = require("../utils/hasPassed");
 
 const router = express.Router();
 
@@ -23,6 +23,14 @@ router.post("/", userChecker, async (req, res) => {
 
     const place = await findPlace(ID, category);
     if (!place) return res.status(404).send({ error: `${category} not found` });
+
+    if (hasDatePassed(date))
+      return res.status(400).send({ error: "Invalid date" });
+
+    if (isTimeBetween(place.openingTime, place.closingTime, time))
+      return res
+        .status(400)
+        .send({ error: `${category} is closed at this time` });
 
     if (parseInt(people) > place.availableSpots) {
       return res.status(400).send({ error: `Insufficient spots` });

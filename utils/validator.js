@@ -157,7 +157,7 @@ const eventSchema = Joi.object({
   premiumPrice: Joi.number().positive().required(),
   totalSpots: Joi.number().positive().required(),
   images: Joi.array().optional(),
-  type: Joi.string().valid("buffet").optional(),
+  program: Joi.string().valid("true", "false").optional(),
 });
 
 const editEventSchema = Joi.object({
@@ -185,7 +185,7 @@ const editEventSchema = Joi.object({
   premiumPrice: Joi.number().positive().optional(),
   totalSpots: Joi.number().positive().optional(),
   images: Joi.array().optional(),
-  type: Joi.string().valid("buffet").optional(),
+  program: Joi.string().valid("true", "false").optional(),
 });
 
 const reservationSchema = Joi.object({

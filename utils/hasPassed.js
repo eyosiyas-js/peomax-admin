@@ -1,4 +1,4 @@
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 function hasDatePassed(date1, date2) {
   let secondDate;
@@ -26,4 +26,23 @@ function hasTimePassed(firstTime, secondTime) {
   return firstMoment.isAfter(secondMoment);
 }
 
-module.exports = { hasDatePassed, hasTimePassed };
+function isTimeBetween(startTime, endTime, targetTime) {
+  let targetMoment;
+
+  if (targetTime) {
+    targetMoment = moment.tz(targetTime, "hh:mm A", "Africa/Nairobi");
+  } else {
+    targetMoment = moment.tz(new Date(), "hh:mm A", "Africa/Nairobi");
+  }
+
+  const startMoment = moment.tz(startTime, "hh:mm A", "Africa/Nairobi");
+  const endMoment = moment.tz(endTime, "hh:mm A", "Africa/Nairobi");
+
+  if (endMoment.isBefore(startMoment)) {
+    endMoment.add(1, "day");
+  }
+
+  return targetMoment.isBetween(startMoment, endMoment, null, "[]");
+}
+
+module.exports = { hasDatePassed, hasTimePassed, isTimeBetween };

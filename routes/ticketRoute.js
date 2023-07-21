@@ -10,7 +10,7 @@ const { uid } = require("uid");
 const { validateTicket } = require("../utils/validator.js");
 const findPlace = require("../utils/findPlace.js");
 const checkAuthorization = require("../utils/checkAuthorization.js");
-const { hasDatePassed, hasTimePassed } = require("../utils/hasPassed.js");
+const { hasDatePassed, isTimeBetween } = require("../utils/hasPassed.js");
 
 const router = express.Router();
 
@@ -27,6 +27,11 @@ router.post("/", userChecker, async (req, res) => {
       return res
         .status(404)
         .send({ error: `No event found with id: ${eventID}` });
+
+    if (hasDatePassed(event.date))
+      return res.status(400).send({ error: "Event is over" });
+    if (isTimeBetween(event.eventStart, event.eventEnd))
+      return res.status(400).send({ error: "Event is over" });
 
     if (people > event.availableSpots)
       return res.status(400).send({ error: "Insufficient space" });
@@ -46,7 +51,7 @@ router.post("/", userChecker, async (req, res) => {
       time: event.eventStart,
       isPremium: isPremium == true ? true : false,
       price: price,
-      // phoneNumber: event.type ? phoneNumber : null,
+      // phoneNumber: event.program=="true" ? phoneNumber : null,
       eventID: eventID,
       ticketID: uid(16),
     });
@@ -66,6 +71,9 @@ router.post("/", userChecker, async (req, res) => {
     );
 
     if (event.type) {
+      if (!phoneNumber)
+        return res.status(400).send({ error: "phone number is required" });
+
       const user = await User.findOne({ userID: req.user.userID });
       const reservation = new Reservation({
         ID: event.ID,

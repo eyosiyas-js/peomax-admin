@@ -108,9 +108,6 @@ router.delete("/:id/ban", managerChecker, async (req, res) => {
       const user = await User.findOne({ userID: req.params.id });
       if (!user) return res.status(404).send({ error: "User not found" });
 
-      if (user.isBanned)
-        return res.status(400).send({ error: "User already banned" });
-
       user.isBanned = true;
       await user.save();
 

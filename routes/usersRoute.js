@@ -112,7 +112,6 @@ router.delete("/:id/ban", managerChecker, async (req, res) => {
       await user.save();
 
       res.send({ message: `User ${user.isBanned ? "banned" : "unbanned"}` });
-      res.send({ message: "User banned" });
     } else {
       const all = await fetchAll(req.user.userID);
       const supervisors = all.flatMap((item) => item.supervisors);

@@ -45,11 +45,21 @@
         text-align: center;
         color: #666666;
       }
+      .verification-code .code {
+        background-color: #e84a3f;
+        color: white;
+        font-size: 32px;
+        padding: 10px;
+        margin: 10px 0;
+        letter-spacing: 5px;
+        display: inline-block;
+        border-radius: 4px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Reservation Successful!</h1>
+      <h1>Reservation Accepted!</h1>
       <p>Hello {{clientName}},</p>
       <p>
         Thank you for making a reservation through the Peomax app, A table will
@@ -62,6 +72,10 @@
         Note: If you do not attend at your reserved spot in time, your
         reservation might be cancelled.
       </p>
+      <div class="verification-code">
+        <h2>Your reservation ID:</h2>
+        <p class="code">{{ID}}</p>
+      </div>
       <div class="footer">
         <p>
           If you have any questions or need assistance, please contact our

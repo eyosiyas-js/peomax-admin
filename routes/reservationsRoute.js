@@ -65,10 +65,15 @@ router.get("/all", superVisorChecker, async (req, res) => {
       { $limit: count },
     ]);
 
+    const allReservations = await Reservation.aggregate([
+      { $match: { ID: { $in: all.map((item) => item.ID) } } },
+    ]);
+
     res.send({
       page,
       totalPages: Math.ceil(all.length / count),
       reservationsCount: all.length,
+      allReservations: allReservations.length,
       reservations,
     });
   } catch (error) {
@@ -133,16 +138,20 @@ router.post("/accept", employeeChecker, async (req, res) => {
         .status(404)
         .send({ error: `No reservation with ID: ${reservationID}` });
 
-    if (reservation.status == "rejected")
-      return res.status(400).send({ error: "Reservation already rejected" });
-    if (reservation.status == "accepted")
-      return res.status(400).send({ error: "Reservation already accepted" });
+    if (
+      reservation.status == "accepted" ||
+      reservation.status == "rejected" ||
+      reservation.status == "attended"
+    )
+      return res
+        .status(400)
+        .send({ error: `Reservation already ${reservation.status}` });
 
     reservation.status = "accepted";
     await reservation.save();
 
     const user = await User.findOne({ userID: reservation.userID });
-    acceptMail(user.firstName, user.email);
+    acceptMail(user.firstName, user.email, reservation.reservationID);
 
     res.send({ message: "Acceptance email sent" });
   } catch (error) {
@@ -176,10 +185,14 @@ router.post("/reject", employeeChecker, async (req, res) => {
         .status(404)
         .send({ error: `No reservation with ID: ${reservationID}` });
 
-    if (reservation.status == "accepted")
-      return res.status(400).send({ error: "Reservation already accepted" });
-    if (reservation.status == "rejected")
-      return res.status(400).send({ error: "Reservation already rejected" });
+    if (
+      reservation.status == "accepted" ||
+      reservation.status == "rejected" ||
+      reservation.status == "attended"
+    )
+      return res
+        .status(400)
+        .send({ error: `Reservation already ${reservation.status}` });
 
     reservation.status = "rejected";
     await reservation.save();
@@ -219,10 +232,10 @@ router.post("/attended", employeeChecker, async (req, res) => {
         .status(404)
         .send({ error: `No reservation with ID: ${reservationID}` });
 
-    if (reservation.status == "accepted")
-      return res.status(400).send({ error: "Reservation already accepted" });
-    if (reservation.status == "rejected")
-      return res.status(400).send({ error: "Reservation already rejected" });
+    if (reservation.status == "attended" || reservation.status == "rejected")
+      return res
+        .status(400)
+        .send({ error: "Reservation already marked as attended" });
 
     reservation.status = "attended";
     await reservation.save();

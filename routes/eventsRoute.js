@@ -10,7 +10,7 @@ const { unlinkSync, existsSync, mkdirSync } = require("fs");
 const { join } = require("path");
 const uploadFile = require("../utils/upload");
 const { validateEvent, validateEditEvent } = require("../utils/validator");
-const { hasDatePassed, hasTimePassed } = require("../utils/hasPassed");
+const { hasDatePassed } = require("../utils/hasPassed");
 
 const storage = join(process.cwd(), "./uploads");
 const formats = require("../utils/formats");
@@ -136,8 +136,6 @@ router.post(
 
       if (hasDatePassed(date))
         return res.status(400).send({ error: "Invalid date" });
-      if (hasTimePassed(eventStart) || hasTimePassed(eventEnd))
-        return res.status(400).send({ error: "Invalid time" });
 
       const event = new Event({
         name: name,

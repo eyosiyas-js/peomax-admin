@@ -9,7 +9,7 @@ const findPlace = require("../utils/findPlace");
 const {
   hasDatePassed,
   hasTimePassed,
-  isTimeBetween,
+  isTimeAfter,
 } = require("../utils/hasPassed");
 
 const router = express.Router();
@@ -27,7 +27,12 @@ router.post("/", userChecker, async (req, res) => {
     if (hasDatePassed(date))
       return res.status(400).send({ error: "Invalid date" });
 
-    if (isTimeBetween(place.openingTime, place.closingTime, time))
+    if (isTimeAfter(time, place.openingTime))
+      return res
+        .status(400)
+        .send({ error: `${category} is no opened at that time` });
+
+    if (hasTimePassed(time, place.closingTime))
       return res
         .status(400)
         .send({ error: `${category} is closed at this time` });

@@ -3,10 +3,12 @@ const router = express.Router();
 const Reservation = require("../models/Reservation");
 const User = require("../models/User");
 const findPlace = require("../utils/findPlace");
+const fetchAll = require("../utils/fetchAll");
 const checkAuthorization = require("../utils/checkAuthorization");
 const acceptMail = require("../utils/acceptMail");
 const rejectMail = require("../utils/rejectMail");
 const employeeChecker = require("../middleware/employeeChecker");
+const superVisorChecker = require("../middleware/superVisorChecker");
 
 router.get("/", employeeChecker, async (req, res) => {
   try {
@@ -26,9 +28,12 @@ router.get("/", employeeChecker, async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    const reservationsCount = await Reservation.countDocuments({ ID: ID });
+    const reservationsCount = await Reservation.countDocuments({
+      ID: ID,
+      status: "pending",
+    });
     const totalPages = Math.ceil(reservationsCount / count);
-    const reservations = await Reservation.find({ ID: ID })
+    const reservations = await Reservation.find({ ID: ID, status: "pending" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(count);
@@ -37,6 +42,33 @@ router.get("/", employeeChecker, async (req, res) => {
       page,
       totalPages,
       reservationsCount,
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
+router.get("/all", superVisorChecker, async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+
+    const all = await fetchAll(req.user.userID);
+
+    const startIndex = (page - 1) * count;
+
+    const reservations = await Reservation.aggregate([
+      { $match: { ID: { $in: all.map((item) => item.ID) } } },
+      { $skip: startIndex },
+      { $limit: count },
+    ]);
+
+    res.send({
+      page,
+      totalPages: Math.ceil(all.length / count),
+      reservationsCount: all.length,
       reservations,
     });
   } catch (error) {
@@ -159,6 +191,49 @@ router.post("/reject", employeeChecker, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't reject reservation" });
+  }
+});
+
+router.post("/attended", employeeChecker, async (req, res) => {
+  try {
+    const { reservationID, ID, category } = req.body;
+
+    if (!reservationID || !ID || !category)
+      return res
+        .status(400)
+        .send({ error: "Please fill all the required info" });
+
+    const place = await findPlace(ID, category);
+
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const isAuthorized = checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(401).send({ error: "Unauthorized action" });
+
+    const reservation = await Reservation.findOne({
+      reservationID: reservationID,
+    });
+    if (!reservation)
+      return res
+        .status(404)
+        .send({ error: `No reservation with ID: ${reservationID}` });
+
+    if (reservation.status == "accepted")
+      return res.status(400).send({ error: "Reservation already accepted" });
+    if (reservation.status == "rejected")
+      return res.status(400).send({ error: "Reservation already rejected" });
+
+    reservation.status = "attended";
+    await reservation.save();
+
+    // const user = await User.findOne({ userID: reservation.userID });
+    // rejectMail(user.firstName, user.email);
+
+    res.send({ message: "Reservation attended" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Couldn't mark reservation as attended" });
   }
 });
 

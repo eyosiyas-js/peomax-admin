@@ -13,7 +13,20 @@ function hasDatePassed(date1, date2) {
   return parsedDate1.isSameOrBefore(secondDate, "day");
 }
 
-function hasTimePassed(firstTime, secondTime) {
+function hasTimePassed(secondTime, firstTime) {
+  let secondMoment;
+
+  if (secondTime) {
+    secondMoment = moment.tz(secondTime, "hh:mm A", "Africa/Nairobi");
+  } else {
+    secondMoment = moment.tz(new Date(), "hh:mm A", "Africa/Nairobi");
+  }
+
+  const firstMoment = moment.tz(firstTime, "hh:mm A", "Africa/Nairobi");
+  return firstMoment.isSameOrBefore(secondMoment);
+}
+
+function isTimeAfter(secondTime, firstTime) {
   let secondMoment;
 
   if (secondTime) {
@@ -26,23 +39,4 @@ function hasTimePassed(firstTime, secondTime) {
   return firstMoment.isAfter(secondMoment);
 }
 
-function isTimeBetween(startTime, endTime, targetTime) {
-  let targetMoment;
-
-  if (targetTime) {
-    targetMoment = moment.tz(targetTime, "hh:mm A", "Africa/Nairobi");
-  } else {
-    targetMoment = moment.tz(new Date(), "hh:mm A", "Africa/Nairobi");
-  }
-
-  const startMoment = moment.tz(startTime, "hh:mm A", "Africa/Nairobi");
-  const endMoment = moment.tz(endTime, "hh:mm A", "Africa/Nairobi");
-
-  if (endMoment.isBefore(startMoment)) {
-    endMoment.add(1, "day");
-  }
-
-  return targetMoment.isBetween(startMoment, endMoment, null, "[]");
-}
-
-module.exports = { hasDatePassed, hasTimePassed, isTimeBetween };
+module.exports = { hasDatePassed, hasTimePassed, isTimeAfter };

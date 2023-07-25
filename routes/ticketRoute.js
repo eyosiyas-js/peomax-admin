@@ -10,7 +10,7 @@ const { uid } = require("uid");
 const { validateTicket } = require("../utils/validator.js");
 const findPlace = require("../utils/findPlace.js");
 const checkAuthorization = require("../utils/checkAuthorization.js");
-const { hasDatePassed, isTimeBetween } = require("../utils/hasPassed.js");
+const { hasDatePassed } = require("../utils/hasPassed.js");
 
 const router = express.Router();
 
@@ -29,8 +29,6 @@ router.post("/", userChecker, async (req, res) => {
         .send({ error: `No event found with id: ${eventID}` });
 
     if (hasDatePassed(event.date))
-      return res.status(400).send({ error: "Event is over" });
-    if (isTimeBetween(event.eventStart, event.eventEnd))
       return res.status(400).send({ error: "Event is over" });
 
     if (people > event.availableSpots)

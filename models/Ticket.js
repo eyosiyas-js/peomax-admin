@@ -33,6 +33,10 @@ const ticketSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  attended: {
+    type: Boolean,
+    default: false,
+  },
   isPaid: {
     type: Boolean,
     default: false,

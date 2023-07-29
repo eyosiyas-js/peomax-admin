@@ -113,10 +113,11 @@ router.post("/verify/:id", employeeChecker, async (req, res) => {
 
     if (!ticket)
       return res.status(404).send({ error: "Invalid virtual ticket" });
-    if (ticket.expired)
+    if (ticket.expired || ticket.attended)
       return res.status(404).send({ error: "Ticket expired" });
 
     ticket.expired = true;
+    ticket.attended = true;
 
     await ticket.save();
 

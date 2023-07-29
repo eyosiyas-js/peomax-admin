@@ -151,7 +151,16 @@ router.post("/accept", employeeChecker, async (req, res) => {
     await reservation.save();
 
     const user = await User.findOne({ userID: reservation.userID });
-    acceptMail(user.firstName, user.email, reservation.reservationID);
+    console.log(user.email);
+    acceptMail(
+      user.firstName,
+      user.email,
+      reservation.reservationID,
+      place,
+      reservation.time,
+      reservation.date,
+      reservation.people
+    );
 
     res.send({ message: "Acceptance email sent" });
   } catch (error) {

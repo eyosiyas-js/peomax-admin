@@ -6,11 +6,24 @@ const logo = readFileSync("./assets/logo.jpg", "base64");
 
 require("dotenv").config();
 
-async function reserveMail(clientName, clientEmail, ID) {
+async function reserveMail(
+  clientName,
+  clientEmail,
+  ID,
+  place,
+  time,
+  date,
+  people
+) {
   try {
     const code = reserveEmail
-      .replace("{{clientName}}", clientName)
-      .replace("{{ID}}", ID);
+      .replace(/{{clientName}}/g, clientName)
+      .replace(/{{ID}}/g, ID)
+      .replace(/{{place}}/g, place.name)
+      .replace(/{{location}}/g, place.location)
+      .replace(/{{time}}/g, time)
+      .replace(/{{date}}/g, date)
+      .replace(/{{people}}/g, people);
 
     let transporter = nodemailer.createTransport({
       service: "gmail",

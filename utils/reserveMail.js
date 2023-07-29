@@ -22,7 +22,7 @@ async function reserveMail(clientName, clientEmail) {
     let message = {
       from: process.env.email,
       to: clientEmail,
-      subject: "Reservation Submitted",
+      subject: "Reservation Processing",
       html: code,
       attachments: [
         {

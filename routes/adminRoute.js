@@ -2,7 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
-const Bar = require("../models/Hotel");
+const Bar = require("../models/Bar");
 const Club = require("../models/Club");
 const Hotel = require("../models/Hotel");
 const Restaurant = require("../models/Restaurant");
@@ -126,103 +126,47 @@ router.get("/totals", adminChecker, async (req, res) => {
       return reservationsByMonth;
     }
 
-    const [
-      totalUsers,
-      bannedUsers,
-      clients,
-      managers,
-      supervisors,
-      employees,
-      totalBars,
-      pendingBars,
-      approvedBars,
-      rejectedBars,
-      totalClubs,
-      pendingClubs,
-      approvedClubs,
-      rejectedClubs,
-      totalHotels,
-      pendingHotels,
-      approvedHotels,
-      rejectedHotels,
-      totalRestaurants,
-      pendingRestaurants,
-      approvedRestaurants,
-      rejectedRestaurants,
-      totalReservations,
-      pendingReservations,
-      acceptedReservations,
-      rejectedReservations,
-    ] = await Promise.all([
-      User.countDocuments({}),
-      User.countDocuments({ isBanned: true }),
-      User.countDocuments({ role: "client" }),
-      User.countDocuments({ role: "manager" }),
-      User.countDocuments({ role: "supervisor" }),
-      User.countDocuments({ role: "employee" }),
-      Bar.countDocuments({}),
-      Bar.countDocuments({ status: "pending" }),
-      Bar.countDocuments({ status: "approved" }),
-      Bar.countDocuments({ status: "rejected" }),
-      Club.countDocuments({}),
-      Club.countDocuments({ status: "pending" }),
-      Club.countDocuments({ status: "approved" }),
-      Club.countDocuments({ status: "rejected" }),
-      Hotel.countDocuments({}),
-      Hotel.countDocuments({ status: "pending" }),
-      Hotel.countDocuments({ status: "approved" }),
-      Hotel.countDocuments({ status: "rejected" }),
-      Restaurant.countDocuments({}),
-      Restaurant.countDocuments({ status: "pending" }),
-      Restaurant.countDocuments({ status: "approved" }),
-      Restaurant.countDocuments({ status: "rejected" }),
-      Reservation.countDocuments({}),
-      Reservation.countDocuments({ status: "pending" }),
-      Reservation.countDocuments({ status: "accepted" }),
-      Reservation.countDocuments({ status: "rejected" }),
-    ]);
-
     const reservations = await Reservation.find({});
     const perMonth = getReservationsByMonth(reservations);
 
     res.send({
       users: {
-        total: totalUsers,
-        banned: bannedUsers,
-        clients,
-        managers,
-        supervisors,
-        employees,
+        total: await User.countDocuments({}),
+        banned: await User.countDocuments({ isBanned: true }),
+        clients: await User.countDocuments({ role: "client" }),
+        managers: await User.countDocuments({ role: "manager" }),
+        supervisors: await User.countDocuments({ role: "supervisor" }),
+        employees: await User.countDocuments({ role: "employee" }),
       },
       bars: {
-        total: totalBars,
-        pending: pendingBars,
-        approved: approvedBars,
-        rejected: rejectedBars,
+        total: await Bar.countDocuments({}),
+        pending: await Bar.countDocuments({ status: "pending" }),
+        approved: await Bar.countDocuments({ status: "approved" }),
+        rejected: await Bar.countDocuments({ status: "rejected" }),
       },
       clubs: {
-        total: totalClubs,
-        pending: pendingClubs,
-        approved: approvedClubs,
-        rejected: rejectedClubs,
+        total: await Club.countDocuments({}),
+        pending: await Club.countDocuments({ status: "pending" }),
+        approved: await Club.countDocuments({ status: "approved" }),
+        rejected: await Club.countDocuments({ status: "rejected" }),
       },
       hotels: {
-        total: totalHotels,
-        pending: pendingHotels,
-        approved: approvedHotels,
-        rejected: rejectedHotels,
+        total: await Hotel.countDocuments({}),
+        pending: await Hotel.countDocuments({ status: "pending" }),
+        approved: await Hotel.countDocuments({ status: "approved" }),
+        rejected: await Hotel.countDocuments({ status: "rejected" }),
       },
       restaurants: {
-        total: totalRestaurants,
-        pending: pendingRestaurants,
-        approved: approvedRestaurants,
-        rejected: rejectedRestaurants,
+        total: await Restaurant.countDocuments({}),
+        pending: await Restaurant.countDocuments({ status: "pending" }),
+        approved: await Restaurant.countDocuments({ status: "approved" }),
+        rejected: await Restaurant.countDocuments({ status: "rejected" }),
       },
       reservations: {
-        total: totalReservations,
-        pending: pendingReservations,
-        accepted: acceptedReservations,
-        rejected: rejectedReservations,
+        total: await Reservation.countDocuments({}),
+        pending: await Reservation.countDocuments({ status: "pending" }),
+        accepted: await Reservation.countDocuments({ status: "accepted" }),
+        rejected: await Reservation.countDocuments({ status: "rejected" }),
         perMonth,
       },
     });

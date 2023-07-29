@@ -11,6 +11,7 @@ async function qrCode(text, clientName, clientEmail, ticket, event) {
     const qrcode = await QRCode.toDataURL(text);
 
     eventEmail = eventEmail.replace("{{clientName}}", clientName);
+    eventEmail = eventEmail.replace("{{eventName}}", event.name);
     eventEmail = eventEmail.replace("{{people}}", ticket.people);
     eventEmail = eventEmail.replace("{{date}}", event.date);
     eventEmail = eventEmail.replace("{{time}}", ticket.time);

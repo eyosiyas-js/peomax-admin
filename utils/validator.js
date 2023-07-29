@@ -191,7 +191,7 @@ const editEventSchema = Joi.object({
 const reservationSchema = Joi.object({
   ID: Joi.string().required(),
   people: Joi.number().integer().min(1).required(),
-  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
+  category: Joi.string().valid("bar", "club", "restaurant").required(),
   time: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
     .required()

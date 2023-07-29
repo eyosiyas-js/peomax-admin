@@ -49,7 +49,7 @@ router.post("/", userChecker, async (req, res) => {
       time: event.eventStart,
       isPremium: isPremium == true ? true : false,
       price: price,
-      // phoneNumber: event.program=="true" ? phoneNumber : null,
+      phoneNumber,
       eventID: eventID,
       ticketID: uid(16),
     });
@@ -69,9 +69,6 @@ router.post("/", userChecker, async (req, res) => {
     );
 
     if (event.type) {
-      if (!phoneNumber)
-        return res.status(400).send({ error: "phone number is required" });
-
       const user = await User.findOne({ userID: req.user.userID });
       const reservation = new Reservation({
         ID: event.ID,

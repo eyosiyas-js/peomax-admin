@@ -19,7 +19,7 @@ router.post("/", userChecker, async (req, res) => {
     const valid = await validateReservation(req.body);
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
-    const { ID, category, people, date, time } = req.body;
+    const { ID, category, people, date, time, phoneNumber } = req.body;
 
     const place = await findPlace(ID, category);
     if (!place) return res.status(404).send({ error: `${category} not found` });
@@ -52,7 +52,7 @@ router.post("/", userChecker, async (req, res) => {
       firstName,
       lastName,
       email,
-      phoneNumber: "+251931528565",
+      phoneNumber,
       category: place.category,
       people: people,
       date: date,

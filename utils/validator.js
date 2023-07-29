@@ -18,7 +18,7 @@ const userSignupSchema = Joi.object({
   password: passwordComplexity(complexityOptions),
   confirmPassword: passwordComplexity(complexityOptions),
   email: Joi.string().trim().email().required(),
-  phoneNumber: Joi.string().trim().optional(),
+  phoneNumber: Joi.string().trim().required(),
 });
 
 const userLoginSchema = Joi.object({
@@ -125,7 +125,7 @@ const editDinningPlaceSchema = Joi.object({
     .try(Joi.string(), Joi.array().items(Joi.string()))
     .required(),
   additional: Joi.string().optional(),
-  phoneNumber: Joi.string().optional(),
+  phoneNumber: Joi.string().required(),
   website: Joi.string().optional(),
 });
 
@@ -204,13 +204,14 @@ const reservationSchema = Joi.object({
     .messages({
       "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
     }),
+  phoneNumber: Joi.string().required(),
 });
 
 const ticketSchema = Joi.object({
   eventID: Joi.string().required(),
   isPremium: Joi.boolean(),
   people: Joi.number().integer().required(),
-  phoneNumber: Joi.string().optional(),
+  phoneNumber: Joi.string().required(),
 });
 
 const menuSchema = Joi.object({

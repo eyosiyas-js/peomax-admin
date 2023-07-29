@@ -5,6 +5,9 @@ const ticketSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phoneNumber: {
+    type: String,
+  },
   people: {
     type: Number,
     default: 1,

@@ -30,7 +30,7 @@ router.post("/", userChecker, async (req, res) => {
     if (isTimeAfter(time, place.openingTime))
       return res
         .status(400)
-        .send({ error: `${category} is no opened at that time` });
+        .send({ error: `${category} is not open at that time` });
 
     if (hasTimePassed(time, place.closingTime))
       return res

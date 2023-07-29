@@ -1,35 +1,15 @@
 const express = require("express");
-const Hotel = require("../models/Hotel");
-const Restaurant = require("../models/Restaurant");
-const Club = require("../models/Club");
-const Bar = require("../models/Bar");
-const managerChecker = require("../middleware/managerChecker");
+const superVisorChecker = require("../middleware/superVisorChecker");
+const fetchAll = require("../utils/fetchAll");
 const router = express.Router();
 
-router.get("/", managerChecker, async (req, res) => {
+router.get("/", superVisorChecker, async (req, res) => {
   try {
-    const bars = await Bar.find({
-      managerID: req.user.userID,
-      subHotel: true,
-      status: "approved",
-    });
-    const clubs = await Club.find({
-      managerID: req.user.userID,
-      subHotel: true,
-      status: "approved",
-    });
-    const hotels = await Hotel.find({
-      managerID: req.user.userID,
-      subHotel: true,
-      status: "approved",
-    });
-    const restaurants = await Restaurant.find({
-      managerID: req.user.userID,
-      subHotel: true,
-      status: "approved",
-    });
+    const all = await fetchAll(req.user.userID);
 
-    const items = hotels.concat(restaurants, bars, clubs);
+    const items = all.filter(
+      (item) => item.subHotel === true && item.status === "approved"
+    );
 
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;

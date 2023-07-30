@@ -6,9 +6,9 @@ require("dotenv").config();
 
 let eventEmail = readFileSync("./emails/event.html", "utf-8");
 
-async function qrCode(text, clientName, clientEmail, ticket, event) {
+async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
   try {
-    const qrcode = await QRCode.toDataURL(text);
+    const qrcode = await QRCode.toDataURL(ticketID);
 
     eventEmail = eventEmail.replace("{{clientName}}", clientName);
     eventEmail = eventEmail.replace("{{eventName}}", event.name);

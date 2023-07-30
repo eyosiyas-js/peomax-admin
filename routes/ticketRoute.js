@@ -36,10 +36,14 @@ router.post("/", userChecker, async (req, res) => {
 
     let price = 0;
 
-    if (isPremium == true) {
+    if (isPremium) {
       price = parseInt(people) * parseFloat(event.premiumPrice);
     } else {
       price = parseInt(people) * parseFloat(event.price);
+    }
+
+    if (isNaN(price) || price <= 0) {
+      return res.status(400).send({ error: "Invalid ticket price" });
     }
 
     const ticket = new Ticket({

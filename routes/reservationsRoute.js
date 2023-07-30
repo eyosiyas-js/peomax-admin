@@ -72,8 +72,7 @@ router.get("/all", superVisorChecker, async (req, res) => {
     res.send({
       page,
       totalPages: Math.ceil(all.length / count),
-      reservationsCount: all.length,
-      allReservations: allReservations.length,
+      reservationsCount: allReservations.length,
       reservations,
     });
   } catch (error) {

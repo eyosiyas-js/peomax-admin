@@ -31,6 +31,7 @@ const reservationsRoute = require("./routes/reservationsRoute.js");
 const overviewRoute = require("./routes/overviewRoute.js");
 const eventsRoute = require("./routes/eventsRoute.js");
 const ticketRoute = require("./routes/ticketRoute.js");
+const ticketsRoute = require("./routes/ticketsRoute.js");
 
 dotenv.config();
 
@@ -86,6 +87,7 @@ app.use("/api/events", eventsRoute);
 app.use("/api/reserve", reserveRoute);
 app.use("/api/reservations", reservationsRoute);
 app.use("/api/ticket", ticketRoute);
+app.use("/api/tickets", ticketsRoute);
 
 app.get("/api", (req, res) => {
   res.send(`Hello World! ${req.protocol}://${req.hostname}`);

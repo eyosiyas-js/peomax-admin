@@ -52,27 +52,13 @@ router.get("/", employeeChecker, async (req, res) => {
 
 router.get("/all", superVisorChecker, async (req, res) => {
   try {
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-
     const all = await fetchAll(req.user.userID);
 
-    const startIndex = (page - 1) * count;
-
     const reservations = await Reservation.aggregate([
-      { $match: { ID: { $in: all.map((item) => item.ID) } } },
-      { $skip: startIndex },
-      { $limit: count },
-    ]);
-
-    const allReservations = await Reservation.aggregate([
       { $match: { ID: { $in: all.map((item) => item.ID) } } },
     ]);
 
     res.send({
-      page,
-      totalPages: Math.ceil(all.length / count),
-      reservationsCount: allReservations.length,
       reservations,
     });
   } catch (error) {

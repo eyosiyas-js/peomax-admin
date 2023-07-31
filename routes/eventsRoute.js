@@ -135,7 +135,7 @@ router.post(
       } = req.body;
 
       if (hasDatePassed(date))
-        return res.status(400).send({ error: "Invalid date" });
+        return res.status(400).send({ error: "Incorrect date" });
 
       const event = new Event({
         name: name,

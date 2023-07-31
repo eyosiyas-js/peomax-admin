@@ -10,7 +10,7 @@ function hasDatePassed(date1, date2) {
   }
 
   const parsedDate1 = moment.tz(date1, "MM/DD/YYYY", "Africa/Nairobi");
-  return parsedDate1.isSameOrBefore(secondDate, "day");
+  return parsedDate1.isBefore(secondDate, "day");
 }
 
 function hasTimePassed(secondTime, firstTime) {

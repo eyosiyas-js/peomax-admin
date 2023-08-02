@@ -121,7 +121,7 @@ router.post("/login", async (req, res) => {
     delete userData.password;
 
     if (user.role == "employee") {
-      const items = fetchAll(req.user.userID);
+      const items = await fetchAll(user.userID);
 
       if (items == []) return res.send({ token, refresh_token, userData });
       res.send({
@@ -131,18 +131,18 @@ router.post("/login", async (req, res) => {
         ID: items[0].ID,
         category: items[0].category,
       });
+    } else {
+      const main = await extractMain(user.userID);
+      if (!main) return res.send({ token, refresh_token, userData });
+
+      res.send({
+        token,
+        refresh_token,
+        userData,
+        ID: main.ID,
+        category: main.category,
+      });
     }
-
-    const main = await extractMain(user.userID);
-    if (!main) return res.send({ token, refresh_token, userData });
-
-    res.send({
-      token,
-      refresh_token,
-      userData,
-      ID: main.ID,
-      category: main.category,
-    });
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
     console.log(error);

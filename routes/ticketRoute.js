@@ -14,6 +14,38 @@ const { hasDatePassed } = require("../utils/hasPassed.js");
 
 const router = express.Router();
 
+router.get("/:id", employeeChecker, async (req, res) => {
+  try {
+    const ticket = await Ticket.findOne({ ticketID: req.params.id });
+
+    if (!ticket)
+      return res
+        .status(404)
+        .send({ error: `No ticket with ID:${req.params.id}` });
+
+    const event = await Event.findOne({ eventID: ticket.eventID });
+    if (!event)
+      return res
+        .status(404)
+        .send({ error: `No event  with ID:${ticket.eventID}` });
+
+    const place = await findPlace(event.ID, event.category);
+    if (!place)
+      return res
+        .status(400)
+        .send({ error: `No ${event.category} with ID: ${event.ID}` });
+
+    const isAuthorized = await checkAuthorization(req.user.userID, place);
+    if (!isAuthorized)
+      return res.status(403).send({ error: "Unauthorized action" });
+
+    res.send(ticket.toObject());
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Couldn't book a ticket" });
+  }
+});
+
 router.post("/", userChecker, async (req, res) => {
   try {
     const valid = validateTicket(req.body);
@@ -103,7 +135,17 @@ router.post("/", userChecker, async (req, res) => {
 router.post("/verify/:id", employeeChecker, async (req, res) => {
   try {
     const ticket = await Ticket.findOne({ ticketID: req.params.id });
+
+    if (!ticket)
+      return res
+        .status(404)
+        .send({ error: `No ticket with ID:${req.params.id}` });
+
     const event = await Event.findOne({ eventID: ticket.eventID });
+    if (!event)
+      return res
+        .status(404)
+        .send({ error: `No event  with ID:${ticket.eventID}` });
 
     const place = await findPlace(event.ID, event.category);
     if (!place)
@@ -115,8 +157,6 @@ router.post("/verify/:id", employeeChecker, async (req, res) => {
     if (!isAuthorized)
       return res.status(403).send({ error: "Unauthorized action" });
 
-    if (!ticket)
-      return res.status(404).send({ error: "Invalid virtual ticket" });
     if (ticket.expired || ticket.attended)
       return res.status(404).send({ error: "Ticket expired" });
 

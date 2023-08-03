@@ -62,22 +62,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id/buffet", async (req, res) => {
-  try {
-    const event = await Event.find({ eventID: req.params.id, type });
-
-    if (!event)
-      return res
-        .status(404)
-        .send({ error: `No event found with id: ${req.params.id}` });
-
-    res.send(event);
-  } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Couldn't get all spots" });
-  }
-});
-
 router.post(
   "/create",
   superVisorChecker,

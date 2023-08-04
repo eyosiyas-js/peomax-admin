@@ -8,7 +8,6 @@ const checkAuthorization = require("../utils/checkAuthorization");
 const acceptMail = require("../utils/acceptMail");
 const rejectMail = require("../utils/rejectMail");
 const employeeChecker = require("../middleware/employeeChecker");
-const superVisorChecker = require("../middleware/superVisorChecker");
 
 router.get("/", employeeChecker, async (req, res) => {
   try {

@@ -50,7 +50,7 @@ router.get("/", employeeChecker, async (req, res) => {
   }
 });
 
-router.get("/all", superVisorChecker, async (req, res) => {
+router.get("/all", employeeChecker, async (req, res) => {
   try {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;

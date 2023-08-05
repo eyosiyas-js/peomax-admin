@@ -221,7 +221,8 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (hotel.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
-    await hotel.remove();
+    hotel.status = "deleted";
+    await hotel.save();
 
     res.send({
       message: `hotel with ID ${req.params.id} has been deleted`,
@@ -240,6 +241,7 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "hotel",
+      status: "active",
     });
 
     res.send(events);
@@ -258,6 +260,7 @@ router.get("/:id/programs", async (req, res) => {
       ID: req.params.id,
       category: "hotel",
       program: true,
+      status: "active",
     });
 
     res.send(events);

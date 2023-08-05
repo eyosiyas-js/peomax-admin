@@ -132,7 +132,8 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (restaurant.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
-    await restaurant.remove();
+    restaurant.status = "deleted";
+    await restaurant.save();
 
     res.send({
       message: `restaurant with ID ${req.params.id} has been deleted`,
@@ -151,6 +152,7 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "restaurant",
+      status: "active",
     });
 
     res.send(events);
@@ -169,6 +171,7 @@ router.get("/:id/programs", async (req, res) => {
       ID: req.params.id,
       category: "restaurant",
       program: true,
+      status: "active",
     });
 
     res.send(events);

@@ -128,7 +128,8 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (club.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
-    await club.remove();
+    club.status = "deleted";
+    await club.save();
 
     res.send({
       message: `club with ID ${req.params.id} has been deleted`,
@@ -147,6 +148,7 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "club",
+      status: "active",
     });
 
     res.send(events);
@@ -165,6 +167,7 @@ router.get("/:id/programs", async (req, res) => {
       ID: req.params.id,
       category: "club",
       program: true,
+      status: "active",
     });
 
     res.send(events);

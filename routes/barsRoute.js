@@ -126,7 +126,8 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (bar.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
-    await bar.remove();
+    bar.status = "deleted";
+    await bar.save();
 
     res.send({
       message: `bar with ID ${req.params.id} has been deleted`,
@@ -145,6 +146,7 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "bar",
+      status: "active",
     });
 
     res.send(events);
@@ -163,6 +165,7 @@ router.get("/:id/programs", async (req, res) => {
       ID: req.params.id,
       category: "bar",
       program: true,
+      status: "active",
     });
 
     res.send(events);

@@ -154,7 +154,7 @@ router.post(
 router.put(
   "/:id/edit",
   superVisorChecker,
-  uploads.array("images", 5),
+  uploads.array("images", 10),
   async (req, res) => {
     try {
       const valid = validateEditEvent(req.body);

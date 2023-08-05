@@ -26,16 +26,16 @@ router.get("/", userChecker, async (req, res) => {
         ID: items[0].ID,
         category: items[0].category,
       });
+    } else {
+      const main = await extractMain(req.user.userID);
+      if (!main) return res.send(user.toObject());
+
+      res.send({
+        ...user.toObject(),
+        ID: main.ID,
+        category: main.category,
+      });
     }
-
-    const main = await extractMain(req.user.userID);
-    if (!main) return res.send(user.toObject());
-
-    res.send({
-      ...user.toObject(),
-      ID: main.ID,
-      category: main.category,
-    });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting user" });

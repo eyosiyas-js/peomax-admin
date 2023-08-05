@@ -65,6 +65,11 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  status: {
+    type: String,
+    enum: ["active", "deleted"],
+    default: "active",
+  },
   program: {
     type: Boolean,
     default: false,

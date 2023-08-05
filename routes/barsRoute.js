@@ -146,7 +146,7 @@ router.get("/:id/events", async (req, res) => {
     const events = await Event.find({
       ID: req.params.id,
       category: "bar",
-      status: "active",
+      status: { $ne: "deleted" },
     });
 
     res.send(events);
@@ -165,7 +165,7 @@ router.get("/:id/programs", async (req, res) => {
       ID: req.params.id,
       category: "bar",
       program: true,
-      status: "active",
+      status: { $ne: "deleted" },
     });
 
     res.send(events);

@@ -163,7 +163,9 @@ router.put(
       const managerID = req.user.userID;
       const place = await findPlace(req.body.ID, req.body.category);
       if (!place)
-        return res.status(400).send({ error: `${category} not found` });
+        return res
+          .status(400)
+          .send({ error: `${req.body.category} not found` });
 
       const isAuthorized = checkAuthorization(managerID, place);
       if (!isAuthorized)
@@ -254,7 +256,8 @@ router.delete("/:id", superVisorChecker, async (req, res) => {
     if (!isAuthorized)
       return res.status(403).send({ error: "Unauthorized action" });
 
-    await event.remove();
+    event.status = "deleted";
+    await event.save();
 
     res.send({ message: "Event removed" });
   } catch (error) {

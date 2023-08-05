@@ -4,9 +4,9 @@ const { readFileSync } = require("fs");
 
 require("dotenv").config();
 
-let eventEmail = readFileSync("./emails/event.html", "utf-8");
-
 async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
+  let eventEmail = readFileSync("./emails/event.html", "utf-8");
+
   try {
     const qrcode = await QRCode.toDataURL(ticketID);
 

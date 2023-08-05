@@ -80,7 +80,7 @@ router.post("/", userChecker, async (req, res) => {
 
     const ticket = new Ticket({
       userID: req.user.userID,
-      people: parseInt(people),
+      people: people,
       date: event.date,
       time: event.eventStart,
       isPremium: isPremium == true ? true : false,
@@ -114,7 +114,7 @@ router.post("/", userChecker, async (req, res) => {
         email: user.email,
         phoneNumber,
         category: event.category,
-        people,
+        people: people,
         date: event.date,
         time: event.eventStart,
         reservationID: uid(16),

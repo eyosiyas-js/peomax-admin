@@ -162,6 +162,8 @@ const eventSchema = Joi.object({
 const editEventSchema = Joi.object({
   name: Joi.string().optional(),
   description: Joi.string().optional(),
+  category: Joi.string().valid("bar", "club", "hotel", "restaurant").required(),
+  ID: Joi.string().required(),
   date: Joi.string()
     .regex(/^\d{2}\/\d{2}\/\d{4}$/)
     .optional()

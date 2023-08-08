@@ -78,8 +78,14 @@ router.post("/", userChecker, async (req, res) => {
       return res.status(400).send({ error: "Invalid ticket price" });
     }
 
+    const user = await User.findOne({ userID: req.user.userID });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
     const ticket = new Ticket({
       userID: req.user.userID,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
       people: people,
       date: event.date,
       time: event.eventStart,
@@ -98,14 +104,13 @@ router.post("/", userChecker, async (req, res) => {
 
     await qrCode(
       ticket.ticketID,
-      req.user.firstName,
-      req.user.email,
+      user.firstName,
+      user.email,
       ticket.toObject(),
       event.toObject()
     );
 
     if (event.type) {
-      const user = await User.findOne({ userID: req.user.userID });
       const reservation = new Reservation({
         ID: event.ID,
         userID: user.userID,

@@ -208,6 +208,28 @@ const reservationSchema = Joi.object({
   phoneNumber: Joi.string().required(),
 });
 
+const reservationManualSchema = Joi.object({
+  ID: Joi.string().required(),
+  people: Joi.number().integer().min(1).required(),
+  category: Joi.string().valid("bar", "club", "restaurant").required(),
+  time: Joi.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Time should be in the format 0:00 PM`,
+    }),
+  date: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
+  firstName: Joi.string().trim().required(),
+  lastName: Joi.string().trim().required(),
+  email: Joi.string().trim().email().optional(),
+  phoneNumber: Joi.string().required(),
+});
+
 const ticketSchema = Joi.object({
   eventID: Joi.string().required(),
   isPremium: Joi.boolean(),
@@ -365,6 +387,20 @@ function validateReservation(data) {
   }
 }
 
+function validateReservationManual(data) {
+  const output = reservationManualSchema.validate(data);
+  const { error } = output;
+
+  if (error) {
+    return {
+      success: false,
+      message: error.details[0].message.replace(/"/g, ""),
+    };
+  } else {
+    return { success: true, message: "Validation successful" };
+  }
+}
+
 function validateTicket(data) {
   const output = ticketSchema.validate(data);
   const { error } = output;
@@ -400,6 +436,7 @@ module.exports = {
   validateSupervisor,
   validateEmployee,
   validateReservation,
+  validateReservationManual,
   validateDiningPlace,
   validateTicket,
   validateEvent,

@@ -292,6 +292,45 @@ async function authProvider(req, res) {
   }
 }
 
+async function reSend(req, res) {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user)
+    return res.status(400).send({ error: `No user with email ${email}` });
+  const prevOtp = await OTP.findOne({ userID: user.userID });
+
+  if (prevOtp) {
+    await prevOtp.remove();
+  }
+
+  const code = generateOTP();
+
+  const otp = new OTP({
+    userID: user.userID,
+    code,
+    type: "email verification",
+  });
+
+  await otp.save();
+
+  const response = await sendEmail(
+    user.firstName,
+    email,
+    "email verification",
+    code
+  );
+
+  if (!response.success) {
+    return res
+      .status(400)
+      .send({ error: `Could not send verification code to ${email}` });
+  }
+  {
+    res.send({ message: "Verification email sent" });
+  }
+}
+
 async function login(req, res) {
   try {
     const valid = await validateLoginData(req.body);
@@ -560,6 +599,7 @@ async function logout(req, res) {
 module.exports = {
   signup,
   verifyEmail,
+  reSend,
   authProvider,
   login,
   resetPassword,

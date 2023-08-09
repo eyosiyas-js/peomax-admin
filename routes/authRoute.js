@@ -8,6 +8,7 @@ const {
   changePassword,
   refreshToken,
   logout,
+  reSend,
 } = require("../controllers/authController.js");
 
 require("dotenv").config();
@@ -17,6 +18,8 @@ const router = express.Router();
 router.post("/signup", signup);
 
 router.post("/verify-email", verifyEmail);
+
+router.post("/resend", reSend);
 
 router.post("/auth-provider", authProvider);
 

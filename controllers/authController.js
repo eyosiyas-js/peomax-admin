@@ -298,6 +298,10 @@ async function reSend(req, res) {
   const user = await User.findOne({ email });
   if (!user)
     return res.status(400).send({ error: `No user with email ${email}` });
+
+  if (user.verified)
+    return res.status(400).send({ error: `User is already verified` });
+
   const prevOtp = await OTP.findOne({ userID: user.userID });
 
   if (prevOtp) {

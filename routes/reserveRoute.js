@@ -136,6 +136,8 @@ router.post("/manual", employeeChecker, async (req, res) => {
       date: date,
       time: time,
       reservationID: uid(16),
+      status: "accepted",
+      manual: true,
     };
 
     if (email) {

@@ -52,6 +52,10 @@ const reservationSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  manual: {
+    type: Boolean,
+    default: false,
+  },
   isPaid: {
     type: Boolean,
     default: false,

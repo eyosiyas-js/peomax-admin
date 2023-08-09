@@ -1,10 +1,9 @@
 const nodemailer = require("nodemailer");
 const { readFileSync } = require("fs");
-const logo = readFileSync("./assets/logo.jpg", "base64");
 
 require("dotenv").config();
 
-async function reserveMail(
+async function acceptMail(
   clientName,
   clientEmail,
   ID,
@@ -14,6 +13,7 @@ async function reserveMail(
   people
 ) {
   try {
+    let reserveEmail = readFileSync("./emails/accepted.html", "utf-8");
     const logo = readFileSync("./assets/logo.jpg", "base64");
 
     const code = reserveEmail
@@ -67,4 +67,4 @@ async function reserveMail(
   }
 }
 
-module.exports = reserveMail;
+module.exports = acceptMail;

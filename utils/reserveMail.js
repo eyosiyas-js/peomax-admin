@@ -1,12 +1,12 @@
 const nodemailer = require("nodemailer");
 const { readFileSync } = require("fs");
-const logo = readFileSync("./assets/logo.jpg", "base64");
 
 require("dotenv").config();
 
 async function reserveMail(clientName, clientEmail) {
   try {
     let reserveEmail = readFileSync("./emails/reserve.html", "utf-8");
+    const logo = readFileSync("./assets/logo.jpg", "base64");
 
     const code = reserveEmail.replace("{{clientName}}", clientName);
 

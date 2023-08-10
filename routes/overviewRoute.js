@@ -1,5 +1,5 @@
 const express = require("express");
-const supervisorChecker = require("../middleware/superVisorChecker.js");
+const employeeChecker = require("../middleware/employeeChecker");
 const Reservation = require("../models/Reservation.js");
 const Event = require("../models/Event.js");
 const Ticket = require("../models/Ticket.js");
@@ -18,7 +18,7 @@ function getReservationsByMonth(reservations) {
   return reservationsByMonth;
 }
 
-router.get("/", supervisorChecker, async (req, res) => {
+router.get("/", employeeChecker, async (req, res) => {
   try {
     const all = await fetchAll(req.user.userID);
 
@@ -37,6 +37,9 @@ router.get("/", supervisorChecker, async (req, res) => {
             },
             rejected: {
               $sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] },
+            },
+            attended: {
+              $sum: { $cond: [{ $eq: ["$status", "attended"] }, 1, 0] },
             },
           },
         },
@@ -68,6 +71,7 @@ router.get("/", supervisorChecker, async (req, res) => {
       pendingReservations = 0,
       acceptedReservations = 0,
       rejectedReservations = 0,
+      attendedReservations = 0,
     } = reservationStats[0] || {};
 
     const allReservations = await Reservation.aggregate([

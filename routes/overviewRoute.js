@@ -94,7 +94,7 @@ router.get("/", supervisorChecker, async (req, res) => {
       },
     ]);
 
-    const attendedEvents = tickets.filter((ticket) => ticket.expired);
+    const attendedEvents = tickets.filter((ticket) => ticket.attended);
 
     const ticketsPerMonth = getReservationsByMonth(tickets);
 

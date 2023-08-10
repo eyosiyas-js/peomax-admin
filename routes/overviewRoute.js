@@ -47,6 +47,7 @@ router.get("/", supervisorChecker, async (req, res) => {
             pendingReservations: { $sum: "$pending" },
             acceptedReservations: { $sum: "$accepted" },
             rejectedReservations: { $sum: "$rejected" },
+            attendedReservations: { $sum: "$attended" },
           },
         },
       ]),
@@ -117,6 +118,7 @@ router.get("/", supervisorChecker, async (req, res) => {
         pending: pendingReservations,
         accepted: acceptedReservations,
         rejected: rejectedReservations,
+        attended: attendedReservations,
         perMonth: reservationsPerMonth,
       },
       events: {

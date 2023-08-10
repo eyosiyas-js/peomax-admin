@@ -58,20 +58,22 @@ router.get("/all", employeeChecker, async (req, res) => {
 
     const startIndex = (page - 1) * count;
 
-    const reservations = await Reservation.aggregate([
-      { $match: { ID: { $in: all.map((item) => item.ID) } } },
-      { $skip: startIndex },
-      { $limit: count },
+    const matchStage = { $match: { ID: { $in: all.map((item) => item.ID) } } };
+    const sortStage = { $sort: { createdAt: -1 } };
+    const skipStage = { $skip: startIndex };
+    const limitStage = { $limit: count };
+
+    const [reservations, totalCount] = await Promise.all([
+      Reservation.aggregate([matchStage, sortStage, skipStage, limitStage]),
+      Reservation.aggregate([matchStage, { $count: "totalCount" }]),
     ]);
 
-    const allReservations = await Reservation.aggregate([
-      { $match: { ID: { $in: all.map((item) => item.ID) } } },
-    ]);
+    const totalPages = Math.ceil(totalCount[0]?.totalCount / count) || 1;
 
     res.send({
       page,
-      totalPages: Math.ceil(allReservations.length / count),
-      reservationsCount: allReservations.length,
+      totalPages,
+      reservationsCount: totalCount[0]?.totalCount || 0,
       reservations,
     });
   } catch (error) {

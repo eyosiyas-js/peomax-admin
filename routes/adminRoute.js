@@ -204,4 +204,58 @@ router.get("/pending", adminChecker, async (req, res) => {
   }
 });
 
+router.get("/reservations/:id", adminChecker, async (req, res) => {
+  try {
+    const ID = req.params.id;
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const reservationsCount = await Reservation.countDocuments({
+      ID,
+    });
+    const totalPages = Math.ceil(reservationsCount / count);
+    const reservations = await Reservation.find({ ID })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(count);
+
+    res.send({
+      page,
+      totalPages,
+      reservationsCount,
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
+router.post("/feature", adminChecker, async (req, res) => {
+  try {
+    const { ID, category } = req.query;
+
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID/category is missing" });
+
+    const place = await findPlace(ID, category);
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    if (place.isPremium)
+      return res
+        .status(400)
+        .send({ error: `${place.name} is already set as premium` });
+
+    place.isPremium = true;
+    await place.save();
+
+    res.send({
+      message: `${place.name} is featured successfully`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
 module.exports = router;

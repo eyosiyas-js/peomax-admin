@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Reservation Cancellation</title>
+    <title>Reservation Rejected</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -26,6 +26,14 @@
         line-height: 1.5;
         margin-bottom: 20px;
       }
+      .qrcode-container {
+        text-align: center;
+        margin-top: 40px;
+      }
+      .qrcode-image {
+        max-width: 200px;
+        height: auto;
+      }
       .note {
         font-style: italic;
         font-size: 14px;
@@ -37,20 +45,34 @@
         text-align: center;
         color: #666666;
       }
+      .verification-code .code {
+        background-color: #e84a3f;
+        color: white;
+        font-size: 32px;
+        padding: 10px;
+        margin: 10px 0;
+        letter-spacing: 5px;
+        display: inline-block;
+        border-radius: 4px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Reservation Cancellation</h1>
+      <h1>Reservation Rejected</h1>
       <p>Hello {{clientName}},</p>
       <p>
-        Unfortunately, we have to cancel your reservation made through the
-        Peomax app due to an inconvenience. We apologize for any inconvenience
-        this may have caused you.
+        Hello {{clientName}},Unfortunately, we have to cancel your reservation
+        made through the Peomax app due to an inconvenience.<br />
+        We apologize for any inconvenience this may have caused you.
       </p>
+      <div class="qrcode-container">
+        <img class="qrcode-image" src="cid:6044075355" alt="QR Code" />
+      </div>
       <p class="note">
-        Note: If you have made any payments for the reservation, the amount will
-        be refunded to your account within the next 5-7 business days.
+        Note: If you have made any payments for the reservation,<br />
+        the amount will be refunded to your account within the next 5-7 business
+        days.
       </p>
       <div class="footer">
         <p>

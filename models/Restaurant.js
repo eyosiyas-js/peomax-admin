@@ -81,6 +81,11 @@ const restaurantSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  rank: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
   ID: {
     type: String,
     require: true,

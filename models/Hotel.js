@@ -86,6 +86,11 @@ const hotelSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  rank: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
   restaurants: {
     type: Array,
     required: false,

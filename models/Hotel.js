@@ -88,6 +88,7 @@ const hotelSchema = new mongoose.Schema({
   },
   rank: {
     type: Number,
+    unique: false,
     required: true,
     min: 1,
   },

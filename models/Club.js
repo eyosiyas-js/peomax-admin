@@ -88,6 +88,7 @@ const clubSchema = new mongoose.Schema({
   },
   rank: {
     type: Number,
+    unique: true,
     required: true,
     min: 1,
   },

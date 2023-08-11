@@ -89,6 +89,7 @@ const barSchema = new mongoose.Schema({
   rank: {
     type: Number,
     required: true,
+    unique: true,
     min: 1,
   },
   ID: {

@@ -17,6 +17,7 @@ const {
   hasTimePassed,
   isTimeAfter,
 } = require("../utils/hasPassed");
+const availableSpots = require("../utils/availableSpots");
 
 const router = express.Router();
 
@@ -43,7 +44,9 @@ router.post("/", userChecker, async (req, res) => {
         .status(400)
         .send({ error: `${category} is closed at this time` });
 
-    if (parseInt(people) > place.availableSpots) {
+    const spots = await availableSpots(date, place);
+
+    if (parseInt(people) > spots) {
       return res.status(400).send({ error: `Insufficient spots` });
     }
 

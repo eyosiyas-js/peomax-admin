@@ -20,7 +20,7 @@ async function fetchAll(managerID) {
       Restaurant.find(query),
     ]);
 
-    const all = [...bars, ...clubs, ...hotels, ...restaurants];
+    const all = [...hotels, ...restaurants, ...clubs, ...bars];
 
     return all;
   } else {
@@ -31,7 +31,7 @@ async function fetchAll(managerID) {
       Restaurant.find({ status: "approved" }),
     ]);
 
-    const all = [...bars, ...clubs, ...hotels, ...restaurants];
+    const all = [...hotels, ...restaurants, ...clubs, ...bars];
 
     return all;
   }

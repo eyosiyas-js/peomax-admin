@@ -143,4 +143,6 @@ router.get("/", employeeChecker, async (req, res) => {
   }
 });
 
+router.get("/download", employeeChecker, async (req, res) => {});
+
 module.exports = router;

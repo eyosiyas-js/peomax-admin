@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "esbuild": "^0.18.15",
+    "exceljs": "^4.3.0",
     "express-rate-limit": "^6.7.0",
     "express-subdomain": "^1.0.5",
     "firebase-admin": "^11.8.0",

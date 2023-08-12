@@ -1,4 +1,6 @@
 const express = require("express");
+const fs = require("fs");
+const ExcelJS = require("exceljs");
 const employeeChecker = require("../middleware/employeeChecker");
 const Reservation = require("../models/Reservation.js");
 const Event = require("../models/Event.js");
@@ -143,6 +145,65 @@ router.get("/", employeeChecker, async (req, res) => {
   }
 });
 
-router.get("/download", employeeChecker, async (req, res) => {});
+router.get("/download", employeeChecker, async (req, res) => {
+  try {
+    const all = await fetchAll(req.user.userID);
+    const data = await Reservation.aggregate([
+      { $match: { ID: { $in: all.map((item) => item.ID) } } },
+    ]);
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    worksheet.addRow([
+      "Name",
+      "Email",
+      "Phone",
+      "People",
+      "Date",
+      "Time",
+      "Status",
+      "Reserved on",
+      "Reservation ID",
+    ]);
+
+    data.forEach((customer) => {
+      const createdAt = customer.time;
+      const timestamp = customer.createdAt;
+      const date = new Date(timestamp);
+
+      const year = date.getUTCFullYear();
+      const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+      const day = date.getUTCDate().toString().padStart(2, "0");
+
+      const readableDate = `${month}/${day}/${year}`;
+
+      worksheet.addRow([
+        customer.firstName + " " + customer.lastName,
+        customer.email,
+        customer.phoneNumber,
+        customer.people,
+        customer.date,
+        readableDate,
+        createdAt,
+        customer.status,
+        readableDate,
+        customer.reservationID,
+      ]);
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader("Content-Disposition", "attachment; filename=table.xlsx");
+      res.send(buffer);
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Could not get overview" });
+  }
+});
 
 module.exports = router;

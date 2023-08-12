@@ -11,10 +11,27 @@ const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
 const adminChecker = require("../middleware/adminChecker.js");
 const findPlace = require("../utils/findPlace.js");
+const fetchAll = require("../utils/fetchAll.js");
 const router = express.Router();
 
 const dotenv = require("dotenv");
 dotenv.config();
+
+function splitArray(sortedArray, separator) {
+  const prevArray = [];
+  const postArray = [];
+
+  for (let i = 0; i < sortedArray.length; i++) {
+    const value = sortedArray[i];
+    if (value.rank <= separator) {
+      prevArray.push(value);
+    } else {
+      postArray.push(value);
+    }
+  }
+
+  return [prevArray, postArray];
+}
 
 router.post("/login", async (req, res) => {
   try {
@@ -255,6 +272,47 @@ router.post("/feature", adminChecker, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
+router.post("/rank", adminChecker, async (req, res) => {
+  try {
+    const { ID, category, rank } = req.body;
+
+    if (!ID || !category || !rank)
+      return res.status(400).send({ error: "ID/category/rank is missing" });
+
+    if (isNaN(parseInt(rank)) || rank == 0) {
+      return res.status(400).send({ error: "rank is invalid" });
+    }
+
+    const place = await findPlace(ID, category);
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    const all = await fetchAll();
+    const sortedItems = all.sort((a, b) => a.rank - b.rank);
+
+    const [prevArray, postArray] = splitArray(sortedItems, rank - 1);
+
+    // let outputArray = postArray.filter((item) => item.ID !== place.ID);
+
+    // for (let i = 0; i < outputArray.length; i++) {
+    //   const item = outputArray[i];
+
+    //   item.rank = item.rank + 1;
+    //   await item.save();
+    // }
+
+    // place.rank = rank;
+    // await place.save();
+
+    res.send({
+      message: `${place.name} is ranked ${rank}`,
+      postArray,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Could not perform action" });
   }
 });
 

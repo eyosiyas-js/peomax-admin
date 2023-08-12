@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("./models/User");
-// const fetchAll = require("./utils/fetchAll");
-const Reservation = require("./models/Reservation");
-const findPlace = require("./utils/findPlace");
+const fetchAll = require("./utils/fetchAll");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -14,27 +12,16 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected!");
 
-    const all = await Reservation.find({});
+    const all = await fetchAll();
     console.log(all.length);
 
     for (let i = 0; i < all.length; i++) {
-      const reservation = all[i];
-
-      // const place = await findPlace(reservation.ID, reservation.category);
-
-      // if (!place) {
-      //   console.log(`place ${reservation.ID} not found`);
-      // }
-
-      // reservation.name = place.name;
-      // await reservation.save();
-
-      console.log(`Name: ${reservation.name} [${i}]`);
+      const item = all[i];
 
       // item.rank = i + 1;
       // await item.save();
 
-      // console.log(`${item.name} ranked: ${item.rank}`);
+      console.log(`${item.name} ranked: ${item.rank}`);
     }
 
     console.log(`Update complete`);

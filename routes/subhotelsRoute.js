@@ -1,9 +1,9 @@
 const express = require("express");
-const superVisorChecker = require("../middleware/superVisorChecker");
+const employeeChecker = require("../middleware/employeeChecker");
 const fetchAll = require("../utils/fetchAll");
 const router = express.Router();
 
-router.get("/", superVisorChecker, async (req, res) => {
+router.get("/", employeeChecker, async (req, res) => {
   try {
     const all = await fetchAll(req.user.userID);
 

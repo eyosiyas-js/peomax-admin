@@ -212,4 +212,28 @@ async function editDiningService(req, res, diningPlaceModel) {
   }
 }
 
+async function getAll(req, res, diningPlaceModel) {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const diningPlacesCount = await diningPlaceModel.countDocuments({
+      status: "approved",
+    });
+    const totalPages = Math.ceil(diningPlacesCount / count);
+    const diningPlaces = await diningPlaceModel
+      .find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
+    res.send({
+      page,
+      totalPages,
+      [`${diningPlaceModel.modelName.toLowerCase()}sCount`]: diningPlacesCount,
+      [`${diningPlaceModel.modelName.toLowerCase()}s`]: diningPlaces,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting dining places" });
+  }
+}
 module.exports = { createDiningService, editDiningService };

@@ -86,7 +86,7 @@ const hotelSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  rank: {
+  _rank: {
     type: Number,
     required: true,
     min: 1,

@@ -18,6 +18,5 @@ rm -rd /var/www/api/utils &&
 rm -rd /var/www/api/routes &&
 rm -rd /var/www/api/middleware &&
 rm -rd /var/www/api/models &&
-pm2 delete API &&
-pm2 start "/var/www/api/index" --name API
 rm -rf /var/www/api/commands.txt &&
+pm2 restart API

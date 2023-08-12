@@ -170,12 +170,16 @@ router.get("/", employeeChecker, async (req, res) => {
   }
 });
 
-router.get("/download", employeeChecker, async (req, res) => {
+router.get("/download/:id", employeeChecker, async (req, res) => {
   try {
     const all = await fetchAll(req.user.userID);
-    const data = await Reservation.aggregate([
-      { $match: { ID: { $in: all.map((item) => item.ID) } } },
-    ]);
+    let matchQuery = { ID: { $in: all.map((item) => item.ID) } };
+
+    if (req.params.id !== "all") {
+      matchQuery.status = req.params.id;
+    }
+
+    const data = await Reservation.aggregate([{ $match: matchQuery }]);
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");

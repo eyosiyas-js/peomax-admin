@@ -107,17 +107,42 @@ router.get("/", employeeChecker, async (req, res) => {
 
     res.send({
       users: {
-        total:
-          all.reduce((count, item) => count + item.supervisors.length, 0) +
-          all.reduce((count, item) => count + item.employees.length, 0),
-        supervisors: all.reduce(
-          (count, item) => count + item.supervisors.length,
-          0
-        ),
-        employees: all.reduce(
-          (count, item) => count + item.employees.length,
-          0
-        ),
+        total: (() => {
+          const supervisorsSet = new Set();
+          const employeesSet = new Set();
+
+          all.forEach((item) => {
+            item.supervisors.forEach((supervisor) =>
+              supervisorsSet.add(supervisor)
+            );
+            item.employees.forEach((employee) => employeesSet.add(employee));
+          });
+
+          const totalSupervisors = supervisorsSet.size;
+          const totalEmployees = employeesSet.size;
+
+          return totalSupervisors + totalEmployees;
+        })(),
+        supervisors: (() => {
+          const supervisorsSet = new Set();
+
+          all.forEach((item) => {
+            item.supervisors.forEach((supervisor) =>
+              supervisorsSet.add(supervisor)
+            );
+          });
+
+          return supervisorsSet.size;
+        })(),
+        employees: (() => {
+          const employeesSet = new Set();
+
+          all.forEach((item) => {
+            item.employees.forEach((employee) => employeesSet.add(employee));
+          });
+
+          return employeesSet.size;
+        })(),
       },
       reservations: {
         total: reservations,

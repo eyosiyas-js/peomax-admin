@@ -2,9 +2,7 @@ node_modules
 uploads
 images
 qrcodes
-.env
 .vscode
-serviceAccountKey.json
 package-lock.json
 test.js
 app.html

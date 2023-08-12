@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm -rd /var/www/api &&
 mkdir /var/www/api &&
 cd /var/www/api &&
@@ -18,5 +20,5 @@ rm -rd /var/www/api/utils &&
 rm -rd /var/www/api/routes &&
 rm -rd /var/www/api/middleware &&
 rm -rd /var/www/api/models &&
-rm -rf /var/www/api/commands.txt &&
+rm -rf /var/www/api/deploy-api.sh &&
 pm2 restart API

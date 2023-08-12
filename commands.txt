@@ -20,4 +20,4 @@ rm -rd /var/www/api/middleware &&
 rm -rd /var/www/api/models &&
 pm2 delete API &&
 pm2 start "/var/www/api/index" --name API
-rm -rf /var/www/api/command.txt &&
+rm -rf /var/www/api/commands.txt &&

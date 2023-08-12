@@ -18,8 +18,8 @@ mongoose
     for (let i = 0; i < all.length; i++) {
       const item = all[i];
 
-      item._rank = i + 1;
-      await item.save();
+      // item._rank = i + 1;
+      // await item.save();
 
       console.log(`${item.name} ranked: ${item._rank}`);
     }

@@ -23,7 +23,7 @@ function splitArray(sortedArray, separator) {
 
   for (let i = 0; i < sortedArray.length; i++) {
     const value = sortedArray[i];
-    if (value.rank <= separator) {
+    if (value._rank <= separator) {
       prevArray.push(value);
     } else {
       postArray.push(value);
@@ -290,7 +290,7 @@ router.post("/rank", adminChecker, async (req, res) => {
     if (!place) return res.status(400).send({ error: `${category} not found` });
 
     const all = await fetchAll();
-    const sortedItems = all.sort((a, b) => a.rank - b.rank);
+    const sortedItems = all.sort((a, b) => a._rank - b._rank);
 
     const [prevArray, postArray] = splitArray(sortedItems, rank - 1);
 
@@ -299,11 +299,11 @@ router.post("/rank", adminChecker, async (req, res) => {
     // for (let i = 0; i < outputArray.length; i++) {
     //   const item = outputArray[i];
 
-    //   item.rank = item.rank + 1;
+    //   item._rank = item._rank + 1;
     //   await item.save();
     // }
 
-    // place.rank = rank;
+    // place._rank = rank;
     // await place.save();
 
     res.send({

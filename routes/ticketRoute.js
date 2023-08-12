@@ -111,8 +111,15 @@ router.post("/", userChecker, async (req, res) => {
     );
 
     if (event.type) {
+      const place = await findPlace(event.ID, event.category);
+      if (!place)
+        return res
+          .status(400)
+          .send({ error: `Could not get destination with ID: ${event.ID}` });
+
       const reservation = new Reservation({
         ID: event.ID,
+        name: place.name,
         userID: user.userID,
         firstName: user.firstName,
         lastName: user.lastName,

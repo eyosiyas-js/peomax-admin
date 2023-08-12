@@ -57,6 +57,7 @@ router.post("/", userChecker, async (req, res) => {
 
     const reservation = new Reservation({
       ID: ID,
+      name: place.name,
       userID: req.user.userID,
       firstName,
       lastName,
@@ -130,6 +131,7 @@ router.post("/manual", employeeChecker, async (req, res) => {
 
     const reservationData = {
       ID: ID,
+      name: place.name,
       userID: `M-${uid(16)}`,
       firstName,
       lastName,

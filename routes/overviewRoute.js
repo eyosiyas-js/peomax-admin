@@ -211,6 +211,7 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
         customer.firstName + " " + customer.lastName,
         customer.email,
         customer.phoneNumber,
+        customer.name,
         customer.people,
         customer.date,
         readableDate,

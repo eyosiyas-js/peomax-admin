@@ -12,7 +12,8 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected!");
 
-    const all = await fetchAll();
+    const data = await fetchAll();
+    const all = data.sort((a, b) => a._rank - b._rank);
     console.log(all.length);
 
     for (let i = 0; i < all.length; i++) {

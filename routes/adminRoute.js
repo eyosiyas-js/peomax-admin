@@ -17,22 +17,6 @@ const router = express.Router();
 const dotenv = require("dotenv");
 dotenv.config();
 
-function splitArray(sortedArray, separator) {
-  const prevArray = [];
-  const postArray = [];
-
-  for (let i = 0; i < sortedArray.length; i++) {
-    const value = sortedArray[i];
-    if (value._rank <= separator) {
-      prevArray.push(value);
-    } else {
-      postArray.push(value);
-    }
-  }
-
-  return [prevArray, postArray];
-}
-
 router.post("/login", async (req, res) => {
   try {
     const valid = await validateLoginData(req.body);
@@ -290,25 +274,72 @@ router.post("/rank", adminChecker, async (req, res) => {
     if (!place) return res.status(400).send({ error: `${category} not found` });
 
     const all = await fetchAll();
-    const sortedItems = all.sort((a, b) => a._rank - b._rank);
+    const data = all.sort((a, b) => a._rank - b._rank);
 
-    const [prevArray, postArray] = splitArray(sortedItems, rank - 1);
+    function findItemsBetweenRanksA(data, startRank, endRank) {
+      const result = data.filter(
+        (item) => item._rank > startRank && item._rank <= endRank
+      );
+      result.sort((a, b) => b._rank - a._rank);
+      return result;
+    }
 
-    // let outputArray = postArray.filter((item) => item.ID !== place.ID);
+    function findItemsBetweenRanksD(data, startRank, endRank) {
+      const result = data.filter(
+        (item) => item._rank < startRank && item._rank >= endRank
+      );
+      result.sort((a, b) => b._rank - a._rank);
+      return result;
+    }
 
-    // for (let i = 0; i < outputArray.length; i++) {
-    //   const item = outputArray[i];
+    async function rankItem(rank, newRank) {
+      const obj1 = data.find((res) => res._rank == rank);
+      const obj2 = data.find((res) => res._rank == newRank);
 
-    //   item._rank = item._rank + 1;
-    //   await item.save();
-    // }
+      if (newRank - rank == 1) {
+        obj1._rank = newRank;
+        obj2._rank = rank;
 
-    // place._rank = rank;
-    // await place.save();
+        await obj1.save();
+        await obj2.save();
+      }
+
+      if (rank - newRank == 1) {
+        obj1._rank = newRank;
+        obj2._rank = rank;
+
+        await obj1.save();
+        await obj2.save();
+      }
+
+      if (newRank - rank !== 1 && rank - newRank !== 1 && newRank < rank) {
+        const middles = findItemsBetweenRanksD(data, rank, newRank);
+        for (let i = 0; i < middles.length; i++) {
+          const item = data[data.indexOf(middles[i])];
+
+          item._rank = item._rank + 1;
+          await item.save();
+        }
+      }
+
+      if (newRank - rank !== 1 && rank - newRank !== 1 && newRank > rank) {
+        const middles = findItemsBetweenRanksA(data, rank, newRank);
+
+        for (let i = 0; i < middles.length; i++) {
+          const item = data[data.indexOf(middles[i])];
+
+          item._rank = item._rank - 1;
+          await item.save();
+        }
+      }
+    }
+
+    await rankItem(place._rank, rank);
+    place._rank = rank;
+    await place.save();
 
     res.send({
       message: `${place.name} is ranked ${rank}`,
-      postArray,
     });
   } catch (error) {
     console.error(error);

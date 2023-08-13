@@ -21,4 +21,4 @@ rm -rd /var/www/api/routes &&
 rm -rd /var/www/api/middleware &&
 rm -rd /var/www/api/models &&
 rm -rf /var/www/api/deploy-api.sh &&
-pm2 restart API
+pm2 restart api

@@ -273,6 +273,9 @@ router.post("/rank", adminChecker, async (req, res) => {
     const place = await findPlace(ID, category);
     if (!place) return res.status(400).send({ error: `${category} not found` });
 
+    if (place._rank === rank)
+      return res.status(400).send({ error: `Rank is already set to ${rank}` });
+
     const all = await fetchAll();
     const data = all.sort((a, b) => a._rank - b._rank);
 

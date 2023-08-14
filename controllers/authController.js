@@ -10,6 +10,8 @@ const {
 } = require("../utils/validator.js");
 const { uid } = require("uid");
 
+require("dotenv").config();
+
 function generateOTP() {
   const chars = "0123456789";
   let otp = "";

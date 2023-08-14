@@ -11,8 +11,6 @@ const {
   reSend,
 } = require("../controllers/authController.js");
 
-require("dotenv").config();
-
 const router = express.Router();
 
 router.post("/signup", signup);

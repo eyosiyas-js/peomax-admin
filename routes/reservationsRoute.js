@@ -58,7 +58,19 @@ router.get("/all", employeeChecker, async (req, res) => {
 
     const startIndex = (page - 1) * count;
 
-    const matchStage = { $match: { ID: { $in: all.map((item) => item.ID) } } };
+    const matchQuery = { ID: { $in: all.map((item) => item.ID) } };
+    if (
+      req.query.status &&
+      (req.query.status == "pending" ||
+        req.query.status == "accepted" ||
+        req.query.status == "rejected" ||
+        req.query.status == "attended")
+    ) {
+      matchQuery.status = req.query.status;
+    }
+
+    const matchStage = { $match: matchQuery };
+
     const sortStage = { $sort: { createdAt: -1 } };
     const skipStage = { $skip: startIndex };
     const limitStage = { $limit: count };

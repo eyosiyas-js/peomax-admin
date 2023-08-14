@@ -350,4 +350,35 @@ router.post("/rank", adminChecker, async (req, res) => {
   }
 });
 
+router.post("/change-password", adminChecker, async () => {
+  try {
+    const { password, confirmPassword } = req.body;
+    if (!password || !confirmPassword)
+      return res
+        .status(400)
+        .send({ error: "password/confirm-password missing" });
+
+    if (password !== confirmPassword)
+      return res.status(400).send({ error: "passwords do not match" });
+
+    const user = await User.findOne({
+      userID: req.user.userID,
+      role: "admin",
+    });
+    if (!user) return res.status(404).send({ error: "Account not found" });
+
+    const saltRounds = parseInt(process.env.saltRounds);
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(password, salt);
+
+    user.password = hash;
+    await user.save();
+
+    res.send({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).send({ error: "Could change password" });
+    console.log(error);
+  }
+});
+
 module.exports = router;

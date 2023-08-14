@@ -55,6 +55,7 @@ router.get("/:id", async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
       ID: req.params.id,
+      status: "approved",
     });
 
     if (!hotel)

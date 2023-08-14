@@ -52,6 +52,7 @@ router.get("/:id", async (req, res) => {
   try {
     const club = await Club.findOne({
       ID: req.params.id,
+      status: "approved",
     });
 
     if (!club)

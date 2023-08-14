@@ -50,6 +50,7 @@ router.get("/:id", async (req, res) => {
   try {
     const bar = await Bar.findOne({
       ID: req.params.id,
+      status: "approved",
     });
 
     if (!bar)

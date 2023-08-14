@@ -33,7 +33,7 @@ mongoose
       // item._rank = i + 1;
       // await item.save();
 
-      console.log(`${item.name} ranked: ${item._rank}`);
+      console.log(`${item.name} is ranked: ${item._rank}`);
     }
 
     console.log(`Update complete`);

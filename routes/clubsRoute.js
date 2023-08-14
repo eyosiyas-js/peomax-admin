@@ -134,6 +134,9 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (club.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
+    if (club.status == "deleted")
+      return res.status(400).send({ error: "club is already removed" });
+
     club.status = "deleted";
     await club.save();
 

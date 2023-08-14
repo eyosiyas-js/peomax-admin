@@ -261,6 +261,9 @@ router.delete("/:id", superVisorChecker, async (req, res) => {
     if (!isAuthorized)
       return res.status(403).send({ error: "Unauthorized action" });
 
+    if (event.status == "deleted")
+      return res.status(400).send({ error: "Event is already deleted" });
+
     event.status = "deleted";
     await event.save();
 

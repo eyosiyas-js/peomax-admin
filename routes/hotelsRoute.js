@@ -55,7 +55,6 @@ router.get("/:id", async (req, res) => {
   try {
     const hotel = await Hotel.findOne({
       ID: req.params.id,
-      status: "approved",
     });
 
     if (!hotel)
@@ -226,6 +225,9 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
 
     if (hotel.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
+
+    if (hotel.status == "deleted")
+      return res.status(400).send({ error: "hotel is already removed" });
 
     hotel.status = "deleted";
     await hotel.save();

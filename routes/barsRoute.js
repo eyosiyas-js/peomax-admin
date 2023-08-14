@@ -132,6 +132,9 @@ router.delete("/:id/delete", managerChecker, async (req, res) => {
     if (bar.managerID !== req.user.userID)
       return res.status(403).send({ error: "Unauthorized" });
 
+    if (bar.status == "deleted")
+      return res.status(400).send({ error: "bar is already removed" });
+
     bar.status = "deleted";
     await bar.save();
 

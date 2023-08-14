@@ -350,7 +350,7 @@ router.post("/rank", adminChecker, async (req, res) => {
   }
 });
 
-router.post("/change-password", adminChecker, async () => {
+router.put("/change-password", adminChecker, async () => {
   try {
     const { password, confirmPassword } = req.body;
     if (!password || !confirmPassword)

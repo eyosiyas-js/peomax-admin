@@ -7,6 +7,16 @@ const { unlinkSync } = require("fs");
 const checkAuthorization = require("../utils/checkAuthorization");
 const { validateEditDiningPlace } = require("../utils/validator");
 
+function generateRandomNumber() {
+  const chars = "0123456789";
+  let otp = "";
+  for (let i = 0; i < 6; i++) {
+    const index = Math.floor(Math.random() * chars.length);
+    otp += chars[index];
+  }
+  return otp;
+}
+
 async function createDiningService(req, res, diningPlaceModel) {
   try {
     const exists = await extractMain(req.user.userID);
@@ -96,7 +106,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       website: website,
       subHotel: subHotel == "true" ? true : false,
       status: "pending",
-      rank: serviceCount.length + 1,
+      rank: serviceCount.length + generateRandomNumber(),
       _rank: serviceCount.length + 1,
     });
 

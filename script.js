@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const User = require("./models/User");
-const fetchAll = require("./utils/fetchAll");
+const Hotel = require("./models/Hotel");
+const Restaurant = require("./models/Restaurant");
+const Bar = require("./models/Bar");
+const Club = require("./models/Club");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -12,8 +15,16 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected!");
 
-    const data = await fetchAll();
-    const all = data.sort((a, b) => a._rank - b._rank);
+    const [bars, clubs, hotels, restaurants] = await Promise.all([
+      Bar.find({}),
+      Club.find({}),
+      Hotel.find({}),
+      Restaurant.find({}),
+    ]);
+
+    const data = [...hotels, ...restaurants, ...clubs, ...bars];
+    const all = data;
+    // const all = data.sort((a, b) => a._rank - b._rank);
     console.log(all.length);
 
     for (let i = 0; i < all.length; i++) {

@@ -277,7 +277,14 @@ router.post("/rank", adminChecker, async (req, res) => {
     if (place._rank === rank)
       return res.status(400).send({ error: `Rank is already set to ${rank}` });
 
-    const all = await fetchAll();
+    const [bars, clubs, hotels, restaurants] = await Promise.all([
+      Bar.find({}),
+      Club.find({}),
+      Hotel.find({}),
+      Restaurant.find({}),
+    ]);
+
+    const all = [...hotels, ...restaurants, ...clubs, ...bars];
     const data = all.sort((a, b) => a._rank - b._rank);
 
     function findItemsBetweenRanksA(data, startRank, endRank) {

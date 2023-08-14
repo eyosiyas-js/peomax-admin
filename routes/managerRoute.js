@@ -4,8 +4,11 @@ const Token = require("../models/Token.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const adminChecker = require("../middleware/adminChecker.js");
+const employeeChecker = require("../middleware/employeeChecker.js");
 const extractMain = require("../utils/extractMain.js");
 const fetchAll = require("../utils/fetchAll.js");
+
+require("dotenv").config();
 
 const {
   validateManagerSignupData,
@@ -145,6 +148,34 @@ router.post("/login", async (req, res) => {
     }
   } catch (error) {
     res.status(500).send({ error: "Could not login user." });
+    console.log(error);
+  }
+});
+
+router.post("/change-password", employeeChecker, async () => {
+  try {
+    const { password, confirmPassword } = req.body;
+    if (!password || !confirmPassword)
+      return res
+        .status(400)
+        .send({ error: "password/confirm-password missing" });
+
+    if (password !== confirmPassword)
+      return res.status(400).send({ error: "passwords do not match" });
+
+    const user = await User.findOne({ userID: req.user.userID });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    const saltRounds = parseInt(process.env.saltRounds);
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(password, salt);
+
+    user.password = hash;
+    await user.save();
+
+    res.send({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).send({ error: "Could change password" });
     console.log(error);
   }
 });

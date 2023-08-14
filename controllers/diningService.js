@@ -96,6 +96,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       website: website,
       subHotel: subHotel == "true" ? true : false,
       status: "pending",
+      rank: serviceCount.length + 1,
       _rank: serviceCount.length + 1,
     });
 

@@ -245,7 +245,7 @@ router.put(
 
 router.delete("/:id", superVisorChecker, async (req, res) => {
   try {
-    const event = await Event.find({ eventID: req.params.id });
+    const event = await Event.findOne({ eventID: req.params.id });
     if (!event)
       return res
         .status(404)

@@ -152,7 +152,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.put("/change-password", employeeChecker, async () => {
+router.put("/change-password", employeeChecker, async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
     if (!password || !confirmPassword)

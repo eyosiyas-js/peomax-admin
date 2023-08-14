@@ -37,7 +37,8 @@ router.post("/login", async (req, res) => {
       const userPassword = user.password;
       const isMatch = await bcrypt.compare(password, userPassword);
 
-      if (!isMatch) res.status(400).send({ error: "password incorrect!" });
+      if (!isMatch)
+        return res.status(400).send({ error: "password incorrect!" });
 
       delete userData.password;
 
@@ -350,7 +351,7 @@ router.post("/rank", adminChecker, async (req, res) => {
   }
 });
 
-router.put("/change-password", adminChecker, async () => {
+router.put("/change-password", adminChecker, async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
     if (!password || !confirmPassword)

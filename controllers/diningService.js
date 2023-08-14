@@ -66,6 +66,7 @@ async function createDiningService(req, res, diningPlaceModel) {
     } = req.body;
 
     const managerID = req.user.userID;
+    const serviceCount = await diningPlaceModel.find({});
 
     const diningPlace = new diningPlaceModel({
       name: name,
@@ -95,6 +96,7 @@ async function createDiningService(req, res, diningPlaceModel) {
       website: website,
       subHotel: subHotel == "true" ? true : false,
       status: "pending",
+      _rank: serviceCount.length + 1,
     });
 
     await diningPlace.save();

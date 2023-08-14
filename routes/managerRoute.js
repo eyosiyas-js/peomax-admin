@@ -163,8 +163,11 @@ router.post("/change-password", employeeChecker, async () => {
     if (password !== confirmPassword)
       return res.status(400).send({ error: "passwords do not match" });
 
-    const user = await User.findOne({ userID: req.user.userID });
-    if (!user) return res.status(404).send({ error: "User not found" });
+    const user = await User.findOne({
+      userID: req.user.userID,
+      role: { $in: ["client", "manager", "supervisor", "employee"] },
+    });
+    if (!user) return res.status(404).send({ error: "Account not found" });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);

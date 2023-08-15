@@ -146,14 +146,20 @@ router.post("/", userChecker, async (req, res) => {
   }
 });
 
-router.post("/verify/:id", employeeChecker, async (req, res) => {
+router.post("/verify", employeeChecker, async (req, res) => {
   try {
-    const ticket = await Ticket.findOne({ ticketID: req.params.id });
+    const { ticketID, eventID } = req.body;
+
+    if (!ticketID || !eventID)
+      return res.status(400).send({ error: "ticket ID / event ID missing" });
+
+    const ticket = await Ticket.findOne({ ticketID });
 
     if (!ticket)
-      return res
-        .status(404)
-        .send({ error: `No ticket with ID:${req.params.id}` });
+      return res.status(404).send({ error: `No ticket with ID:${ticketID}` });
+
+    if (ticket.eventID !== eventID)
+      return res.status(400).send({ error: `Incorrect event` });
 
     const event = await Event.findOne({ eventID: ticket.eventID });
     if (!event)

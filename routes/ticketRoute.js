@@ -93,6 +93,8 @@ router.post("/", userChecker, async (req, res) => {
       price: price,
       phoneNumber,
       eventID: eventID,
+      ID: event.ID,
+      category: event.category,
       ticketID: uid(16),
     });
 

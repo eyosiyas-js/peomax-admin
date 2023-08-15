@@ -18,12 +18,17 @@ mongoose
       const ticket = tickets[i];
       const event = await Event.findOne({ eventID: ticket.eventID });
 
-      ticket.ID = event.ID;
-      ticket.category = event.category;
+      if (!event) {
+        await ticket.remove();
+        console.log(`Removed ${i}`);
+      } else {
+        ticket.ID = event.ID;
+        ticket.category = event.category;
 
-      await ticket.save();
+        await ticket.save();
 
-      console.log(`ticket ${i} updated`);
+        console.log(`ticket ${i} updated`);
+      }
     }
 
     console.log(`Update complete`);

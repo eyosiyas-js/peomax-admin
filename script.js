@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
-const Event = require("./models/Event");
-const Ticket = require("./models/Ticket");
+const Item = require("./models/User");
 const dotenv = require("dotenv");
 dotenv.config();
+
+const data = require(`./compass/${Item.modelName.toLocaleLowerCase()}s.json`);
 
 const mongo_url = process.env.mongo_url;
 
@@ -12,23 +13,12 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected!");
 
-    const tickets = await Ticket.find({});
+    const items = data;
 
-    for (let i = 0; i < tickets.length; i++) {
-      const ticket = tickets[i];
-      const event = await Event.findOne({ eventID: ticket.eventID });
-
-      if (!event) {
-        await ticket.remove();
-        console.log(`Removed ${i}`);
-      } else {
-        ticket.ID = event.ID;
-        ticket.category = event.category;
-
-        await ticket.save();
-
-        console.log(`ticket ${i} updated`);
-      }
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      await new Item(item).save();
+      console.log(`Item: ${i + 1}`);
     }
 
     console.log(`Update complete`);

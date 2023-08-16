@@ -8,7 +8,7 @@ const Club = require("../models/Club");
 const router = express.Router();
 
 async function isUnderOneKM(start, end) {
-  const result = haversine(start, end, { threshold: 1000, unit: "meter" });
+  const result = haversine(start, end, { threshold: 25000, unit: "meter" });
   return result;
 }
 

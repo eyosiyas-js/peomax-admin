@@ -7,6 +7,7 @@ const Club = require("../models/Club");
 const Hotel = require("../models/Hotel");
 const Restaurant = require("../models/Restaurant");
 const Reservation = require("../models/Reservation.js");
+const Ticket = require("../models/Ticket.js");
 const Token = require("../models/Token.js");
 const { validateLoginData } = require("../utils/validator.js");
 const adminChecker = require("../middleware/adminChecker.js");
@@ -230,6 +231,33 @@ router.get("/reservations/:id", adminChecker, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
+router.get("/tickets/:id", adminChecker, async (req, res) => {
+  try {
+    const eventID = req.params.id;
+    const count = parseInt(req.query.count) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * count;
+    const ticketsCount = await Ticket.countDocuments({
+      eventID,
+    });
+    const totalPages = Math.ceil(ticketsCount / count);
+    const tickets = await Ticket.find({ eventID })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(count);
+
+    res.send({
+      page,
+      totalPages,
+      ticketsCount,
+      tickets,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting tickets" });
   }
 });
 

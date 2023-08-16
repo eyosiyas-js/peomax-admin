@@ -172,9 +172,15 @@ router.get("/", employeeChecker, async (req, res) => {
 
 router.get("/download/:id", employeeChecker, async (req, res) => {
   try {
-    const currentDate = new Date().toLocaleDateString("en-US", {
-      timeZone: "Africa/Addis_Ababa",
-    });
+    const currentDate = new Date()
+      .toLocaleDateString("en-US", {
+        timeZone: "Africa/Addis_Ababa",
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      })
+      .replace(/\//g, "/");
+
     const all = await fetchAll(req.user.userID);
     let matchQuery = { ID: { $in: all.map((item) => item.ID) }, currentDate };
 

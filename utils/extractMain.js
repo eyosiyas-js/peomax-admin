@@ -6,9 +6,10 @@ const Club = require("../models/Club");
 async function extractMain(managerID) {
   const query = {
     $or: [
-      { supervisors: { $in: [managerID] }, subHotel: false },
-      { employees: { $in: [managerID] }, subHotel: false },
-      { managerID, subHotel: false },
+      { supervisors: { $in: [managerID] }, subHotel: { $ne: true } },
+      { employees: { $in: [managerID] }, subHotel: { $ne: true } },
+      { managerID, subHotel: { $ne: true } },
+      { subHotel: { $exists: false } },
     ],
   };
 

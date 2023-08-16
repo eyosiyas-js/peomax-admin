@@ -172,8 +172,11 @@ router.get("/", employeeChecker, async (req, res) => {
 
 router.get("/download/:id", employeeChecker, async (req, res) => {
   try {
+    const currentDate = new Date().toLocaleDateString("en-US", {
+      timeZone: "Africa/Addis_Ababa",
+    });
     const all = await fetchAll(req.user.userID);
-    let matchQuery = { ID: { $in: all.map((item) => item.ID) } };
+    let matchQuery = { ID: { $in: all.map((item) => item.ID) }, currentDate };
 
     if (req.params.id !== "all") {
       matchQuery.status = req.params.id;

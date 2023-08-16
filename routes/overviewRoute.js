@@ -182,7 +182,10 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
       .replace(/\//g, "/");
 
     const all = await fetchAll(req.user.userID);
-    let matchQuery = { ID: { $in: all.map((item) => item.ID) }, currentDate };
+    let matchQuery = {
+      ID: { $in: all.map((item) => item.ID) },
+      date: currentDate,
+    };
 
     if (req.params.id !== "all") {
       matchQuery.status = req.params.id;

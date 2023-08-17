@@ -116,6 +116,26 @@ router.post("/reject", adminChecker, async (req, res) => {
   }
 });
 
+router.delete("/delete", adminChecker, async (req, res) => {
+  try {
+    const { ID, category } = req.body;
+    if (!ID || !category)
+      return res.status(400).send({ error: "ID/category missing" });
+
+    const place = await findPlace(ID, category);
+    if (!place)
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+
+    place.status = "deleted";
+    await place.save();
+
+    res.send({ message: `${category} deleted` });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Could not reject submission" });
+  }
+});
+
 router.get("/totals", adminChecker, async (req, res) => {
   try {
     function getReservationsByMonth(reservations) {
@@ -414,6 +434,68 @@ router.put("/change-password", adminChecker, async (req, res) => {
   } catch (error) {
     res.status(500).send({ error: "Could change password" });
     console.log(error);
+  }
+});
+
+router.post("/rate", adminChecker, async (req, res) => {
+  try {
+    const { ID, category, rate } = req.body;
+
+    if (!ID || !category || !rate)
+      return res.status(400).send({ error: "ID/category/rate is missing" });
+
+    if (isNaN(parseInt(rate)) || parseInt(rate) < 0) {
+      return res.status(400).send({ error: "rate is invalid or negative" });
+    }
+
+    const place = await findPlace(ID, category);
+    if (!place) return res.status(400).send({ error: `${category} not found` });
+
+    place.rating = rate;
+    await place.save();
+
+    res.send({
+      message: `${place.name} is rated ${rate}`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Error getting reservations" });
+  }
+});
+
+router.get("/deleted", adminChecker, async (req, res) => {
+  try {
+    const [bars, clubs, hotels, restaurants] = await Promise.all([
+      Bar.find({ status: "deleted" }),
+      Club.find({ status: "deleted" }),
+      Hotel.find({ status: "deleted" }),
+      Restaurant.find({ status: "deleted" }),
+    ]);
+
+    const deleted = [...hotels, ...restaurants, ...clubs, ...bars];
+
+    res.send(deleted);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Could not reject submission" });
+  }
+});
+
+router.get("/rejected", adminChecker, async (req, res) => {
+  try {
+    const [bars, clubs, hotels, restaurants] = await Promise.all([
+      Bar.find({ status: "rejected" }),
+      Club.find({ status: "rejected" }),
+      Hotel.find({ status: "rejected" }),
+      Restaurant.find({ status: "rejected" }),
+    ]);
+
+    const rejected = [...hotels, ...restaurants, ...clubs, ...bars];
+
+    res.send(rejected);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Could not reject submission" });
   }
 });
 

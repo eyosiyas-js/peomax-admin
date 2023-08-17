@@ -31,15 +31,11 @@ router.get("/", async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    let query = {};
-
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const clubsCount = await Club.countDocuments(query);
+    const clubsCount = await Club.countDocuments({ status: "approved" });
     const totalPages = Math.ceil(clubsCount / count);
-    const clubs = await Club.find(query).skip(skip).limit(count);
+    const clubs = await Club.find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
     res.send({
       page,
       totalPages,
@@ -54,19 +50,15 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    let query = { ID: req.params.id };
+    const club = await Club.findOne({
+      ID: req.params.id,
+      status: "approved",
+    });
 
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const club = await Club.findOne(query);
-
-    if (!club) {
+    if (!club)
       return res
         .status(404)
         .send({ error: `No club with ID: ${req.params.id}` });
-    }
 
     res.send(club.toObject());
   } catch (error) {

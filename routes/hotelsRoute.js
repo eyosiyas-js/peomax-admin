@@ -34,15 +34,11 @@ router.get("/", async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    let query = {};
-
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const hotelsCount = await Hotel.countDocuments(query);
+    const hotelsCount = await Hotel.countDocuments({ status: "approved" });
     const totalPages = Math.ceil(hotelsCount / count);
-    const hotels = await Hotel.find(query).skip(skip).limit(count);
+    const hotels = await Hotel.find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
     res.send({
       page,
       totalPages,
@@ -57,19 +53,14 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    let query = { ID: req.params.id };
+    const hotel = await Hotel.findOne({
+      ID: req.params.id,
+    });
 
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const hotel = await Hotel.findOne(query);
-
-    if (!hotel) {
+    if (!hotel)
       return res
         .status(404)
         .send({ error: `No hotel with ID: ${req.params.id}` });
-    }
 
     res.send(hotel.toObject());
   } catch (error) {

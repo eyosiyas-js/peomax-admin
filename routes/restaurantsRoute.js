@@ -31,15 +31,13 @@ router.get("/", async (req, res) => {
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * count;
-    let query = {};
-
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const restaurantsCount = await Restaurant.countDocuments(query);
+    const restaurantsCount = await Restaurant.countDocuments({
+      status: "approved",
+    });
     const totalPages = Math.ceil(restaurantsCount / count);
-    const restaurants = await Restaurant.find(query).skip(skip).limit(count);
+    const restaurants = await Restaurant.find({ status: "approved" })
+      .skip(skip)
+      .limit(count);
     res.send({
       page,
       totalPages,
@@ -54,19 +52,15 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    let query = { ID: req.params.id };
+    const restaurant = await Restaurant.findOne({
+      ID: req.params.id,
+      status: "approved",
+    });
 
-    if (req.user.role !== "admin") {
-      query.status = "approved";
-    }
-
-    const restaurant = await Restaurant.findOne(query);
-
-    if (!restaurant) {
+    if (!restaurant)
       return res
         .status(404)
         .send({ error: `No restaurant with ID: ${req.params.id}` });
-    }
 
     res.send(restaurant.toObject());
   } catch (error) {

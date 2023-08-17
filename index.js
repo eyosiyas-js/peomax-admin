@@ -1,7 +1,6 @@
 const express = require("express");
 const socketIo = require("socket.io");
 const { createServer } = require("http");
-const subdomain = require("express-subdomain");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");

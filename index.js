@@ -36,12 +36,12 @@ const availableSpotsRoute = require("./routes/availableSpotsRoute.js");
 
 dotenv.config();
 
-const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// const limiter = rateLimit({
+//   windowMs: 5 * 60 * 1000,
+//   max: 100,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });
 
 const app = express();
 const server = createServer(app);
@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 });
 
 app.use(helmet());
-app.use(limiter);
+// app.use(limiter);
 app.disable("x-powered-by");
 app.use(express.json());
 

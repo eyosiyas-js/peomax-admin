@@ -64,7 +64,7 @@ router.post(
 
       const isAuthorized = checkAuthorization(managerID, place);
       if (!isAuthorized)
-        return res.status(401).send({ error: "Unauthorized action" });
+        return res.status(403).send({ error: "Unauthorized action" });
 
       const files = await req.files;
       let hasInvalidFile = false;
@@ -146,7 +146,7 @@ router.delete("/", superVisorChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized action" });
+      return res.status(403).send({ error: "Unauthorized action" });
 
     const newItems = menu.items.filter((item) => item.itemID !== itemID);
     menu.items = newItems;

@@ -84,7 +84,7 @@ router.post(
 
       const isAuthorized = checkAuthorization(managerID, place);
       if (!isAuthorized)
-        return res.status(401).send({ error: "Unauthorized action" });
+        return res.status(403).send({ error: "Unauthorized action" });
 
       const files = await req.files;
       let hasInvalidFile = false;
@@ -174,7 +174,7 @@ router.put(
 
       const isAuthorized = checkAuthorization(managerID, place);
       if (!isAuthorized)
-        return res.status(401).send({ error: "Unauthorized action" });
+        return res.status(403).send({ error: "Unauthorized action" });
 
       let urls = [];
       if (req.query.files == "true") {

@@ -22,7 +22,7 @@ router.get("/", employeeChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized access" });
+      return res.status(403).send({ error: "Unauthorized access" });
 
     const count = parseInt(req.query.count) || 20;
     const page = parseInt(req.query.page) || 1;
@@ -140,7 +140,7 @@ router.post("/accept", employeeChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized action" });
+      return res.status(403).send({ error: "Unauthorized action" });
 
     const reservation = await Reservation.findOne({
       reservationID: reservationID,
@@ -196,7 +196,7 @@ router.post("/reject", employeeChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized action" });
+      return res.status(403).send({ error: "Unauthorized action" });
 
     const reservation = await Reservation.findOne({
       reservationID: reservationID,
@@ -243,7 +243,7 @@ router.post("/attended", employeeChecker, async (req, res) => {
 
     const isAuthorized = checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
-      return res.status(401).send({ error: "Unauthorized action" });
+      return res.status(403).send({ error: "Unauthorized action" });
 
     const reservation = await Reservation.findOne({
       reservationID: reservationID,

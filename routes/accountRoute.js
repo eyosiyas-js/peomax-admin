@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/User.js");
+const Reservation = require("../models/Reservation.js");
 const userChecker = require("../middleware/userChecker.js");
 const extractMain = require("../utils/extractMain.js");
 const fetchAll = require("../utils/fetchAll.js");
@@ -26,7 +27,7 @@ router.get("/", userChecker, async (req, res) => {
         ID: items[0].ID,
         category: items[0].category,
       });
-    } else {
+    } else if (user.role == "supervisor" || user.role == "manager") {
       const main = await extractMain(req.user.userID);
       if (!main) return res.send(user.toObject());
 
@@ -34,6 +35,12 @@ router.get("/", userChecker, async (req, res) => {
         ...user.toObject(),
         ID: main.ID,
         category: main.category,
+      });
+    } else {
+      const reservations = await Reservation.find({ userID: req.user.userID });
+      res.send({
+        ...user.toObject(),
+        reservations,
       });
     }
   } catch (error) {

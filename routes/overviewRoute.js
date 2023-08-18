@@ -181,6 +181,9 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
     //   })
     //   .replace(/\//g, "/");
 
+    if (!req.query.date)
+      return res.status(400).send({ error: `date is required` });
+
     const all = await fetchAll(req.user.userID);
     let matchQuery = {
       ID: { $in: all.map((item) => item.ID) },
@@ -192,6 +195,8 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
     }
 
     const data = await Reservation.aggregate([{ $match: matchQuery }]);
+    if (data.length == 0)
+      return res.status(400).send({ error: `No reservations on this date` });
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");

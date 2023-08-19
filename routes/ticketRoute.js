@@ -107,7 +107,7 @@ router.post("/", userChecker, async (req, res) => {
       req.io.emit(`reserve:${reservation.ID}`, reservation);
     }
 
-    user.credits = user.credits + price * 0.1;
+    user.credits = user.credits + Math.round(price * 0.1);
     await user.save();
     res.send({ message: "Virtual Ticket is sent to your email" });
   } catch (error) {

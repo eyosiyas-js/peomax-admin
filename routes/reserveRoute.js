@@ -79,7 +79,7 @@ router.post("/", userChecker, async (req, res) => {
     await reservation.save();
     await reserveMail(req.user.firstName, req.user.email);
 
-    user.credits = user.credits + 50;
+    user.credits = user.credits + 100;
     await user.save();
 
     res.send({ message: "Reservation Email sent" });

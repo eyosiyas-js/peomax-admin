@@ -135,7 +135,7 @@ async function signup(req, res) {
         role: "client",
         reference: reference,
       });
-      affiliate.credits = affiliate.credits + 250;
+      affiliate.credits = affiliate.credits + 500;
       await affiliate.save();
     }
 

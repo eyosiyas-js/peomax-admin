@@ -18,7 +18,7 @@ const userSignupSchema = Joi.object({
   password: passwordComplexity(complexityOptions),
   confirmPassword: passwordComplexity(complexityOptions),
   email: Joi.string().trim().email().required(),
-  email: Joi.string().trim().optional(),
+  reference: Joi.string().trim().optional(),
 });
 
 const userLoginSchema = Joi.object({

@@ -15,7 +15,7 @@ async function generateReference(usr) {
     const index = Math.floor(Math.random() * chars.length);
     random += chars[index];
   }
-  let reference = `peo-${random}${usr.firstName[0].toLowerCase()}${usr.email[1].toLowerCase()}${usr.lastName[0].toLowerCase()}`;
+  let reference = `peomax-${random}${usr.firstName[0].toLowerCase()}${usr.email[1].toLowerCase()}${usr.lastName[0].toLowerCase()}`;
 
   const referenceExists = await User.findOne({
     role: "client",

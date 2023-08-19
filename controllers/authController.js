@@ -22,6 +22,26 @@ function generateOTP() {
   return otp;
 }
 
+async function generateReference(usr) {
+  const chars = "0123456789";
+  let random = "";
+  for (let i = 0; i < 4; i++) {
+    const index = Math.floor(Math.random() * chars.length);
+    random += chars[index];
+  }
+  let reference = `peo-${random}${usr.firstName[0].toLowerCase()}${usr.email[1].toLowerCase()}${usr.lastName[0].toLowerCase()}`;
+
+  const referenceExists = await User.findOne({
+    role: "client",
+    reference: reference,
+  });
+  if (referenceExists) {
+    return await generateReference(usr);
+  } else {
+    return reference;
+  }
+}
+
 async function signup(req, res) {
   try {
     const valid = await validateSignupData(req.body);
@@ -29,7 +49,8 @@ async function signup(req, res) {
       return res.status(400).send({ error: valid.message });
     }
 
-    const { firstName, lastName, password, confirmPassword, email } = req.body;
+    const { firstName, lastName, password, confirmPassword, email, reference } =
+      req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -105,7 +126,18 @@ async function signup(req, res) {
       password: hashedPassword,
       email,
       role: "client",
+      reference: await generateReference({ firstName, lastName, email }),
+      credits: 500,
     };
+
+    if (reference) {
+      const affiliate = await User.findOne({
+        role: "client",
+        reference: reference,
+      });
+      affiliate.credits = affiliate.credits + 250;
+      await affiliate.save();
+    }
 
     const user = new User(userData);
 

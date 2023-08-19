@@ -47,6 +47,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  reference: {
+    type: String,
+    require: false,
+  },
+  credits: {
+    type: Number,
+    require: true,
+  },
   isBanned: {
     type: Boolean,
     required: false,

@@ -296,7 +296,7 @@ router.post("/feature", adminChecker, async (req, res) => {
         .status(400)
         .send({ error: `${place.name} is already set as premium` });
 
-    place.isPremium = true;
+    place.isPremium = !place.isPremium;
     await place.save();
 
     res.send({

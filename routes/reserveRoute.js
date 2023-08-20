@@ -79,6 +79,7 @@ router.post("/", userChecker, async (req, res) => {
     await reservation.save();
     await reserveMail(req.user.firstName, req.user.email);
 
+    user.phoneNumber = phoneNumber;
     user.credits = user.credits + 100;
     await user.save();
 

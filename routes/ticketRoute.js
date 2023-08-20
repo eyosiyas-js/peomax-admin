@@ -108,6 +108,7 @@ router.post("/", userChecker, async (req, res) => {
     }
 
     user.credits = user.credits + Math.round(price * 0.1);
+    user.phoneNumber = phoneNumber;
     await user.save();
     res.send({ message: "Virtual Ticket is sent to your email" });
   } catch (error) {

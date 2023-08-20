@@ -37,6 +37,16 @@ router.get("/", managerChecker, async (req, res) => {
   }
 });
 
+router.get("/credits", adminChecker, async (req, res) => {
+  try {
+    const users = await User.find({ role: "client" }).sort({ credits: -1 });
+    res.send(users);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Error" });
+  }
+});
+
 router.get("/search", managerChecker, async (req, res) => {
   try {
     const regex = new RegExp(req.query.q, "i");

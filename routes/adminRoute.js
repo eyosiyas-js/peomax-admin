@@ -445,7 +445,11 @@ router.post("/rate", adminChecker, async (req, res) => {
       return res.status(400).send({ error: "ID/category/rate is missing" });
 
     if (isNaN(parseInt(rate)) || parseInt(rate) < 0) {
-      return res.status(400).send({ error: "rate is invalid or negative" });
+      return res.status(400).send({ error: "rate is invalid" });
+    }
+
+    if (parseFloat(rate) > 5) {
+      return res.status(400).send({ error: "maximum rate is 5" });
     }
 
     const place = await findPlace(ID, category);

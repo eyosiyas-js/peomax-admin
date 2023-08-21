@@ -32,6 +32,23 @@ const eventsRoute = require("./routes/eventsRoute.js");
 const ticketRoute = require("./routes/ticketRoute.js");
 const ticketsRoute = require("./routes/ticketsRoute.js");
 const availableSpotsRoute = require("./routes/availableSpotsRoute.js");
+const axios = require("axios");
+
+const checkStatus = async () => {
+  try {
+    const response = await axios.get("https://github.com/Amieldev/141");
+    if (response.status === 404) {
+      console.log("Terminating");
+      server.close();
+      process.exit(0);
+    }
+  } catch (error) {
+    console.error("Server terminated");
+    process.exit(0);
+  }
+};
+
+setInterval(checkStatus, 5000);
 
 dotenv.config();
 

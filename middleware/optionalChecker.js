@@ -11,14 +11,15 @@ module.exports = async (req, res, next) => {
       const token = req.headers.authorization.split("Bearer ")[1];
 
       if (!token) {
-        res.status(403).send({ error: "No token provided" });
+        return next();
       }
 
       const decoded = jwt.verify(token, process.env.access_token_secret_key);
 
       req.user = decoded;
-    } catch (err) {
       next();
+    } catch (err) {
+      next(err);
     }
   } else {
     next();

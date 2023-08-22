@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get("/", optionalChecker, async (req, res) => {
   try {
-    if (req.user.role === "admin") {
+    if (req.user && req.user.role === "admin") {
       const hotels = await Hotel.find({}).sort({ _rank: 1 });
       const restaurants = await Restaurant.find({}).sort({
         _rank: 1,

@@ -192,7 +192,7 @@ const editEventSchema = Joi.object({
 
 const reservationSchema = Joi.object({
   ID: Joi.string().required(),
-  people: Joi.number().integer().min(1).required(),
+  people: Joi.number().integer().positive().required(),
   category: Joi.string().valid("bar", "club", "restaurant").required(),
   time: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
@@ -211,7 +211,7 @@ const reservationSchema = Joi.object({
 
 const reservationManualSchema = Joi.object({
   ID: Joi.string().required(),
-  people: Joi.number().integer().min(1).required(),
+  people: Joi.number().integer().positive().required(),
   category: Joi.string().valid("bar", "club", "restaurant").required(),
   time: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
@@ -234,7 +234,7 @@ const reservationManualSchema = Joi.object({
 const ticketSchema = Joi.object({
   eventID: Joi.string().required(),
   isPremium: Joi.boolean(),
-  people: Joi.number().integer().required(),
+  people: Joi.number().integer().positive().required(),
   phoneNumber: Joi.string().required(),
 });
 

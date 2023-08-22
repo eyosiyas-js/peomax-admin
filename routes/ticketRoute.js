@@ -49,13 +49,22 @@ router.post("/", userChecker, async (req, res) => {
     const user = await User.findOne({ userID: req.user.userID });
     if (!user) return res.status(404).send({ error: "User not found" });
 
+    const currentDate = new Date()
+      .toLocaleDateString("en-US", {
+        timeZone: "Africa/Addis_Ababa",
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      })
+      .replace(/\//g, "/");
+
     const ticket = new Ticket({
       userID: req.user.userID,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       people: people,
-      date: event.date,
+      date: currentDate,
       time: event.eventStart,
       isPremium: isPremium == true ? true : false,
       price: price,

@@ -26,7 +26,7 @@ const ticketSchema = new mongoose.Schema({
     default: 1,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
   time: {

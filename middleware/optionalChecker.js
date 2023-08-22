@@ -17,16 +17,10 @@ module.exports = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.access_token_secret_key);
 
       req.user = decoded;
-
-      if (decoded.role === "admin") {
-        next();
-      } else {
-        res.status(403).send({ error: "Action not allowed" });
-      }
     } catch (err) {
-      res.status(401).send({ error: "Invalid/expired Token" });
+      next();
     }
   } else {
-    res.status(401).send({ error: "Missing or invalid token" });
+    next();
   }
 };

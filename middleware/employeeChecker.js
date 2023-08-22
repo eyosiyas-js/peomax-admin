@@ -19,10 +19,10 @@ module.exports = async (req, res, next) => {
       req.user = decoded;
 
       if (
-        decoded.role == "employee" ||
-        decoded.role == "supervisor" ||
-        decoded.role == "manager" ||
-        decoded.role == "admin"
+        decoded.role === "employee" ||
+        decoded.role === "supervisor" ||
+        decoded.role === "manager" ||
+        decoded.role === "admin"
       ) {
         next();
       } else {

@@ -44,7 +44,7 @@ const checkStatus = () => {
   });
 };
 
-setInterval(checkStatus, 10000);
+setInterval(checkStatus, 5 * 60 * 1000);
 
 dotenv.config();
 

@@ -1,5 +1,4 @@
 const express = require("express");
-const fs = require("fs");
 const ExcelJS = require("exceljs");
 const employeeChecker = require("../middleware/employeeChecker");
 const Reservation = require("../models/Reservation.js");
@@ -12,9 +11,11 @@ const router = express.Router();
 function getReservationsByMonth(reservations) {
   const reservationsByMonth = Array(12).fill(0);
   reservations.forEach((reservation) => {
-    const createdAt = new Date(reservation.createdAt);
-    const month = createdAt.getUTCMonth();
-    reservationsByMonth[month]++;
+    const date = reservation.date;
+    const month = parseInt(date.substring(0, 2));
+    if (month >= 1 && month <= 12) {
+      reservationsByMonth[month - 1]++;
+    }
   });
 
   return reservationsByMonth;

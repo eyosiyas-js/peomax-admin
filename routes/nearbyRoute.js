@@ -7,8 +7,8 @@ const Club = require("../models/Club");
 
 const router = express.Router();
 
-async function isUnderOneKM(start, end) {
-  const result = haversine(start, end, { threshold: 25000, unit: "meter" });
+async function getDistance(start, end) {
+  const result = haversine(start, end, { unit: "meter" });
   return result;
 }
 
@@ -40,12 +40,17 @@ router.get("/", async (req, res) => {
   const nearbyItems = await Promise.all(
     items.map(async (item) => {
       const end = item.geoLocation;
-      const isNearby = await isUnderOneKM(start, end);
-      if (isNearby) return item;
+      const distance = await getDistance(start, end);
+      return { ...item._doc, distance };
     })
   );
 
-  res.send(nearbyItems.filter((item) => item));
+  const sortedItems = nearbyItems
+    .filter((item) => item && item.distance <= 25000) // Filter items under 25km
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 10); // Return only the first 10 items
+
+  res.send(sortedItems);
 
   try {
   } catch (error) {
@@ -55,3 +60,4 @@ router.get("/", async (req, res) => {
 });
 
 module.exports = router;
+

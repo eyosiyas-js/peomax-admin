@@ -46,9 +46,9 @@ router.get("/", async (req, res) => {
   );
 
   const sortedItems = nearbyItems
-    .filter((item) => item && item.distance <= 25000) // Filter items under 25km
+    .filter((item) => item && item.distance <= 25000)
     .sort((a, b) => a.distance - b.distance)
-    .slice(0, 10); // Return only the first 10 items
+    .slice(0, 10);
 
   res.send(sortedItems);
 

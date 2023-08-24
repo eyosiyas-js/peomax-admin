@@ -100,7 +100,7 @@ const hotelSchema = new mongoose.Schema({
     require: true,
   },
 
-  // Extra fields
+  
 
   crossStreet: {
     type: String,

@@ -245,7 +245,7 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       );
-      res.setHeader("Content-Disposition", "attachment; filename=table.xlsx");
+      res.setHeader("Content-Disposition", "attachment; filename=reservations.xlsx");
       res.send(buffer);
     });
   } catch (err) {

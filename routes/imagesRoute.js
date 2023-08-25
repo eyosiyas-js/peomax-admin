@@ -8,7 +8,7 @@ router.get("/:id", async (req, res) => {
 
     if (!image) return res.status(404).send({ error: "Image not found" });
 
-    res.contentType(image.contentType);
+    res.set("Content-Type", image.contentType);
     res.send(image.data);
   } catch (err) {
     console.log(err);

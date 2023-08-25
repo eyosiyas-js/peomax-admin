@@ -32,6 +32,7 @@ const eventsRoute = require("./routes/eventsRoute.js");
 const ticketRoute = require("./routes/ticketRoute.js");
 const ticketsRoute = require("./routes/ticketsRoute.js");
 const availableSpotsRoute = require("./routes/availableSpotsRoute.js");
+const imagesRoute = require("./routes/imagesRoute.js");
 
 dotenv.config();
 
@@ -83,6 +84,7 @@ app.use("/api/nearby", nearbyRoute);
 app.use("/api/geolocation", geolocationRoute);
 app.use("/api/menu", menuRoute);
 
+app.use("/images",imagesRoute)
 app.use("/api/events", eventsRoute);
 app.use("/api/reserve", reserveRoute);
 app.use("/api/reservations", reservationsRoute);

@@ -4,7 +4,7 @@ const Image = require("../models/Image");
 
 router.get("/:id", async (req, res) => {
   try {
-    const image = await Image.findOne({ ID: req.params.ID });
+    const image = await Image.findOne({ ID: req.params.id });
 
     if (!image) return res.status(404).send({ error: "Image not found" });
 

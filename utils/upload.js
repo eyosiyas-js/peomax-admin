@@ -1,30 +1,21 @@
-const admin = require("firebase-admin");
-const serviceAccount = require("../serviceAccountKey.json");
 const { uid } = require("uid");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: "gs://reserve-et.appspot.com",
-});
-
-const bucket = admin.storage().bucket();
+const Image = require("../models/Image");
+const fs = require('fs');
 
 async function uploadFile(filePath, fileName, fileType) {
   try {
-    const destination = `/images/${uid(6)}${fileName}`;
+    const name = fileName+uid(6);
+    const data = fs.readFileSync(filePath);
 
-    await bucket.upload(filePath, {
-      destination: destination,
-      metadata: {
-        contentType: fileType,
-      },
+    const image = new Image({
+      ID: name,
+      contentType: fileType,
+      data: data
     });
 
-    const file = bucket.file(destination);
-    const [url] = await file.getSignedUrl({
-      action: "read",
-      expires: "03-17-2030",
-    });
+    await image.save();
+
+    const url = `https://api.peomax.com/images/${name}`;
     return { status: "success", url: url };
   } catch (error) {
     console.log(error);

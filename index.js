@@ -45,11 +45,11 @@ dotenv.config();
 
 const app = express();
 const server = createServer(app);
-const io = socketIo(server, { cors: { origin: "*" } });
+const io = socketIo(server, { cors: { origin: ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"] } });
 const port = process.env.PORT || 4000;
 const mongo_url = process.env.mongo_url;
 
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"] }));
 
 app.use((req, res, next) => {
   req.io = io;
@@ -106,3 +106,4 @@ mongoose
     );
   })
   .catch((err) => console.error(err));
+

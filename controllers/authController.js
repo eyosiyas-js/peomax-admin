@@ -622,10 +622,9 @@ async function logout(req, res) {
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });
-    if (!refresh_token)
-      return res.status(401).send({ error: "Invalid/Expired refresh token" });
+    if (refresh_token)
+      return await refresh_token.remove();
 
-    await refresh_token.remove();
 
     res.send({ message: "Logged out" });
   } catch (error) {

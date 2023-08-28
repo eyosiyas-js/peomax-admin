@@ -43,20 +43,35 @@ dotenv.config();
 //   legacyHeaders: false,
 // });
 
+const origins = ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"]
+
 const app = express();
 const server = createServer(app);
-const io = socketIo(server, { cors: { origin: ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"] } });
+const io = socketIo(server, { cors: { origin: origins } });
 const port = process.env.PORT || 4000;
 const mongo_url = process.env.mongo_url;
 
-app.use(cors({ origin: ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"] }));
+app.use(cors({ origin: origins }));
 
 app.use((req, res, next) => {
   req.io = io;
   return next();
 });
 
-app.use(helmet());
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", "data:"],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    mediaSrc: ["'self'"],
+    frameSrc: ["'none'"],
+  }
+}));
 // app.use(limiter);
 app.disable("x-powered-by");
 app.use(express.json());

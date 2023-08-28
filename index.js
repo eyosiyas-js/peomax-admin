@@ -58,6 +58,7 @@ app.use((req, res, next) => {
   return next();
 });
 
+app.use(helmet());
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.contentSecurityPolicy({
   directives: {
@@ -72,6 +73,7 @@ app.use(helmet.contentSecurityPolicy({
     frameSrc: ["'none'"],
   }
 }));
+app.use(helmet.xssFilter());
 // app.use(limiter);
 app.disable("x-powered-by");
 app.use(express.json());
@@ -121,4 +123,5 @@ mongoose
     );
   })
   .catch((err) => console.error(err));
+
 

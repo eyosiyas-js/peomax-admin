@@ -258,4 +258,78 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
   }
 });
 
+router.get("tickets/download/:id", employeeChecker, async (req, res) => {
+  try {
+    // const currentDate = new Date()
+    //   .toLocaleDateString("en-US", {
+    //     timeZone: "Africa/Addis_Ababa",
+    //     month: "2-digit",
+    //     day: "2-digit",
+    //     year: "numeric",
+    //   })
+    //   .replace(/\//g, "/");
+
+    if (!req.query.date)
+      return res.status(400).send({ error: `date is required` });
+
+    const all = await fetchAll(req.user.userID);
+    let matchQuery = {
+      ID: { $in: all.map((item) => item.ID) },
+    };
+
+    if (req.params.id === "premium") {
+      matchQuery.isPremium = true;
+    } else if (req.params.id === "regular") {
+      matchQuery.isPremium = false;
+    } else {
+    }
+
+    const data = await Ticket.aggregate([{ $match: matchQuery }]);
+    if (data.length == 0)
+      return res.status(400).send({ error: `No reservations on this date` });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    worksheet.addRow([
+      "Name",
+      "Email",
+      "Phone",
+      "Event",
+      "People",
+      "Time",
+      "Booked on",
+      "ticket ID",
+    ]);
+
+    data.forEach((customer) => {
+      worksheet.addRow([
+        customer.firstName + " " + customer.lastName,
+        customer.email,
+        customer.phoneNumber,
+        customer.name,
+        customer.people,
+        customer.time,
+        customer.date,
+        customer.ticketID,
+      ]);
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=reservations.xlsx"
+      );
+      res.send(buffer);
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Could not get overview" });
+  }
+});
+
 module.exports = router;

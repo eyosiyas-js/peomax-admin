@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const Item = require("./models/Ticket");
+const Event = require("./models/Event");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const items = require(`./${Item.modelName.toLocaleLowerCase()}s.json`);
+// const items = require(`./${Item.modelName.toLocaleLowerCase()}s.json`);
 
 const mongo_url = process.env.mongo_url;
 
@@ -13,22 +14,15 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected!");
 
+    const items = await Item.find({});
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const createdAt = item.createdAt.$date;
-      const dateString = createdAt;
 
-      const datePart = new Date(dateString).toISOString().split("T")[0];
-      const [year, month, day] = datePart.split("-");
-      const formattedDate = `${month}/${day}/${year}`;
+      const event = await Event.findOne({ eventID: item.eventID });
+      item.name = event.name;
 
-      item.date = formattedDate;
-      item.createdAt = createdAt;
-      delete item._id;
-      delete item.createdAt;
-
-      const ticket = new Item(item);
-      await ticket.save();
+      await item.save();
 
       console.log(`Item: ${i + 1} updated`);
     }

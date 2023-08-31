@@ -59,6 +59,7 @@ router.post("/", userChecker, async (req, res) => {
       .replace(/\//g, "/");
 
     const ticket = new Ticket({
+      name: event.name,
       userID: req.user.userID,
       firstName: user.firstName,
       lastName: user.lastName,

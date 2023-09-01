@@ -233,7 +233,6 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
         customer.name,
         customer.people,
         customer.date,
-        readableDate,
         createdAt,
         customer.status,
         readableDate,
@@ -258,20 +257,8 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
   }
 });
 
-router.get("tickets/download/:id", employeeChecker, async (req, res) => {
+router.get("/tickets/download/:id", employeeChecker, async (req, res) => {
   try {
-    // const currentDate = new Date()
-    //   .toLocaleDateString("en-US", {
-    //     timeZone: "Africa/Addis_Ababa",
-    //     month: "2-digit",
-    //     day: "2-digit",
-    //     year: "numeric",
-    //   })
-    //   .replace(/\//g, "/");
-
-    if (!req.query.date)
-      return res.status(400).send({ error: `date is required` });
-
     const all = await fetchAll(req.user.userID);
     let matchQuery = {
       ID: { $in: all.map((item) => item.ID) },
@@ -281,7 +268,9 @@ router.get("tickets/download/:id", employeeChecker, async (req, res) => {
       matchQuery.isPremium = true;
     } else if (req.params.id === "regular") {
       matchQuery.isPremium = false;
+    } else if (req.params.id === "all") {
     } else {
+      return res.status(400).send({ error: "Invalid type" });
     }
 
     const data = await Ticket.aggregate([{ $match: matchQuery }]);

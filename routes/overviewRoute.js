@@ -233,7 +233,7 @@ router.get("/download/:id", employeeChecker, async (req, res) => {
         customer.name,
         customer.people,
         customer.date,
-        createdAt,
+        customer.time,
         customer.status,
         readableDate,
         customer.reservationID,

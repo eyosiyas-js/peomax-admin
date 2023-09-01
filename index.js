@@ -32,6 +32,7 @@ const eventsRoute = require("./routes/eventsRoute.js");
 const ticketRoute = require("./routes/ticketRoute.js");
 const ticketsRoute = require("./routes/ticketsRoute.js");
 const availableSpotsRoute = require("./routes/availableSpotsRoute.js");
+const tableRoute = require("./routes/tableRoute.js");
 const imagesRoute = require("./routes/imagesRoute.js");
 
 dotenv.config();
@@ -43,7 +44,11 @@ dotenv.config();
 //   legacyHeaders: false,
 // });
 
-const origins = ["https://peomax.com", "https://management.peomax.com", "https://admin.peomax.com"]
+const origins = [
+  "https://peomax.com",
+  "https://management.peomax.com",
+  "https://admin.peomax.com",
+];
 
 const app = express();
 const server = createServer(app);
@@ -59,20 +64,22 @@ app.use((req, res, next) => {
 });
 
 app.use(helmet());
-app.use(helmet.frameguard({ action: 'deny' }));
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:"],
-    connectSrc: ["'self'"],
-    fontSrc: ["'self'"],
-    objectSrc: ["'none'"],
-    mediaSrc: ["'self'"],
-    frameSrc: ["'none'"],
-  }
-}));
+app.use(helmet.frameguard({ action: "deny" }));
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  })
+);
 app.use(helmet.xssFilter());
 // app.use(limiter);
 app.disable("x-powered-by");
@@ -101,13 +108,14 @@ app.use("/api/nearby", nearbyRoute);
 app.use("/api/geolocation", geolocationRoute);
 app.use("/api/menu", menuRoute);
 
-app.use("/images",imagesRoute)
+app.use("/images", imagesRoute);
 app.use("/api/events", eventsRoute);
 app.use("/api/reserve", reserveRoute);
 app.use("/api/reservations", reservationsRoute);
 app.use("/api/ticket", ticketRoute);
 app.use("/api/tickets", ticketsRoute);
 app.use("/api/available-spots", availableSpotsRoute);
+app.use("/api/tables", tableRoute);
 
 app.get("/api", (req, res) => {
   res.send(`Hello World! ${req.protocol}://${req.hostname}`);
@@ -123,5 +131,3 @@ mongoose
     );
   })
   .catch((err) => console.error(err));
-
-

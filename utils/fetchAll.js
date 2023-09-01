@@ -25,10 +25,10 @@ async function fetchAll(managerID) {
     return all;
   } else {
     const [bars, clubs, hotels, restaurants] = await Promise.all([
-      Bar.find({ status: "approved" }),
-      Club.find({ status: "approved" }),
-      Hotel.find({ status: "approved" }),
-      Restaurant.find({ status: "approved" }),
+      Bar.find({}),
+      Club.find({}),
+      Hotel.find({}),
+      Restaurant.find({}),
     ]);
 
     const all = [...hotels, ...restaurants, ...clubs, ...bars];

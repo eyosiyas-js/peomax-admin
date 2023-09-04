@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const User = require("../models/User");
+
 dotenv.config();
 
 module.exports = async function (req, res, next) {
@@ -15,6 +17,11 @@ module.exports = async function (req, res, next) {
       );
 
       req.user = decoded;
+      const userData = await User.findOne({ userID: decoded.userID });
+
+      if (userData.isBanned === true)
+        return res.status(403).send({ error: "User is banned" });
+
       next();
     } catch (err) {
       res.status(401).send({ error: "Invalid/expired Token" });

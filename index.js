@@ -44,11 +44,13 @@ dotenv.config();
 //   legacyHeaders: false,
 // });
 
-const origins = [
-  "https://peomax.com",
-  "https://management.peomax.com",
-  "https://admin.peomax.com",
-];
+// const origins = [
+//   "https://peomax.com",
+//   "https://management.peomax.com",
+//   "https://admin.peomax.com",
+// ];
+
+const origins = "*";
 
 const app = express();
 const server = createServer(app);

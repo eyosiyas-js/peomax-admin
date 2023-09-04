@@ -19,7 +19,7 @@ router.get("/tickets/:id/:place", adminChecker, async (req, res) => {
     if (req.params.id === "premium") {
       matchQuery.isPremium = true;
     } else if (req.params.id === "regular") {
-      matchQuery.isPremium = false;
+      matchQuery.isPremium = !true;
     } else if (req.params.id === "all") {
     } else {
       return res.status(400).send({ error: "Invalid type" });
@@ -36,6 +36,7 @@ router.get("/tickets/:id/:place", adminChecker, async (req, res) => {
       "Phone",
       "Event",
       "People",
+      "Premium",
       "Time",
       "Booked on",
       "ticket ID",
@@ -48,6 +49,7 @@ router.get("/tickets/:id/:place", adminChecker, async (req, res) => {
         customer.phoneNumber,
         customer.name,
         customer.people,
+        customer.isPremium ? "Yes" : "No",
         customer.time,
         customer.date,
         customer.ticketID,

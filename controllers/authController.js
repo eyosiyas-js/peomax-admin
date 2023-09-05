@@ -44,6 +44,10 @@ async function generateReference(usr) {
 
 async function signup(req, res) {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+
     const valid = await validateSignupData(req.body);
     if (!valid.success) {
       return res.status(400).send({ error: valid.message });
@@ -232,6 +236,10 @@ async function verifyEmail(req, res) {
 
 async function authProvider(req, res) {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+
     const { firstName, lastName, email } = req.body;
 
     if (!firstName || !lastName || !email)
@@ -327,6 +335,9 @@ async function authProvider(req, res) {
 }
 
 async function reSend(req, res) {
+  if (req.body.email) {
+    req.body.email = req.body.email.toLowerCase();
+  }
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -371,6 +382,10 @@ async function reSend(req, res) {
 
 async function login(req, res) {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+
     const valid = await validateLoginData(req.body);
     if (!valid.success) {
       return res.status(400).send({ error: valid.message });
@@ -473,6 +488,10 @@ async function login(req, res) {
 
 async function resetPassword(req, res) {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+
     const code = await generateOTP();
 
     const { email } = req.body;
@@ -622,9 +641,7 @@ async function logout(req, res) {
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
     });
-    if (refresh_token)
-      return await refresh_token.remove();
-
+    if (refresh_token) return await refresh_token.remove();
 
     res.send({ message: "Logged out" });
   } catch (error) {

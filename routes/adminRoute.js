@@ -20,6 +20,10 @@ dotenv.config();
 
 router.post("/login", async (req, res) => {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+
     const valid = await validateLoginData(req.body);
     if (!valid.success) return res.status(400).send({ error: valid.message });
 

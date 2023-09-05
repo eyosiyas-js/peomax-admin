@@ -13,6 +13,9 @@ const router = express.Router();
 
 router.post("/register", managerChecker, async (req, res) => {
   try {
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
     const valid = await validateSupervisor(req.body);
     if (!valid.success) return res.status(400).send({ error: valid.message });
 

@@ -31,23 +31,12 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const events = await Event.find({});
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
-    const eventsCount = events.length;
-    const totalPages = Math.ceil(eventsCount / count);
+    events.sort((a, b) => b.totalSpots - a.totalSpots);
 
-    const paginatedData = events.slice(skip, skip + count);
-
-    res.send({
-      page,
-      totalPages,
-      eventsCount,
-      events: paginatedData,
-    });
+    res.send(events);
   } catch (error) {
     console.log(error);
-    res.status(400).send({ error: "Couldn't get all spots" });
+    res.status(400).send({ error: "Couldn't get all events" });
   }
 });
 

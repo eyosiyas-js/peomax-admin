@@ -31,6 +31,9 @@ router.post("/", userChecker, async (req, res) => {
     const place = await findPlace(ID, category);
     if (!place) return res.status(404).send({ error: `${category} not found` });
 
+    if (parseInt(people) > 10)
+      return res.status(400).send({ error: "Maximum people allowed is 10" });
+
     if (hasDatePassed(date))
       return res.status(400).send({ error: "Invalid date" });
 
@@ -122,6 +125,9 @@ router.post("/manual", employeeChecker, async (req, res) => {
       return res
         .status(400)
         .send({ error: `${category} is not open at that time` });
+
+    if (parseInt(people) > 10)
+      return res.status(400).send({ error: "Maximum people allowed is 10" });
 
     if (hasTimePassed(time, place.closingTime))
       return res

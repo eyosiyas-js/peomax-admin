@@ -9,7 +9,6 @@ async function extractMain(managerID) {
       { supervisors: { $in: [managerID] }, subHotel: { $ne: true } },
       { employees: { $in: [managerID] }, subHotel: { $ne: true } },
       { managerID, subHotel: { $ne: true } },
-      { subHotel: { $exists: false } },
     ],
   };
 

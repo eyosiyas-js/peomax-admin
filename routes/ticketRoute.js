@@ -31,6 +31,9 @@ router.post("/", userChecker, async (req, res) => {
     if (hasDatePassed(event.endDate))
       return res.status(400).send({ error: "Event is over" });
 
+    if (people > 10)
+      return res.status(400).send({ error: "Maximum people allowed is 10" });
+
     if (people > event.availableSpots)
       return res.status(400).send({ error: "Insufficient space" });
 
@@ -198,7 +201,7 @@ router.post("/verify", employeeChecker, async (req, res) => {
 
     await ticket.save();
 
-    res.send({ message: "Ticket verified!" });
+    res.send({ verified: true, message: "Ticket verified!" });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't book a ticket" });

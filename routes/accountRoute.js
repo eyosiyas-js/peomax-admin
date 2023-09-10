@@ -18,7 +18,7 @@ router.get("/", userChecker, async (req, res) => {
 
     if (!user) return res.status(404).send({ error: "User not found" });
 
-    if (user.role == "employee") {
+    if (user.role === "employee") {
       const items = await fetchAll(req.user.userID);
 
       if (items == []) return res.send(user.toObject());
@@ -27,7 +27,7 @@ router.get("/", userChecker, async (req, res) => {
         ID: items[0].ID,
         category: items[0].category,
       });
-    } else if (user.role == "supervisor" || user.role == "manager") {
+    } else if (user.role === "supervisor" || user.role === "manager") {
       const main = await extractMain(req.user.userID);
       if (!main) return res.send(user.toObject());
 

@@ -140,6 +140,12 @@ const eventSchema = Joi.object({
     .messages({
       "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
     }),
+  endDate: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .required()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
   isFullDay: Joi.boolean().optional(),
   eventStart: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)

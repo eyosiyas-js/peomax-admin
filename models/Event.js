@@ -45,6 +45,10 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  endDate: {
+    type: String,
+    required: false,
+  },
   isFullDay: {
     type: Boolean,
     default: false,

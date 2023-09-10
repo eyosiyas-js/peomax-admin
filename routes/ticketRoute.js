@@ -28,7 +28,7 @@ router.post("/", userChecker, async (req, res) => {
         .status(404)
         .send({ error: `No event found with id: ${eventID}` });
 
-    if (hasDatePassed(event.date))
+    if (hasDatePassed(event.endDate))
       return res.status(400).send({ error: "Event is over" });
 
     if (people > event.availableSpots)

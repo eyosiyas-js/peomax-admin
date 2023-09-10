@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-const Item = require("./models/Ticket");
-const Event = require("./models/Event");
+const Item = require("./models/Event");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -18,10 +17,7 @@ mongoose
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-
-      const event = await Event.findOne({ eventID: item.eventID });
-      item.name = event.name;
-
+      item.endDate = item.date;
       await item.save();
 
       console.log(`Item: ${i + 1} updated`);

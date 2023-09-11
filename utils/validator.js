@@ -177,6 +177,12 @@ const editEventSchema = Joi.object({
     .messages({
       "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
     }),
+  endDate: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
   eventStart: Joi.string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)\s(AM|PM)$/)
     .optional()

@@ -39,7 +39,7 @@ router.post("/", userChecker, async (req, res) => {
 
     let price = 0;
 
-    if (isPremium) {
+    if (isPremium && event.premiumPrice) {
       price = parseInt(people) * parseFloat(event.premiumPrice);
     } else {
       price = parseInt(people) * parseFloat(event.price);

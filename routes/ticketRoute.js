@@ -162,20 +162,16 @@ router.get("/:id", employeeChecker, async (req, res) => {
   }
 });
 
-router.post("/verify", employeeChecker, async (req, res) => {
+router.post("/verify/:id", employeeChecker, async (req, res) => {
   try {
-    const { ticketID, eventID } = req.body;
+    const ticketID = req.params.id;
 
-    if (!ticketID || !eventID)
-      return res.status(400).send({ error: "ticket ID / event ID missing" });
+    if (!ticketID) return res.status(400).send({ error: "ticket ID missing" });
 
     const ticket = await Ticket.findOne({ ticketID });
 
     if (!ticket)
       return res.status(404).send({ error: `No ticket with ID:${ticketID}` });
-
-    if (ticket.eventID !== eventID)
-      return res.status(400).send({ error: `Incorrect event` });
 
     const event = await Event.findOne({ eventID: ticket.eventID });
     if (!event)
@@ -192,6 +188,12 @@ router.post("/verify", employeeChecker, async (req, res) => {
     const isAuthorized = await checkAuthorization(req.user.userID, place);
     if (!isAuthorized)
       return res.status(403).send({ error: "Unauthorized action" });
+
+    if (hasDatePassed(event.endDate)) {
+      ticket.expired = true;
+      await ticket.save();
+      return res.status(400).send({ error: "Event is over" });
+    }
 
     if (ticket.expired || ticket.attended)
       return res.status(404).send({ error: "Ticket expired" });

@@ -203,7 +203,7 @@ router.post("/verify/:id", employeeChecker, async (req, res) => {
 
     await ticket.save();
 
-    res.send({ verified: true, message: "Ticket verified!" });
+    res.send({ verified: true, message: "Ticket verified!", ticket });
   } catch (error) {
     console.log(error);
     res.status(400).send({ error: "Couldn't book a ticket" });

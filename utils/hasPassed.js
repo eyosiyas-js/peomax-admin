@@ -39,4 +39,16 @@ function isTimeAfter(secondTime, firstTime) {
   return firstMoment.isAfter(secondMoment);
 }
 
-module.exports = { hasDatePassed, hasTimePassed, isTimeAfter };
+function isDateBetween(startDate, dateToCheck, endDate) {
+  const dateToCheckMoment = moment.tz(
+    dateToCheck,
+    "MM/DD/YYYY",
+    "Africa/Nairobi"
+  );
+  const startMoment = moment.tz(startDate, "MM/DD/YYYY", "Africa/Nairobi");
+  const endMoment = moment.tz(endDate, "MM/DD/YYYY", "Africa/Nairobi");
+
+  return dateToCheckMoment.isBetween(startMoment, endMoment, null, "[]");
+}
+
+module.exports = { hasDatePassed, hasTimePassed, isTimeAfter, isDateBetween };

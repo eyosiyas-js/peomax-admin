@@ -2,6 +2,7 @@ const express = require("express");
 const Event = require("../models/Event");
 const findPlace = require("../utils/findPlace");
 const checkAuthorization = require("../utils/checkAuthorization");
+const availableSpots = require("../utils/availableSpots");
 const superVisorChecker = require("../middleware/superVisorChecker");
 const { uid } = require("uid");
 
@@ -48,6 +49,29 @@ router.get("/:id", async (req, res) => {
       return res
         .status(404)
         .send({ error: `No event found with id: ${req.params.id}` });
+
+    res.send(event);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: "Couldn't get all spots" });
+  }
+});
+
+router.get("/:id/available-spots", async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) return res.status(400).send({ error: "Date is required" });
+
+    const event = await Event.find({ eventID: req.params.id });
+    if (!event)
+      return res
+        .status(404)
+        .send({ error: `No event found with id: ${req.params.id}` });
+
+    const spots = await availableSpots(date, event, "event");
+
+    res.send({ spots });
 
     res.send(event);
   } catch (error) {

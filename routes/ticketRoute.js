@@ -11,7 +11,7 @@ const { validateTicket } = require("../utils/validator.js");
 const findPlace = require("../utils/findPlace.js");
 const checkAuthorization = require("../utils/checkAuthorization.js");
 const availableSpots = require("../utils/availableSpots");
-const { hasDatePassed } = require("../utils/hasPassed.js");
+const { hasDatePassed, isDateBetween } = require("../utils/hasPassed.js");
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ router.post("/", userChecker, async (req, res) => {
 
     if (!valid.success) return res.status(400).send({ error: valid.message });
 
-    const { eventID, isPremium, people, phoneNumber } = req.body;
+    const { eventID, isPremium, people, phoneNumber, bookedDate } = req.body;
 
     const event = await Event.findOne({ eventID: eventID });
     if (!event)
@@ -35,7 +35,26 @@ router.post("/", userChecker, async (req, res) => {
     let freeSpots = event.availableSpots;
 
     if (event.date !== event.endDate) {
-      spots = await availableSpots(date, event, "event");
+      if (!bookedDate) {
+        return res
+          .status(400)
+          .send({
+            error:
+              "Booking date is required for events that last for multiple days",
+          });
+      }
+
+      spots = await availableSpots(bookedDate, event, "event");
+
+      if (
+        bookedDate == event.date ||
+        bookedDate == event.endDate ||
+        isDateBetween(event.date, bookedDate, event.endDate)
+      ) {
+        return res
+          .status(400)
+          .send({ error: "The date is outside the scope of the event" });
+      }
     } else {
       event.availableSpots = freeSpots - parseInt(people);
     }
@@ -87,6 +106,10 @@ router.post("/", userChecker, async (req, res) => {
       category: event.category,
       ticketID: uid(16),
     });
+
+    if (bookedDate) {
+      ticket.bookedDate = bookedDate;
+    }
 
     event.totalBooks = parseInt(event.totalBooks) + 1;
     await event.save();

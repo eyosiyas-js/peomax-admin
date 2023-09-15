@@ -10,6 +10,7 @@ const { uid } = require("uid");
 const { validateTicket } = require("../utils/validator.js");
 const findPlace = require("../utils/findPlace.js");
 const checkAuthorization = require("../utils/checkAuthorization.js");
+const availableSpots = require("../utils/availableSpots");
 const { hasDatePassed } = require("../utils/hasPassed.js");
 
 const router = express.Router();
@@ -31,11 +32,19 @@ router.post("/", userChecker, async (req, res) => {
     if (hasDatePassed(event.endDate))
       return res.status(400).send({ error: "Event is over" });
 
+    let freeSpots = event.availableSpots;
+
+    if (event.date !== event.endDate) {
+      spots = await availableSpots(date, event, "event");
+    } else {
+      event.availableSpots = freeSpots - parseInt(people);
+    }
+
+    if (people > freeSpots)
+      return res.status(400).send({ error: "Insufficient space" });
+
     if (people > 10)
       return res.status(400).send({ error: "Maximum people allowed is 10" });
-
-    if (people > event.availableSpots)
-      return res.status(400).send({ error: "Insufficient space" });
 
     let price = 0;
 
@@ -79,7 +88,6 @@ router.post("/", userChecker, async (req, res) => {
       ticketID: uid(16),
     });
 
-    event.availableSpots = event.availableSpots - parseInt(people);
     event.totalBooks = parseInt(event.totalBooks) + 1;
     await event.save();
 

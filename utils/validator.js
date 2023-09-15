@@ -248,6 +248,12 @@ const ticketSchema = Joi.object({
   isPremium: Joi.boolean(),
   people: Joi.number().integer().positive().required(),
   phoneNumber: Joi.string().required(),
+  bookedDate: Joi.string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": `Date should be in the format mm/dd/yyyy`,
+    }),
 });
 
 const menuSchema = Joi.object({

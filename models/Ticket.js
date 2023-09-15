@@ -33,6 +33,10 @@ const ticketSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  bookedDate: {
+    type: String,
+    required: false,
+  },
   time: {
     type: String,
     required: true,

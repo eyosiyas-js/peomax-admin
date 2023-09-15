@@ -138,7 +138,15 @@ router.post(
       } = req.body;
 
       if (hasDatePassed(date))
-        return res.status(400).send({ error: "Incorrect date" });
+        return res.status(400).send({ error: "Invalid date" });
+
+      if (hasDatePassed(endDate))
+        return res.status(400).send({ error: "Invalid date" });
+
+      if (hasDatePassed(endDate, date))
+        return res
+          .status(400)
+          .send({ error: "End date can not be set before start date" });
 
       const event = new Event({
         name: name,
@@ -221,6 +229,7 @@ router.put(
         name,
         description,
         date,
+        endDate,
         totalSpots,
         availableSpots,
         eventStart,
@@ -235,9 +244,18 @@ router.put(
       if (date && hasDatePassed(date))
         return res.status(400).send({ error: "Invalid date" });
 
+      if (endDate && hasDatePassed(endDate))
+        return res.status(400).send({ error: "Invalid date" });
+
+      if (date && endDate && hasDatePassed(endDate, date))
+        return res
+          .status(400)
+          .send({ error: "End date can not be set before start date" });
+
       event.name = name ?? event.name;
       event.description = description ?? event.description;
       event.date = date ?? event.date;
+      event.endDate = endDate ?? event.endDate;
       event.image = urls.length !== 0 ? urls[0] : event.image;
       event.images = urls.length !== 0 ? urls : event.images;
       event.availableSpots = availableSpots ?? event.availableSpots;

@@ -1,15 +1,17 @@
 const Reservation = require("../models/Reservation");
+const Ticket = require("../models/Ticket");
 
-async function availableSpots(date, place) {
+async function availableSpots(date, place, type) {
   try {
-    const reservationAggregation = await Reservation.aggregate([
+    const matchQuery = {
+      ID: place.ID,
+      category: place.category,
+      date: date,
+    };
+
+    let aggregationPipeline = [
       {
-        $match: {
-          ID: place.ID,
-          category: place.category,
-          date: date,
-          status: { $nin: ["rejected", "attended"] },
-        },
+        $match: matchQuery,
       },
       {
         $group: {
@@ -17,7 +19,18 @@ async function availableSpots(date, place) {
           totalPeople: { $sum: "$people" },
         },
       },
-    ]);
+    ];
+
+    if (type === "event") {
+      matchQuery.expired = { $ne: true };
+      matchQuery.attended = { $ne: true };
+    } else {
+      matchQuery.status = { $nin: ["rejected", "attended"] };
+    }
+
+    const reservationAggregation = await (type === "event"
+      ? Ticket.aggregate(aggregationPipeline)
+      : Reservation.aggregate(aggregationPipeline));
 
     const sumOfPeople = reservationAggregation.length
       ? reservationAggregation[0].totalPeople

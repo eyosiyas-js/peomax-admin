@@ -5,4 +5,5 @@ qrcodes
 .vscode
 package-lock.json
 test.js
+todo.txt
 app.html

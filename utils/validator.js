@@ -245,7 +245,7 @@ const reservationManualSchema = Joi.object({
 
 const ticketSchema = Joi.object({
   eventID: Joi.string().required(),
-  isPremium: Joi.boolean(),
+  isPremium: Joi.boolean().optional(),
   people: Joi.number().integer().positive().required(),
   phoneNumber: Joi.string().required(),
   bookedDate: Joi.string()

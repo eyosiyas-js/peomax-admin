@@ -6,7 +6,6 @@ async function availableSpots(date, place, type) {
     const matchQuery = {
       ID: place.ID,
       category: place.category,
-      date: date,
     };
 
     let aggregationPipeline = [
@@ -24,8 +23,10 @@ async function availableSpots(date, place, type) {
     if (type === "event") {
       matchQuery.expired = { $ne: true };
       matchQuery.attended = { $ne: true };
+      matchQuery.bookedDate = date;
     } else {
       matchQuery.status = { $nin: ["rejected", "attended"] };
+      matchQuery.date = date;
     }
 
     const reservationAggregation = await (type === "event"

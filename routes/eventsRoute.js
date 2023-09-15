@@ -164,10 +164,13 @@ router.post(
         eventEnd: eventEnd,
         price: price,
         endDate,
-        premiumPrice: premiumPrice ?? null,
         program: program == "true",
         eventID: uid(16),
       });
+
+      if (premiumPrice) {
+        event.premiumPrice = premiumPrice;
+      }
 
       await event.save();
 

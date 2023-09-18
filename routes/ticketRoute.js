@@ -36,12 +36,10 @@ router.post("/", userChecker, async (req, res) => {
 
     if (event.date !== event.endDate) {
       if (!bookedDate) {
-        return res
-          .status(400)
-          .send({
-            error:
-              "Booking date is required for events that last for multiple days",
-          });
+        return res.status(400).send({
+          error:
+            "Booking date is required for events that last for multiple days",
+        });
       }
 
       spots = await availableSpots(bookedDate, event, "event");
@@ -49,7 +47,7 @@ router.post("/", userChecker, async (req, res) => {
       if (
         bookedDate == event.date ||
         bookedDate == event.endDate ||
-        isDateBetween(event.date, bookedDate, event.endDate)
+        !isDateBetween(event.date, bookedDate, event.endDate)
       ) {
         return res
           .status(400)

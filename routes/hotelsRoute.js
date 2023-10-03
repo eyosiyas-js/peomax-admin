@@ -84,6 +84,7 @@ router.get("/:id/restaurants", async (req, res) => {
 
     const restaurantsCount = await Restaurant.countDocuments({
       managerID: hotel.managerID,
+      status: "approved",
     });
     const totalPages = Math.ceil(restaurantsCount / count);
     const restaurants = await Restaurant.find({ managerID: hotel.managerID })
@@ -114,6 +115,7 @@ router.get("/:id/bars", async (req, res) => {
 
     const barsCount = await Bar.countDocuments({
       managerID: hotel.managerID,
+      status: "approved",
     });
     const totalPages = Math.ceil(barsCount / count);
     const bars = await Bar.find({ managerID: hotel.managerID })
@@ -144,6 +146,7 @@ router.get("/:id/clubs", async (req, res) => {
 
     const clubsCount = await Club.countDocuments({
       managerID: hotel.managerID,
+      status: "approved",
     });
     const totalPages = Math.ceil(clubsCount / count);
     const clubs = await Club.find({ managerID: hotel.managerID })

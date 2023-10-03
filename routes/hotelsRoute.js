@@ -87,7 +87,10 @@ router.get("/:id/restaurants", async (req, res) => {
       status: "approved",
     });
     const totalPages = Math.ceil(restaurantsCount / count);
-    const restaurants = await Restaurant.find({ managerID: hotel.managerID })
+    const restaurants = await Restaurant.find({
+      managerID: hotel.managerID,
+      status: "approved",
+    })
       .skip(skip)
       .limit(count);
     res.send({
@@ -118,7 +121,10 @@ router.get("/:id/bars", async (req, res) => {
       status: "approved",
     });
     const totalPages = Math.ceil(barsCount / count);
-    const bars = await Bar.find({ managerID: hotel.managerID })
+    const bars = await Bar.find({
+      managerID: hotel.managerID,
+      status: "approved",
+    })
       .skip(skip)
       .limit(count);
     res.send({
@@ -149,7 +155,10 @@ router.get("/:id/clubs", async (req, res) => {
       status: "approved",
     });
     const totalPages = Math.ceil(clubsCount / count);
-    const clubs = await Club.find({ managerID: hotel.managerID })
+    const clubs = await Club.find({
+      managerID: hotel.managerID,
+      status: "approved",
+    })
       .skip(skip)
       .limit(count);
     res.send({

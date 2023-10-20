@@ -247,7 +247,7 @@ async function authProvider(req, res) {
 
     const existingUser = await User.findOne({ email: email });
 
-    if (existingUser.isBanned)
+    if (existingUser && existingUser.isBanned)
       return res.status(403).send({ error: "User is banned" });
 
     if (existingUser) {

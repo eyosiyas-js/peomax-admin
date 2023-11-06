@@ -505,6 +505,11 @@ async function resetPassword(req, res) {
         .status(404)
         .send({ error: `No user found with the email ${email}` });
 
+    if (!user.password)
+      return res
+        .status(400)
+        .send({ error: "User is registered with google authentication." });
+
     const otp = new OTP({
       userID: user.userID,
       code: code,
@@ -545,6 +550,11 @@ async function changePassword(req, res) {
       return res.status(404).send({ error: "Passwords do not match" });
 
     const user = await User.findOne({ userID: otp.userID });
+
+    if (!user.password)
+      return res
+        .status(400)
+        .send({ error: "User is registered with google authentication." });
 
     const saltRounds = parseInt(process.env.saltRounds);
     const salt = await bcrypt.genSalt(saltRounds);

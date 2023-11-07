@@ -24,7 +24,7 @@ async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
 
     const code = eventEmail;
     let transporter = nodemailer.createTransport({
-      service: "https://smtp.cloudflareemail.net",
+      service: "smtp.cloudflareemail.net",
       port: 587,
       auth: {
         user: process.env.email,

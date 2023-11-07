@@ -11,7 +11,7 @@ async function reserveMail(clientName, clientEmail) {
     const code = reserveEmail.replace("{{clientName}}", clientName);
 
     let transporter = nodemailer.createTransport({
-      service: "https://smtp.cloudflareemail.net",
+      service: "smtp.cloudflareemail.net",
       port: 587,
       auth: {
         user: process.env.email,

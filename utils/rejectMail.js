@@ -13,6 +13,7 @@ async function reserveMail(clientName, clientEmail) {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       port: 587,
+      secure: false,
       auth: {
         user: process.env.email,
         pass: process.env.email_password,

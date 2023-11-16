@@ -26,6 +26,7 @@ async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       port: 587,
+      secure: false,
       auth: {
         user: process.env.email,
         pass: process.env.email_password,

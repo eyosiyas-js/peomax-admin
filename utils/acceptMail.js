@@ -26,7 +26,7 @@ async function acceptMail(
       .replace(/{{people}}/g, people);
 
     let transporter = nodemailer.createTransport({
-      service: "smtp.gmail.com",
+      from: "infopeomax",
       port: 587,
       auth: {
         user: process.env.email,

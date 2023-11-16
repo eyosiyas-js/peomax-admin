@@ -22,21 +22,23 @@ function generateOTP() {
   return otp;
 }
 
-async function generateReference(usr) {
-  const chars = "0123456789";
+async function generateReference() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let random = "";
   for (let i = 0; i < 4; i++) {
     const index = Math.floor(Math.random() * chars.length);
     random += chars[index];
   }
-  let reference = `peomax-${random}${usr.firstName[0].toLowerCase()}${usr.email[1].toLowerCase()}${usr.lastName[0].toLowerCase()}`;
+
+  let reference = random;
 
   const referenceExists = await User.findOne({
     role: "client",
     reference: reference,
   });
+
   if (referenceExists) {
-    return await generateReference(usr);
+    return await generateReference();
   } else {
     return reference;
   }

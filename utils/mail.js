@@ -51,7 +51,6 @@ async function sendEmail(clientName, clientEmail, subject, verificationCode) {
   });
 
   let message = {
-    from: process.env.email,
     to: clientEmail,
     subject: subject,
     html: modifiedEmail,

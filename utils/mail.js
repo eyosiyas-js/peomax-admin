@@ -42,7 +42,7 @@ async function sendEmail(clientName, clientEmail, subject, verificationCode) {
   modifiedEmail = modifiedEmail.replace("{{code}}", verificationCode);
 
   let transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
     port: 587,
     secure: false,
     auth: {

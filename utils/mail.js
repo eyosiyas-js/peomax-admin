@@ -42,7 +42,7 @@ async function sendEmail(clientName, clientEmail, subject, verificationCode) {
   modifiedEmail = modifiedEmail.replace("{{code}}", verificationCode);
 
   let transporter = nodemailer.createTransport({
-    from: "infopeomax",
+    service: "smtp.gmail.com",
     port: 587,
     auth: {
       user: process.env.email,

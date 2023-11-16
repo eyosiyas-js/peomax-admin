@@ -11,7 +11,7 @@ async function reserveMail(clientName, clientEmail) {
     const code = reserveEmail.replace("{{clientName}}", clientName);
 
     let transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: "smtp.gmail.com",
       port: 587,
       auth: {
         user: process.env.email,
@@ -20,7 +20,6 @@ async function reserveMail(clientName, clientEmail) {
     });
 
     let message = {
-      from: process.env.email,
       to: clientEmail,
       subject: "Reservation Rejected",
       html: code,

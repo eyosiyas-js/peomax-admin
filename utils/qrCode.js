@@ -24,7 +24,7 @@ async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
 
     const code = eventEmail;
     let transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: "smtp.gmail.com",
       port: 587,
       auth: {
         user: process.env.email,
@@ -33,7 +33,6 @@ async function qrCode(ticketID, clientName, clientEmail, ticket, event) {
     });
 
     let message = {
-      from: process.env.email,
       to: clientEmail,
       subject: "Virtual Ticket",
       html: code,

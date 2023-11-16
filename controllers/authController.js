@@ -25,7 +25,7 @@ function generateOTP() {
 async function generateReference() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let random = "";
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     const index = Math.floor(Math.random() * chars.length);
     random += chars[index];
   }

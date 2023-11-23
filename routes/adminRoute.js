@@ -1,510 +1,729 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const User = require("../models/User.js");
-const Bar = require("../models/Bar");
-const Club = require("../models/Club");
-const Hotel = require("../models/Hotel");
-const Restaurant = require("../models/Restaurant");
-const Reservation = require("../models/Reservation.js");
-const Ticket = require("../models/Ticket.js");
-const Token = require("../models/Token.js");
-const { validateLoginData } = require("../utils/validator.js");
-const adminChecker = require("../middleware/adminChecker.js");
-const findPlace = require("../utils/findPlace.js");
-const fetchAll = require("../utils/fetchAll.js");
-const router = express.Router();
+const express = require('express')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const User = require('../models/User.js')
+const Bar = require('../models/Bar')
+const Club = require('../models/Club')
+const Hotel = require('../models/Hotel')
+const Restaurant = require('../models/Restaurant')
+const Reservation = require('../models/Reservation.js')
+const Ticket = require('../models/Ticket.js')
+const Token = require('../models/Token.js')
+const { validateLoginData } = require('../utils/validator.js')
+const adminChecker = require('../middleware/adminChecker.js')
+const findPlace = require('../utils/findPlace.js')
+const fetchAll = require('../utils/fetchAll.js')
+const router = express.Router()
+const ExcelJS = require('exceljs')
+const PDFDocument = require('pdfkit')
 
-const dotenv = require("dotenv");
-dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config()
 
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     if (req.body.email) {
-      req.body.email = req.body.email.toLowerCase();
+      req.body.email = req.body.email.toLowerCase()
     }
 
-    const valid = await validateLoginData(req.body);
-    if (!valid.success) return res.status(400).send({ error: valid.message });
+    const valid = await validateLoginData(req.body)
+    if (!valid.success) return res.status(400).send({ error: valid.message })
 
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email, role: "admin" });
+    const { email, password } = req.body
+    const user = await User.findOne({ email: email, role: 'admin' })
     if (!user) {
-      res.status(404).send({ error: "Admin not found." });
+      res.status(404).send({ error: 'Admin not found.' })
     } else {
       const userData = {
         password: user.password,
         email: user.email,
         userID: user.userID,
-        role: "admin",
-      };
+        role: 'admin',
+      }
 
-      const userPassword = user.password;
-      const isMatch = await bcrypt.compare(password, userPassword);
+      const userPassword = user.password
+      const isMatch = await bcrypt.compare(password, userPassword)
 
       if (!isMatch)
-        return res.status(400).send({ error: "password incorrect!" });
+        return res.status(400).send({ error: 'password incorrect!' })
 
-      delete userData.password;
+      delete userData.password
 
       const token1 = await jwt.sign(
         userData,
         process.env.access_token_secret_key,
         {
-          expiresIn: "30d",
-        }
-      );
+          expiresIn: '30d',
+        },
+      )
 
       const token2 = await jwt.sign(
         userData,
         process.env.refresh_token_secret_key,
         {
-          expiresIn: "60d",
-        }
-      );
+          expiresIn: '60d',
+        },
+      )
 
-      const token = `Bearer ${token1}`;
-      const refresh_token = `Bearer ${token2}`;
+      const token = `Bearer ${token1}`
+      const refresh_token = `Bearer ${token2}`
 
       const newRefreshToken = new Token({
         userID: userData.userID,
         token: refresh_token,
-      });
-      await newRefreshToken.save();
+      })
+      await newRefreshToken.save()
 
-      res.send({ token, refresh_token, userData });
+      res.send({ token, refresh_token, userData })
     }
   } catch (error) {
-    res.status(500).send("Could not login to admin");
-    console.log(error);
+    res.status(500).send('Could not login to admin')
+    console.log(error)
   }
-});
+})
 
-router.post("/approve", adminChecker, async (req, res) => {
+router.post('/approve', adminChecker, async (req, res) => {
   try {
-    const { ID, category } = req.body;
+    const { ID, category } = req.body
     if (!ID || !category)
-      return res.status(400).send({ error: "ID/category missing" });
+      return res.status(400).send({ error: 'ID/category missing' })
 
-    const place = await findPlace(ID, category);
+    const place = await findPlace(ID, category)
     if (!place)
-      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` })
 
-    place.status = "approved";
-    await place.save();
+    place.status = 'approved'
+    await place.save()
 
-    res.send({ message: `${category} approved` });
+    res.send({ message: `${category} approved` })
   } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Could not approve submission" });
+    console.log(error)
+    res.status(400).send({ error: 'Could not approve submission' })
   }
-});
+})
 
-router.post("/reject", adminChecker, async (req, res) => {
+router.post('/reject', adminChecker, async (req, res) => {
   try {
-    const { ID, category } = req.body;
+    const { ID, category } = req.body
     if (!ID || !category)
-      return res.status(400).send({ error: "ID/category missing" });
+      return res.status(400).send({ error: 'ID/category missing' })
 
-    const place = await findPlace(ID, category);
+    const place = await findPlace(ID, category)
     if (!place)
-      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` })
 
-    place.status = "rejected";
-    await place.save();
+    place.status = 'rejected'
+    await place.save()
 
-    res.send({ message: `${category} rejected` });
+    res.send({ message: `${category} rejected` })
   } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Could not reject submission" });
+    console.log(error)
+    res.status(400).send({ error: 'Could not reject submission' })
   }
-});
+})
 
-router.delete("/delete", adminChecker, async (req, res) => {
+router.delete('/delete', adminChecker, async (req, res) => {
   try {
-    const { ID, category } = req.body;
+    const { ID, category } = req.body
     if (!ID || !category)
-      return res.status(400).send({ error: "ID/category missing" });
+      return res.status(400).send({ error: 'ID/category missing' })
 
-    const place = await findPlace(ID, category);
+    const place = await findPlace(ID, category)
     if (!place)
-      return res.status(400).send({ error: `No ${category} with ID: ${ID}` });
+      return res.status(400).send({ error: `No ${category} with ID: ${ID}` })
 
-    place.status = "deleted";
-    await place.save();
+    place.status = 'deleted'
+    await place.save()
 
-    res.send({ message: `${category} deleted` });
+    res.send({ message: `${category} deleted` })
   } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Could not reject submission" });
+    console.log(error)
+    res.status(400).send({ error: 'Could not reject submission' })
   }
-});
+})
 
-router.get("/totals", adminChecker, async (req, res) => {
+router.get('/totals', adminChecker, async (req, res) => {
   try {
     function getReservationsByMonth(reservations) {
-      const reservationsByMonth = Array(12).fill(0);
+      const reservationsByMonth = Array(12).fill(0)
       for (let i = 0; i < reservations.length; i++) {
-        const reservation = reservations[i];
-        const createdAt = new Date(reservation.createdAt);
-        const month = createdAt.getUTCMonth();
-        reservationsByMonth[month]++;
+        const reservation = reservations[i]
+        const createdAt = new Date(reservation.createdAt)
+        const month = createdAt.getUTCMonth()
+        reservationsByMonth[month]++
       }
-      return reservationsByMonth;
+      return reservationsByMonth
     }
 
-    const reservations = await Reservation.find({});
-    const perMonth = getReservationsByMonth(reservations);
+    const reservations = await Reservation.find({})
+    const perMonth = getReservationsByMonth(reservations)
 
     res.send({
       users: {
         total: await User.countDocuments({}),
         banned: await User.countDocuments({ isBanned: true }),
-        clients: await User.countDocuments({ role: "client" }),
-        managers: await User.countDocuments({ role: "manager" }),
-        supervisors: await User.countDocuments({ role: "supervisor" }),
-        employees: await User.countDocuments({ role: "employee" }),
+        clients: await User.countDocuments({ role: 'client' }),
+        managers: await User.countDocuments({ role: 'manager' }),
+        supervisors: await User.countDocuments({ role: 'supervisor' }),
+        employees: await User.countDocuments({ role: 'employee' }),
       },
       bars: {
         total: await Bar.countDocuments({}),
-        pending: await Bar.countDocuments({ status: "pending" }),
-        approved: await Bar.countDocuments({ status: "approved" }),
-        rejected: await Bar.countDocuments({ status: "rejected" }),
+        pending: await Bar.countDocuments({ status: 'pending' }),
+        approved: await Bar.countDocuments({ status: 'approved' }),
+        rejected: await Bar.countDocuments({ status: 'rejected' }),
       },
       clubs: {
         total: await Club.countDocuments({}),
-        pending: await Club.countDocuments({ status: "pending" }),
-        approved: await Club.countDocuments({ status: "approved" }),
-        rejected: await Club.countDocuments({ status: "rejected" }),
+        pending: await Club.countDocuments({ status: 'pending' }),
+        approved: await Club.countDocuments({ status: 'approved' }),
+        rejected: await Club.countDocuments({ status: 'rejected' }),
       },
       hotels: {
         total: await Hotel.countDocuments({}),
-        pending: await Hotel.countDocuments({ status: "pending" }),
-        approved: await Hotel.countDocuments({ status: "approved" }),
-        rejected: await Hotel.countDocuments({ status: "rejected" }),
+        pending: await Hotel.countDocuments({ status: 'pending' }),
+        approved: await Hotel.countDocuments({ status: 'approved' }),
+        rejected: await Hotel.countDocuments({ status: 'rejected' }),
       },
       restaurants: {
         total: await Restaurant.countDocuments({}),
-        pending: await Restaurant.countDocuments({ status: "pending" }),
-        approved: await Restaurant.countDocuments({ status: "approved" }),
-        rejected: await Restaurant.countDocuments({ status: "rejected" }),
+        pending: await Restaurant.countDocuments({ status: 'pending' }),
+        approved: await Restaurant.countDocuments({ status: 'approved' }),
+        rejected: await Restaurant.countDocuments({ status: 'rejected' }),
       },
       reservations: {
         total: await Reservation.countDocuments({}),
-        pending: await Reservation.countDocuments({ status: "pending" }),
-        accepted: await Reservation.countDocuments({ status: "accepted" }),
-        rejected: await Reservation.countDocuments({ status: "rejected" }),
+        pending: await Reservation.countDocuments({ status: 'pending' }),
+        accepted: await Reservation.countDocuments({ status: 'accepted' }),
+        rejected: await Reservation.countDocuments({ status: 'rejected' }),
         perMonth,
       },
-    });
+    })
   } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error getting total items" });
+    console.log(err)
+    res.status(400).send({ error: 'Error getting total items' })
   }
-});
+})
 
-router.get("/pending", adminChecker, async (req, res) => {
+router.get('/pending', adminChecker, async (req, res) => {
   try {
-    const hotels = await Hotel.find({ status: "pending" });
-    const restaurants = await Restaurant.find({ status: "pending" });
-    const bars = await Bar.find({ status: "pending" });
-    const clubs = await Club.find({ status: "pending" });
-    const items = hotels.concat(restaurants, bars, clubs);
+    const hotels = await Hotel.find({ status: 'pending' })
+    const restaurants = await Restaurant.find({ status: 'pending' })
+    const bars = await Bar.find({ status: 'pending' })
+    const clubs = await Club.find({ status: 'pending' })
+    const items = hotels.concat(restaurants, bars, clubs)
 
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
-    const itemsCount = items.length;
-    const totalPages = Math.ceil(itemsCount / count);
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
+    const itemsCount = items.length
+    const totalPages = Math.ceil(itemsCount / count)
 
-    const paginatedData = items.slice(skip, skip + count);
+    const paginatedData = items.slice(skip, skip + count)
 
     res.send({
       page,
       totalPages,
       itemsCount,
       items: paginatedData,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: `Error` });
+    console.error(error)
+    res.status(500).send({ error: `Error` })
   }
-});
+})
 
-router.get("/reservations/:id", adminChecker, async (req, res) => {
+router.get('/reservations/:id', adminChecker, async (req, res) => {
   try {
-    const ID = req.params.id;
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
+    const ID = req.params.id
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
     const reservationsCount = await Reservation.countDocuments({
       ID,
-    });
-    const totalPages = Math.ceil(reservationsCount / count);
+    })
+    const totalPages = Math.ceil(reservationsCount / count)
     const reservations = await Reservation.find({ ID })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(count);
+      .limit(count)
 
     res.send({
       page,
       totalPages,
       reservationsCount,
       reservations,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting reservations" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting reservations' })
   }
-});
+})
 
-router.get("/tickets/:id", adminChecker, async (req, res) => {
+router.get('/tickets/:id', adminChecker, async (req, res) => {
   try {
-    const eventID = req.params.id;
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
+    const eventID = req.params.id
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
     const ticketsCount = await Ticket.countDocuments({
       eventID,
-    });
-    const totalPages = Math.ceil(ticketsCount / count);
+    })
+    const totalPages = Math.ceil(ticketsCount / count)
     const tickets = await Ticket.find({ eventID })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(count);
+      .limit(count)
 
     res.send({
       page,
       totalPages,
       ticketsCount,
       tickets,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting tickets" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting tickets' })
   }
-});
+})
 
-router.post("/feature", adminChecker, async (req, res) => {
+router.get('/tickets/download/:id/:place', adminChecker, async (req, res) => {
   try {
-    const { ID, category } = req.query;
+    const eventID = req.params.id
+
+    let matchQuery = {
+      eventID,
+    }
+
+    if (req.params.place && req.params.place !== 'all') {
+      if (req.params.place === 'premium') {
+        matchQuery.isPremium = true
+      } else if (req.params.place === 'regular') {
+        matchQuery.isPremium = !true
+      } else if (req.params.place === 'all') {
+      } else if (req.params.place === 'attended') {
+        matchQuery.attended = true
+      } else {
+        return res.status(400).send({ error: 'Invalid type' })
+      }
+    } else {
+    }
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
+    const ticketsCount = await Ticket.countDocuments({
+      eventID,
+    })
+    const totalPages = Math.ceil(ticketsCount / count)
+    const tickets = await Ticket.aggregate([{ $match: matchQuery }])
+      .sort({ createdAt: -1 })
+      .skip(skip)
+
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Sheet1')
+
+    worksheet.addRow([
+      'Name',
+      'Email',
+      'Phone',
+      'Event',
+      'People',
+      'Time',
+      'Booked on',
+      'Type',
+      'Status',
+      'ticket ID',
+    ])
+    tickets.forEach((customer) => {
+      worksheet.addRow([
+        customer.firstName + ' ' + customer.lastName,
+        customer.email,
+        customer.phoneNumber,
+        customer.name,
+        customer.people,
+        customer.time,
+        customer.date,
+        customer.isPremium ? 'Premium' : 'Regular',
+        customer.attended ? 'Attended' : ' Not Attended',
+        customer.ticketID,
+      ])
+    })
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      )
+      res.setHeader('Content-Disposition', 'attachment; filename=tickets.xlsx')
+      res.send(buffer)
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ error: 'Error getting tickets' })
+  }
+})
+
+router.get('/tickets/download/pdf/:id/:place',adminChecker, async (req, res) => {
+  try {
+    const eventID = req.params.id
+
+    let matchQuery = {
+      eventID,
+    }
+
+    if (req.params.place && req.params.place !== 'all') {
+      if (req.params.place === 'premium') {
+        matchQuery.isPremium = true
+      } else if (req.params.place === 'regular') {
+        matchQuery.isPremium = !true
+      } else if (req.params.place === 'all') {
+      } else if (req.params.place === 'attended') {
+        matchQuery.attended = true
+      } else {
+        return res.status(400).send({ error: 'Invalid type' })
+      }
+    } else {
+    }
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
+    const ticketsCount = await Ticket.countDocuments({
+      eventID,
+    })
+    const totalPages = Math.ceil(ticketsCount / count)
+    const tickets = await Ticket.aggregate([{ $match: matchQuery }])
+      .sort({ createdAt: -1 })
+      .skip(skip)
+
+    // console.log(matchQuery)
+
+    const companyInfo = {
+      name: 'Peomax',
+      email: 'Info@peomax.com',
+      phone: '+251939333079',
+    }
+
+    const doc = new PDFDocument({ size: 'letter', layout: 'landscape' }) // Set landscape orientation
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename=tickets.pdf')
+    doc.pipe(res)
+    const logoPath = './assets/peomax.jpg'
+    doc.image(logoPath, 50, 30, { width: 100 })
+    doc.fontSize(12).text(`Company: ${companyInfo.name}`, 530, 50)
+    doc.fontSize(12).text(`Email: ${companyInfo.email}`, 530, 70)
+    doc.fontSize(12).text(`Phone: ${companyInfo.phone}`, 530, 90)
+
+    const headers = [
+      { name: 'Name', width: 100 },
+      { name: 'Event', width: 120 },
+      { name: 'Phone', width: 130 },
+      { name: 'People', width: 120 },
+      { name: 'Time', width: 105 },
+      { name: 'Booked On', width: 100 },
+      { name: 'Type', width: 100 },
+    ]
+    const headerSpacing = 25
+
+    doc.fontSize(16).text(`Tickets`, 50, 150)
+    let y = 180
+    let x = 50
+    headers.forEach((header, index) => {
+      doc.fontSize(12).text(header.name, x + header.width * index, y)
+    })
+    y += headerSpacing
+
+    const addNewPage = () => {
+      doc.addPage({ size: 'letter', layout: 'landscape' }) // Set landscape orientation for new pages
+      doc.image(logoPath, 50, 30, { width: 100 })
+      doc.fontSize(16).text(`Tickets`, 50, 150)
+      doc.fontSize(12).text(`Company: ${companyInfo.name}`, 530, 30)
+      doc.fontSize(12).text(`Email: ${companyInfo.email}`, 530, 50)
+      doc.fontSize(12).text(`Phone: ${companyInfo.phone}`, 530, 70)
+      let newY = 180
+      headers.forEach((header, index) => {
+        doc.fontSize(12).text(header.name, x + header.width * index, newY)
+      })
+      newY += headerSpacing
+      return newY
+    }
+
+    let currentY = y
+
+    tickets.forEach((dataItem) => {
+      if (currentY > 500) {
+        // Adjusted space for landscape orientation
+        currentY = addNewPage()
+      }
+
+      const filteredData = {
+        name: dataItem.firstName + ' ' + dataItem.lastName,
+        email: dataItem.name,
+        phoneNumber: dataItem.phoneNumber,
+        people: dataItem.people,
+        time: dataItem.time,
+        date: dataItem.date,
+        Reserved: dataItem.isPremium === true ? 'Premium' : 'Regular',
+      }
+      Object.keys(filteredData).forEach((key, index) => {
+        const value = filteredData[key]
+
+        if (value !== undefined && value !== null) {
+          const cellWidth = headers[index].width
+          doc
+            .fontSize(10)
+            .text(value.toString(), x + cellWidth * index, currentY, {
+              width: cellWidth,
+              align: 'left',
+              lineBreak: true,
+            })
+        } else {
+          doc
+            .fontSize(10)
+            .text('N/A', x + headers[index].width * index, currentY)
+        }
+      })
+
+      currentY += headerSpacing
+    })
+    const yourName = `Wasihun Tefera`
+    doc.fontSize(12).text(yourName, 50, currentY + 50)
+
+    const logoPathh = './assets/signiture.png'
+    doc.image(logoPathh, 80, currentY + 60, { width: 100 })
+
+    doc
+      .moveTo(50, currentY + 120)
+      .lineTo(250, currentY + 120)
+      .stroke()
+
+    doc.end()
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ error: 'Error getting tickets' })
+  }
+})
+
+router.post('/feature', adminChecker, async (req, res) => {
+  try {
+    const { ID, category } = req.query
 
     if (!ID || !category)
-      return res.status(400).send({ error: "ID/category is missing" });
+      return res.status(400).send({ error: 'ID/category is missing' })
 
-    const place = await findPlace(ID, category);
-    if (!place) return res.status(400).send({ error: `${category} not found` });
+    const place = await findPlace(ID, category)
+    if (!place) return res.status(400).send({ error: `${category} not found` })
 
     if (place.isPremium)
       return res
         .status(400)
-        .send({ error: `${place.name} is already set as premium` });
+        .send({ error: `${place.name} is already set as premium` })
 
-    place.isPremium = !place.isPremium;
-    await place.save();
+    place.isPremium = !place.isPremium
+    await place.save()
 
     res.send({
       message: `${place.name} is featured successfully`,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting reservations" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting reservations' })
   }
-});
+})
 
-router.post("/rank", adminChecker, async (req, res) => {
+router.post('/rank', adminChecker, async (req, res) => {
   try {
-    const { ID, category, rank } = req.body;
+    const { ID, category, rank } = req.body
 
     if (!ID || !category || !rank)
-      return res.status(400).send({ error: "ID/category/rank is missing" });
+      return res.status(400).send({ error: 'ID/category/rank is missing' })
 
     if (isNaN(parseInt(rank)) || rank == 0) {
-      return res.status(400).send({ error: "rank is invalid" });
+      return res.status(400).send({ error: 'rank is invalid' })
     }
 
-    const place = await findPlace(ID, category);
-    if (!place) return res.status(400).send({ error: `${category} not found` });
+    const place = await findPlace(ID, category)
+    if (!place) return res.status(400).send({ error: `${category} not found` })
 
     if (place._rank === rank)
-      return res.status(400).send({ error: `Rank is already set to ${rank}` });
+      return res.status(400).send({ error: `Rank is already set to ${rank}` })
 
     const [bars, clubs, hotels, restaurants] = await Promise.all([
       Bar.find({}),
       Club.find({}),
       Hotel.find({}),
       Restaurant.find({}),
-    ]);
+    ])
 
-    const all = [...hotels, ...restaurants, ...clubs, ...bars];
-    const data = all.sort((a, b) => a._rank - b._rank);
+    const all = [...hotels, ...restaurants, ...clubs, ...bars]
+    const data = all.sort((a, b) => a._rank - b._rank)
 
     function findItemsBetweenRanksA(data, startRank, endRank) {
       const result = data.filter(
-        (item) => item._rank > startRank && item._rank <= endRank
-      );
-      result.sort((a, b) => b._rank - a._rank);
-      return result;
+        (item) => item._rank > startRank && item._rank <= endRank,
+      )
+      result.sort((a, b) => b._rank - a._rank)
+      return result
     }
 
     function findItemsBetweenRanksD(data, startRank, endRank) {
       const result = data.filter(
-        (item) => item._rank < startRank && item._rank >= endRank
-      );
-      result.sort((a, b) => b._rank - a._rank);
-      return result;
+        (item) => item._rank < startRank && item._rank >= endRank,
+      )
+      result.sort((a, b) => b._rank - a._rank)
+      return result
     }
 
     async function rankItem(rank, newRank) {
-      const obj1 = data.find((res) => res._rank == rank);
-      const obj2 = data.find((res) => res._rank == newRank);
+      const obj1 = data.find((res) => res._rank == rank)
+      const obj2 = data.find((res) => res._rank == newRank)
 
       if (newRank - rank == 1) {
-        obj1._rank = newRank;
-        obj2._rank = rank;
+        obj1._rank = newRank
+        obj2._rank = rank
 
-        await obj1.save();
-        await obj2.save();
+        await obj1.save()
+        await obj2.save()
       }
 
       if (rank - newRank == 1) {
-        obj1._rank = newRank;
-        obj2._rank = rank;
+        obj1._rank = newRank
+        obj2._rank = rank
 
-        await obj1.save();
-        await obj2.save();
+        await obj1.save()
+        await obj2.save()
       }
 
       if (newRank - rank !== 1 && rank - newRank !== 1 && newRank < rank) {
-        const middles = findItemsBetweenRanksD(data, rank, newRank);
+        const middles = findItemsBetweenRanksD(data, rank, newRank)
         for (let i = 0; i < middles.length; i++) {
-          const item = data[data.indexOf(middles[i])];
+          const item = data[data.indexOf(middles[i])]
 
-          item._rank = item._rank + 1;
-          await item.save();
+          item._rank = item._rank + 1
+          await item.save()
         }
       }
 
       if (newRank - rank !== 1 && rank - newRank !== 1 && newRank > rank) {
-        const middles = findItemsBetweenRanksA(data, rank, newRank);
+        const middles = findItemsBetweenRanksA(data, rank, newRank)
 
         for (let i = 0; i < middles.length; i++) {
-          const item = data[data.indexOf(middles[i])];
+          const item = data[data.indexOf(middles[i])]
 
-          item._rank = item._rank - 1;
-          await item.save();
+          item._rank = item._rank - 1
+          await item.save()
         }
       }
     }
 
-    await rankItem(place._rank, rank);
-    place._rank = rank;
-    await place.save();
+    await rankItem(place._rank, rank)
+    place._rank = rank
+    await place.save()
 
     res.send({
       message: `${place.name} is ranked ${rank}`,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Could not perform action" });
+    console.error(error)
+    res.status(500).send({ error: 'Could not perform action' })
   }
-});
+})
 
-router.put("/change-password", adminChecker, async (req, res) => {
+router.put('/change-password', adminChecker, async (req, res) => {
   try {
-    const { password, confirmPassword } = req.body;
+    const { password, confirmPassword } = req.body
     if (!password || !confirmPassword)
       return res
         .status(400)
-        .send({ error: "password/confirm-password missing" });
+        .send({ error: 'password/confirm-password missing' })
 
     if (password !== confirmPassword)
-      return res.status(400).send({ error: "passwords do not match" });
+      return res.status(400).send({ error: 'passwords do not match' })
 
     const user = await User.findOne({
       userID: req.user.userID,
-      role: "admin",
-    });
-    if (!user) return res.status(404).send({ error: "Account not found" });
+      role: 'admin',
+    })
+    if (!user) return res.status(404).send({ error: 'Account not found' })
 
-    const saltRounds = parseInt(process.env.saltRounds);
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hash = await bcrypt.hash(password, salt);
+    const saltRounds = parseInt(process.env.saltRounds)
+    const salt = await bcrypt.genSalt(saltRounds)
+    const hash = await bcrypt.hash(password, salt)
 
-    user.password = hash;
-    await user.save();
+    user.password = hash
+    await user.save()
 
-    res.send({ message: "Password changed successfully" });
+    res.send({ message: 'Password changed successfully' })
   } catch (error) {
-    res.status(500).send({ error: "Could change password" });
-    console.log(error);
+    res.status(500).send({ error: 'Could change password' })
+    console.log(error)
   }
-});
+})
 
-router.post("/rate", adminChecker, async (req, res) => {
+router.post('/rate', adminChecker, async (req, res) => {
   try {
-    const { ID, category, rate } = req.body;
+    const { ID, category, rate } = req.body
 
     if (!ID || !category || !rate)
-      return res.status(400).send({ error: "ID/category/rate is missing" });
+      return res.status(400).send({ error: 'ID/category/rate is missing' })
 
     if (isNaN(parseInt(rate)) || parseInt(rate) < 0) {
-      return res.status(400).send({ error: "rate is invalid" });
+      return res.status(400).send({ error: 'rate is invalid' })
     }
 
     if (parseFloat(rate) > 5) {
-      return res.status(400).send({ error: "maximum rate is 5" });
+      return res.status(400).send({ error: 'maximum rate is 5' })
     }
 
-    const place = await findPlace(ID, category);
-    if (!place) return res.status(400).send({ error: `${category} not found` });
+    const place = await findPlace(ID, category)
+    if (!place) return res.status(400).send({ error: `${category} not found` })
 
-    place.rating = rate;
-    await place.save();
+    place.rating = rate
+    await place.save()
 
     res.send({
       message: `${place.name} is rated ${rate}`,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting reservations" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting reservations' })
   }
-});
+})
 
-router.get("/deleted", adminChecker, async (req, res) => {
+router.get('/deleted', adminChecker, async (req, res) => {
   try {
     const [bars, clubs, hotels, restaurants] = await Promise.all([
-      Bar.find({ status: "deleted" }),
-      Club.find({ status: "deleted" }),
-      Hotel.find({ status: "deleted" }),
-      Restaurant.find({ status: "deleted" }),
-    ]);
+      Bar.find({ status: 'deleted' }),
+      Club.find({ status: 'deleted' }),
+      Hotel.find({ status: 'deleted' }),
+      Restaurant.find({ status: 'deleted' }),
+    ])
 
-    const deleted = [...hotels, ...restaurants, ...clubs, ...bars];
+    const deleted = [...hotels, ...restaurants, ...clubs, ...bars]
 
-    res.send(deleted);
+    res.send(deleted)
   } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Could not reject submission" });
+    console.log(error)
+    res.status(400).send({ error: 'Could not reject submission' })
   }
-});
+})
 
-router.get("/rejected", adminChecker, async (req, res) => {
+router.get('/rejected', adminChecker, async (req, res) => {
   try {
     const [bars, clubs, hotels, restaurants] = await Promise.all([
-      Bar.find({ status: "rejected" }),
-      Club.find({ status: "rejected" }),
-      Hotel.find({ status: "rejected" }),
-      Restaurant.find({ status: "rejected" }),
-    ]);
+      Bar.find({ status: 'rejected' }),
+      Club.find({ status: 'rejected' }),
+      Hotel.find({ status: 'rejected' }),
+      Restaurant.find({ status: 'rejected' }),
+    ])
 
-    const rejected = [...hotels, ...restaurants, ...clubs, ...bars];
+    const rejected = [...hotels, ...restaurants, ...clubs, ...bars]
 
-    res.send(rejected);
+    res.send(rejected)
   } catch (error) {
-    console.log(error);
-    res.status(400).send({ error: "Could not reject submission" });
+    console.log(error)
+    res.status(400).send({ error: 'Could not reject submission' })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

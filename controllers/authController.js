@@ -1,129 +1,135 @@
-const User = require("../models/User.js");
-const OTP = require("../models/OTP.js");
-const Token = require("../models/Token.js");
-const bcrypt = require("bcrypt");
-const sendEmail = require("../utils/mail.js");
-const jwt = require("jsonwebtoken");
+const User = require('../models/User.js')
+const OTP = require('../models/OTP.js')
+const Token = require('../models/Token.js')
+const bcrypt = require('bcrypt')
+const sendEmail = require('../utils/mail.js')
+const jwt = require('jsonwebtoken')
 const {
   validateSignupData,
   validateLoginData,
-} = require("../utils/validator.js");
-const { uid } = require("uid");
+} = require('../utils/validator.js')
+const { uid } = require('uid')
 
-require("dotenv").config();
+require('dotenv').config()
 
 function generateOTP() {
-  const chars = "0123456789";
-  let otp = "";
+  const chars = '0123456789'
+  let otp = ''
   for (let i = 0; i < 6; i++) {
-    const index = Math.floor(Math.random() * chars.length);
-    otp += chars[index];
+    const index = Math.floor(Math.random() * chars.length)
+    otp += chars[index]
   }
-  return otp;
+  return otp
 }
 
 async function generateReference() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let random = "";
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let random = ''
   for (let i = 0; i < 6; i++) {
-    const index = Math.floor(Math.random() * chars.length);
-    random += chars[index];
+    const index = Math.floor(Math.random() * chars.length)
+    random += chars[index]
   }
 
-  let reference = random;
+  let reference = random
 
   const referenceExists = await User.findOne({
-    role: "client",
+    role: 'client',
     reference: reference,
-  });
+  })
 
   if (referenceExists) {
-    return await generateReference();
+    return await generateReference()
   } else {
-    return reference;
+    return reference
   }
 }
 
 async function signup(req, res) {
   try {
     if (req.body.email) {
-      req.body.email = req.body.email.toLowerCase();
+      req.body.email = req.body.email.toLowerCase()
     }
 
-    const valid = await validateSignupData(req.body);
+    const valid = await validateSignupData(req.body)
     if (!valid.success) {
-      return res.status(400).send({ error: valid.message });
+      return res.status(400).send({ error: valid.message })
     }
 
-    const { firstName, lastName, password, confirmPassword, email, reference } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      password,
+      confirmPassword,
+      email,
+      reference,
+    } = req.body
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email })
 
     if (existingUser) {
       if (existingUser.isBanned) {
-        return res.status(400).send({ error: "User is banned" });
+        return res.status(400).send({ error: 'User is banned' })
       }
 
       if (existingUser.verified) {
-        return res.status(400).send({ error: "User already exists" });
+        return res.status(400).send({ error: 'User already exists' })
       }
 
       const prevOtp = await OTP.findOne({
         userID: existingUser.userID,
-        type: "email verification",
-      });
+        type: 'email verification',
+      })
 
       if (prevOtp) {
-        return res.send({ message: "Verify your email address" });
+        return res.send({ message: 'Verify your email address' })
       }
 
       if (password !== confirmPassword) {
-        return res.status(400).send({ error: "Passwords do not match" });
+        return res.status(400).send({ error: 'Passwords do not match' })
       }
 
-      const saltRounds = parseInt(process.env.saltRounds);
-      const salt = await bcrypt.genSalt(saltRounds);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const saltRounds = parseInt(process.env.saltRounds)
+      const salt = await bcrypt.genSalt(saltRounds)
+      const hashedPassword = await bcrypt.hash(password, salt)
 
-      existingUser.firstName = firstName;
-      existingUser.lastName = lastName;
-      existingUser.password = hashedPassword;
-      await existingUser.save();
+      existingUser.firstName = firstName
+      existingUser.lastName = lastName
+      existingUser.password = hashedPassword
+      await existingUser.save()
 
-      const code = await generateOTP();
+      const code = await generateOTP()
 
       const otp = new OTP({
         userID: existingUser.userID,
         code,
-        type: "email verification",
-      });
+        type: 'email verification',
+      })
 
-      await otp.save();
+      await otp.save()
 
       const response = await sendEmail(
         existingUser.firstName,
         existingUser.email,
-        "email verification",
-        code
-      );
+        'email verification',
+        code,
+      )
 
       if (!response.success) {
         return res
           .status(400)
-          .send({ error: `Could not send verification code to ${email}` });
+          .send({ error: `Could not send verification code to ${email}` })
       }
 
-      return res.send({ message: "Verify your email address" });
+      return res.send({ message: 'Verify your email address' })
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).send({ error: "Passwords do not match" });
+      return res.status(400).send({ error: 'Passwords do not match' })
     }
 
-    const saltRounds = parseInt(process.env.saltRounds);
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const saltRounds = parseInt(process.env.saltRounds)
+    const salt = await bcrypt.genSalt(saltRounds)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
     const userData = {
       userID: uid(16),
@@ -131,69 +137,69 @@ async function signup(req, res) {
       lastName,
       password: hashedPassword,
       email,
-      role: "client",
+      role: 'client',
       reference: await generateReference({ firstName, lastName, email }),
       credits: 500,
-    };
+    }
 
     if (reference) {
       const affiliate = await User.findOne({
-        role: "client",
+        role: 'client',
         reference: reference,
-      });
-      affiliate.credits = affiliate.credits + 500;
-      await affiliate.save();
+      })
+      affiliate.credits = affiliate.credits + 500
+      await affiliate.save()
     }
 
-    const user = new User(userData);
+    const user = new User(userData)
 
-    const code = await generateOTP();
+    const code = await generateOTP()
 
     const otp = new OTP({
       userID: userData.userID,
       code,
-      type: "email verification",
-    });
+      type: 'email verification',
+    })
 
-    await otp.save();
+    await otp.save()
 
     const response = await sendEmail(
       firstName,
       email,
-      "email verification",
-      code
-    );
+      'email verification',
+      code,
+    )
 
     if (!response.success) {
       return res
         .status(400)
-        .send({ error: `Could not send verification code to ${email}` });
+        .send({ error: `Could not send verification code to ${email}` })
     }
 
-    await user.save();
-    res.send({ message: "Verify your email address" });
+    await user.save()
+    res.send({ message: 'Verify your email address' })
   } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error saving signup user." });
+    console.log(err)
+    res.status(400).send({ error: 'Error saving signup user.' })
   }
 }
 
 async function verifyEmail(req, res) {
   try {
-    const { code } = req.body;
+    const { code } = req.body
 
-    if (!code) return res.status(400).send({ error: "Code not provided" });
+    if (!code) return res.status(400).send({ error: 'Code not provided' })
 
-    const otp = await OTP.findOne({ code: code, type: "email verification" });
+    const otp = await OTP.findOne({ code: code, type: 'email verification' })
     if (!otp)
-      return res.status(400).send({ error: "Incorrect or expired code" });
+      return res.status(400).send({ error: 'Incorrect or expired code' })
 
-    const user = await User.findOne({ userID: otp.userID });
-    if (!user) return res.status(400).send({ error: "User does not exist" });
+    const user = await User.findOne({ userID: otp.userID })
+    if (!user) return res.status(400).send({ error: 'User does not exist' })
 
-    if (user.isBanned) return res.status(403).send({ error: "User is banned" });
+    if (user.isBanned) return res.status(403).send({ error: 'User is banned' })
 
-    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true });
+    await User.findOneAndUpdate({ userID: otp.userID }, { verified: true })
 
     const userData = {
       firstName: user.firstName,
@@ -202,55 +208,56 @@ async function verifyEmail(req, res) {
       email: user.email,
       userID: user.userID,
       role: user.role,
-    };
+      reference: user.reference,
+    }
 
     const token1 = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
-        expiresIn: "30d",
-      }
-    );
+        expiresIn: '30d',
+      },
+    )
 
     const token2 = await jwt.sign(
       userData,
       process.env.refresh_token_secret_key,
       {
-        expiresIn: "60d",
-      }
-    );
+        expiresIn: '60d',
+      },
+    )
 
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
+    const token = `Bearer ${token1}`
+    const refresh_token = `Bearer ${token2}`
 
     const newRefreshToken = new Token({
       userID: userData.userID,
       token: refresh_token,
-    });
-    await newRefreshToken.save();
+    })
+    await newRefreshToken.save()
 
-    res.send({ token, refresh_token, userData });
+    res.send({ token, refresh_token, userData })
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Could not verify code" });
+    console.log(error)
+    res.status(500).send({ error: 'Could not verify code' })
   }
 }
 
 async function authProvider(req, res) {
   try {
     if (req.body.email) {
-      req.body.email = req.body.email.toLowerCase();
+      req.body.email = req.body.email.toLowerCase()
     }
 
-    const { firstName, lastName, email } = req.body;
+    const { firstName, lastName, email } = req.body
 
     if (!firstName || !lastName || !email)
-      return res.status(400).send({ error: "Please fill the required fields" });
+      return res.status(400).send({ error: 'Please fill the required fields' })
 
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email: email })
 
     if (existingUser && existingUser.isBanned)
-      return res.status(403).send({ error: "User is banned" });
+      return res.status(403).send({ error: 'User is banned' })
 
     if (existingUser) {
       const userData = {
@@ -260,35 +267,35 @@ async function authProvider(req, res) {
         email: existingUser.email,
         verified: true,
         role: existingUser.role,
-      };
+      }
 
       const token1 = await jwt.sign(
         userData,
         process.env.access_token_secret_key,
         {
-          expiresIn: "30d",
-        }
-      );
+          expiresIn: '30d',
+        },
+      )
 
       const token2 = await jwt.sign(
         userData,
         process.env.refresh_token_secret_key,
         {
-          expiresIn: "60d",
-        }
-      );
+          expiresIn: '60d',
+        },
+      )
 
-      const token = `Bearer ${token1}`;
-      const refresh_token = `Bearer ${token2}`;
+      const token = `Bearer ${token1}`
+      const refresh_token = `Bearer ${token2}`
 
       const newRefreshToken = new Token({
         userID: userData.userID,
         token: refresh_token,
-      });
-      await newRefreshToken.save();
-      const status = "login";
+      })
+      await newRefreshToken.save()
+      const status = 'login'
 
-      res.send({ status, token, refresh_token, userData });
+      res.send({ status, token, refresh_token, userData })
     } else {
       const userData = {
         userID: uid(16),
@@ -296,154 +303,154 @@ async function authProvider(req, res) {
         lastName: lastName,
         email: email,
         verified: true,
-        role: "client",
-      };
+        role: 'client',
+      }
 
-      const user = new User(userData);
-      await user.save();
+      const user = new User(userData)
+      await user.save()
 
       const token1 = await jwt.sign(
         userData,
         process.env.access_token_secret_key,
         {
-          expiresIn: "30d",
-        }
-      );
+          expiresIn: '30d',
+        },
+      )
 
       const token2 = await jwt.sign(
         userData,
         process.env.refresh_token_secret_key,
         {
-          expiresIn: "60d",
-        }
-      );
+          expiresIn: '60d',
+        },
+      )
 
-      const token = `Bearer ${token1}`;
-      const refresh_token = `Bearer ${token2}`;
+      const token = `Bearer ${token1}`
+      const refresh_token = `Bearer ${token2}`
 
       const newRefreshToken = new Token({
         userID: userData.userID,
         token: refresh_token,
-      });
-      await newRefreshToken.save();
-      const status = "signup";
+      })
+      await newRefreshToken.save()
+      const status = 'signup'
 
-      res.send({ status, token, refresh_token, userData });
+      res.send({ status, token, refresh_token, userData })
     }
   } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error saving signup user." });
+    console.log(err)
+    res.status(400).send({ error: 'Error saving signup user.' })
   }
 }
 
 async function reSend(req, res) {
   if (req.body.email) {
-    req.body.email = req.body.email.toLowerCase();
+    req.body.email = req.body.email.toLowerCase()
   }
-  const { email } = req.body;
+  const { email } = req.body
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email })
   if (!user)
-    return res.status(400).send({ error: `No user with email ${email}` });
+    return res.status(400).send({ error: `No user with email ${email}` })
 
   if (user.verified)
-    return res.status(400).send({ error: `User is already verified` });
+    return res.status(400).send({ error: `User is already verified` })
 
-  const prevOtp = await OTP.findOne({ userID: user.userID });
+  const prevOtp = await OTP.findOne({ userID: user.userID })
 
   if (prevOtp) {
-    await prevOtp.remove();
+    await prevOtp.remove()
   }
 
-  const code = generateOTP();
+  const code = generateOTP()
 
   const otp = new OTP({
     userID: user.userID,
     code,
-    type: "email verification",
-  });
+    type: 'email verification',
+  })
 
-  await otp.save();
+  await otp.save()
 
   const response = await sendEmail(
     user.firstName,
     email,
-    "email verification",
-    code
-  );
+    'email verification',
+    code,
+  )
 
   if (!response.success) {
     return res
       .status(400)
-      .send({ error: `Could not send verification code to ${email}` });
+      .send({ error: `Could not send verification code to ${email}` })
   }
   {
-    res.send({ message: "Verification email sent" });
+    res.send({ message: 'Verification email sent' })
   }
 }
 
 async function login(req, res) {
   try {
     if (req.body.email) {
-      req.body.email = req.body.email.toLowerCase();
+      req.body.email = req.body.email.toLowerCase()
     }
 
-    const valid = await validateLoginData(req.body);
+    const valid = await validateLoginData(req.body)
     if (!valid.success) {
-      return res.status(400).send({ error: valid.message });
+      return res.status(400).send({ error: valid.message })
     }
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email, role: "client" });
+    const { email, password } = req.body
+    const user = await User.findOne({ email: email, role: 'client' })
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password)
 
     if (!isMatch) {
-      return res.status(400).send({ error: "Incorrect password" });
+      return res.status(400).send({ error: 'Incorrect password' })
     }
 
     if (!user) {
-      return res.status(404).send({ error: "User not found" });
+      return res.status(404).send({ error: 'User not found' })
     }
 
     if (user.isBanned) {
-      return res.status(403).send({ error: "User is banned" });
+      return res.status(403).send({ error: 'User is banned' })
     }
 
     if (!user.verified) {
       const prevOtp = await OTP.findOne({
         userID: user.userID,
-        type: "email verification",
-      });
+        type: 'email verification',
+      })
 
       if (prevOtp) {
         return res.status(400).send({
-          error: "User unverified",
-        });
+          error: 'User unverified',
+        })
       } else {
-        const code = await generateOTP();
+        const code = await generateOTP()
         const otp = new OTP({
           userID: user.userID,
           code: code,
-          type: "email verification",
-        });
-        await otp.save();
+          type: 'email verification',
+        })
+        await otp.save()
 
         const response = await sendEmail(
           user.firstName,
           user.email,
-          "email verification",
-          code
-        );
+          'email verification',
+          code,
+        )
 
         if (!response.success) {
           return res.status(400).send({
             error: `Could not send verification code to ${email}`,
-          });
+          })
         }
 
         return res.send({
-          message: "User unverified",
-        });
+          message: 'User unverified',
+        })
       }
     }
 
@@ -453,116 +460,117 @@ async function login(req, res) {
       email: user.email,
       userID: user.userID,
       role: user.role,
-    };
+      reference: user.reference,
+    }
 
     const accessToken = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
-        expiresIn: "30d",
-      }
-    );
+        expiresIn: '30d',
+      },
+    )
 
     const refreshToken = await jwt.sign(
       userData,
       process.env.refresh_token_secret_key,
       {
-        expiresIn: "60d",
-      }
-    );
+        expiresIn: '60d',
+      },
+    )
 
-    const token = `Bearer ${accessToken}`;
-    const refresh_token = `Bearer ${refreshToken}`;
+    const token = `Bearer ${accessToken}`
+    const refresh_token = `Bearer ${refreshToken}`
 
     const newRefreshToken = new Token({
       userID: userData.userID,
       token: refresh_token,
-    });
+    })
 
-    await newRefreshToken.save();
+    await newRefreshToken.save()
 
-    res.send({ token, refresh_token, userData });
+    res.send({ token, refresh_token, userData })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Could not log in user" });
+    console.error(error)
+    res.status(500).send({ error: 'Could not log in user' })
   }
 }
 
 async function resetPassword(req, res) {
   try {
     if (req.body.email) {
-      req.body.email = req.body.email.toLowerCase();
+      req.body.email = req.body.email.toLowerCase()
     }
 
-    const code = await generateOTP();
+    const code = await generateOTP()
 
-    const { email } = req.body;
+    const { email } = req.body
 
-    if (!email) return res.status(400).send({ error: "Email not provided" });
+    if (!email) return res.status(400).send({ error: 'Email not provided' })
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email })
 
     if (!user)
       return res
         .status(404)
-        .send({ error: `No user found with the email ${email}` });
+        .send({ error: `No user found with the email ${email}` })
 
     if (!user.password)
       return res
         .status(400)
-        .send({ error: "User is registered with google authentication." });
+        .send({ error: 'User is registered with google authentication.' })
 
     const otp = new OTP({
       userID: user.userID,
       code: code,
-      type: "reset password",
-    });
-    otp.save();
+      type: 'reset password',
+    })
+    otp.save()
 
     const response = await sendEmail(
       user.firstName,
       email,
-      "reset password",
-      code
-    );
+      'reset password',
+      code,
+    )
 
     if (!response.success)
-      return res.status(400).send({ error: response.error });
+      return res.status(400).send({ error: response.error })
 
-    res.send({ message: response.message });
+    res.send({ message: response.message })
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't change password" });
+    console.log(error)
+    res.status(500).send({ error: "Couldn't change password" })
   }
 }
 
 async function changePassword(req, res) {
-  const { code, newPassword, confirmPassword } = req.body;
+  const { code, newPassword, confirmPassword } = req.body
 
-  if (!code) return res.status(400).send({ error: "Code is required" });
+  if (!code) return res.status(400).send({ error: 'Code is required' })
   if (!newPassword || !confirmPassword)
-    return res.status(400).send({ error: "Passwords required" });
+    return res.status(400).send({ error: 'Passwords required' })
 
   try {
-    const otp = await OTP.findOne({ code: code, type: "reset password" });
+    const otp = await OTP.findOne({ code: code, type: 'reset password' })
     if (!otp)
-      return res.status(404).send({ error: "Incorrect or expired code" });
+      return res.status(404).send({ error: 'Incorrect or expired code' })
 
     if (newPassword !== confirmPassword)
-      return res.status(404).send({ error: "Passwords do not match" });
+      return res.status(404).send({ error: 'Passwords do not match' })
 
-    const user = await User.findOne({ userID: otp.userID });
+    const user = await User.findOne({ userID: otp.userID })
 
     if (!user.password)
       return res
         .status(400)
-        .send({ error: "User is registered with google authentication." });
+        .send({ error: 'User is registered with google authentication.' })
 
-    const saltRounds = parseInt(process.env.saltRounds);
-    const salt = await bcrypt.genSalt(saltRounds);
-    const newhashedPassword = await bcrypt.hash(newPassword, salt);
+    const saltRounds = parseInt(process.env.saltRounds)
+    const salt = await bcrypt.genSalt(saltRounds)
+    const newhashedPassword = await bcrypt.hash(newPassword, salt)
 
-    user.password = newhashedPassword; // Update the user's password
+    user.password = newhashedPassword // Update the user's password
 
     const userData = {
       firstName: user.firstName,
@@ -571,94 +579,94 @@ async function changePassword(req, res) {
       email: user.email,
       userID: user.userID,
       role: user.role,
-    };
+    }
 
-    await user.save(); // Save the user with the updated password
+    await user.save() // Save the user with the updated password
 
     const token1 = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
-        expiresIn: "30d",
-      }
-    );
+        expiresIn: '30d',
+      },
+    )
 
     const token2 = await jwt.sign(
       userData,
       process.env.refresh_token_secret_key,
       {
-        expiresIn: "60d",
-      }
-    );
+        expiresIn: '60d',
+      },
+    )
 
-    const token = `Bearer ${token1}`;
-    const refresh_token = `Bearer ${token2}`;
+    const token = `Bearer ${token1}`
+    const refresh_token = `Bearer ${token2}`
 
     const newRefreshToken = new Token({
       userID: userData.userID,
       token: refresh_token,
-    });
-    await newRefreshToken.save();
+    })
+    await newRefreshToken.save()
 
-    delete userData.password;
+    delete userData.password
 
-    res.send({ token, refresh_token, userData });
+    res.send({ token, refresh_token, userData })
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't change password" });
+    console.log(error)
+    res.status(500).send({ error: "Couldn't change password" })
   }
 }
 
 async function refreshToken(req, res) {
   try {
     if (!req.body.refreshToken)
-      return res.status(400).send({ error: "Refresh token not provided" });
+      return res.status(400).send({ error: 'Refresh token not provided' })
 
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
-    });
+    })
     if (!refresh_token)
-      return res.status(401).send({ error: "Invalid/Expired refresh token" });
+      return res.status(401).send({ error: 'Invalid/Expired refresh token' })
     const userData = await jwt.verify(
       req.body.refresh_token.slice(7),
-      process.env.refresh_token_secret_key
-    );
+      process.env.refresh_token_secret_key,
+    )
 
-    delete userData.exp;
-    delete userData.iat;
-    delete userData.password;
+    delete userData.exp
+    delete userData.iat
+    delete userData.password
 
     const jwttoken = await jwt.sign(
       userData,
       process.env.access_token_secret_key,
       {
-        expiresIn: "30d",
-      }
-    );
+        expiresIn: '30d',
+      },
+    )
 
-    const token = `Bearer ${jwttoken}`;
+    const token = `Bearer ${jwttoken}`
 
-    res.send({ token, userData });
+    res.send({ token, userData })
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't refresh token" });
+    console.log(error)
+    res.status(500).send({ error: "Couldn't refresh token" })
   }
 }
 
 async function logout(req, res) {
   try {
     if (!req.body.refreshToken)
-      return res.status(400).send({ error: "Refresh token not provided" });
+      return res.status(400).send({ error: 'Refresh token not provided' })
 
     const refresh_token = await Token.findOne({
       token: req.body.refresh_token,
-    });
-    if (refresh_token) return await refresh_token.remove();
+    })
+    if (refresh_token) return await refresh_token.remove()
 
-    res.send({ message: "Logged out" });
+    res.send({ message: 'Logged out' })
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: "Couldn't refresh token" });
+    console.log(error)
+    res.status(500).send({ error: "Couldn't refresh token" })
   }
 }
 
@@ -672,4 +680,4 @@ module.exports = {
   changePassword,
   refreshToken,
   logout,
-};
+}

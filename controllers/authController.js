@@ -267,6 +267,7 @@ async function authProvider(req, res) {
         email: existingUser.email,
         verified: true,
         role: existingUser.role,
+        reference: existingUser.reference,
       }
 
       const token1 = await jwt.sign(
@@ -304,6 +305,8 @@ async function authProvider(req, res) {
         email: email,
         verified: true,
         role: 'client',
+        reference: await generateReference({ firstName, lastName, email }),
+        credits: 500,
       }
 
       const user = new User(userData)

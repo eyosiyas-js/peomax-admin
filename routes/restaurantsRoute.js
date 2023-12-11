@@ -1,20 +1,20 @@
-const express = require("express");
-const Restaurant = require("../models/Restaurant");
-const Event = require("../models/Event");
+const express = require('express')
+const Restaurant = require('../models/Restaurant')
+const Event = require('../models/Event')
 const {
   createDiningService,
   editDiningService,
-} = require("../controllers/diningService");
-const managerChecker = require("../middleware/managerChecker");
+} = require('../controllers/diningService')
+const managerChecker = require('../middleware/managerChecker')
+const moment = require('moment-timezone')
+const multer = require('multer')
+const { existsSync, mkdirSync } = require('fs')
+const { join } = require('path')
 
-const multer = require("multer");
-const { existsSync, mkdirSync } = require("fs");
-const { join } = require("path");
-
-const storage = join(process.cwd(), "./uploads");
+const storage = join(process.cwd(), './uploads')
 
 if (!existsSync(storage)) {
-  mkdirSync(storage);
+  mkdirSync(storage)
 }
 
 const uploads = multer({
@@ -22,172 +22,175 @@ const uploads = multer({
   limits: {
     fileSize: 5 * 1024 * 1024,
   },
-});
+})
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const count = parseInt(req.query.count) || 20;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * count;
+    const count = parseInt(req.query.count) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1) * count
     const restaurantsCount = await Restaurant.countDocuments({
-      status: "approved",
-    });
-    const totalPages = Math.ceil(restaurantsCount / count);
-    const restaurants = await Restaurant.find({ status: "approved" })
+      status: 'approved',
+    })
+    const totalPages = Math.ceil(restaurantsCount / count)
+    const restaurants = await Restaurant.find({ status: 'approved' })
       .skip(skip)
-      .limit(count);
+      .limit(count)
     res.send({
       page,
       totalPages,
       restaurantsCount,
       restaurants,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting restaurants" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting restaurants' })
   }
-});
+})
 
-router.get("/:id", async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
       ID: req.params.id,
-      status: "approved",
-    });
+      status: 'approved',
+    })
 
     if (!restaurant)
       return res
         .status(404)
-        .send({ error: `No restaurant with ID: ${req.params.id}` });
+        .send({ error: `No restaurant with ID: ${req.params.id}` })
 
-    res.send(restaurant.toObject());
+    res.send(restaurant.toObject())
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.status(500).send({
       error: `Couldn't find a restaurant with the ID: ${req.params.id}`,
-    });
+    })
   }
-});
+})
 
-router.get("/:id/related", async (req, res) => {
+router.get('/:id/related', async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
       ID: req.params.id,
-    });
+    })
 
     if (!restaurant)
       return res
         .status(400)
-        .send({ error: `No restaurant found with ID:  ${ID}` });
+        .send({ error: `No restaurant found with ID:  ${ID}` })
 
     const related_restaurants = await Restaurant.find({
       $and: [
         { ID: { $ne: restaurant.ID } },
         {
           $or: [
-            { name: { $regex: new RegExp(restaurant.name, "i") } },
+            { name: { $regex: new RegExp(restaurant.name, 'i') } },
             { managerID: restaurant.managerID },
             {
               location: {
-                $regex: new RegExp(restaurant.location, "i"),
+                $regex: new RegExp(restaurant.location, 'i'),
               },
             },
-            { rating: { $regex: new RegExp(restaurant.rating, "i") } },
+            { rating: { $regex: new RegExp(restaurant.rating, 'i') } },
           ],
         },
       ],
-    });
+    })
 
     if (related_restaurants.length == 0)
-      return res.status(400).send({ error: "No related restaurants found" });
-    res.send(related_restaurants);
+      return res.status(400).send({ error: 'No related restaurants found' })
+    res.send(related_restaurants)
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error finding related restaurants" });
+    console.error(error)
+    res.status(500).send({ error: 'Error finding related restaurants' })
   }
-});
+})
 
 router.post(
-  "/create",
+  '/create',
   managerChecker,
-  uploads.array("images", 10),
+  uploads.array('images', 10),
   async (req, res) => {
-    await createDiningService(req, res, Restaurant);
-  }
-);
+    await createDiningService(req, res, Restaurant)
+  },
+)
 
 router.put(
-  "/:id/edit",
+  '/:id/edit',
   managerChecker,
-  uploads.array("images", 10),
+  uploads.array('images', 10),
   async (req, res) => {
-    await editDiningService(req, res, Restaurant);
-  }
-);
+    await editDiningService(req, res, Restaurant)
+  },
+)
 
-router.delete("/:id/delete", managerChecker, async (req, res) => {
+router.delete('/:id/delete', managerChecker, async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({
       ID: req.params.id,
-    });
+    })
 
-    if (!restaurant) return res.status(404).send("restaurant not found");
+    if (!restaurant) return res.status(404).send('restaurant not found')
 
     if (restaurant.managerID !== req.user.userID)
-      return res.status(403).send({ error: "Unauthorized" });
+      return res.status(403).send({ error: 'Unauthorized' })
 
-    if (restaurant.status == "deleted")
-      return res.status(400).send({ error: "restaurant is already removed" });
+    if (restaurant.status == 'deleted')
+      return res.status(400).send({ error: 'restaurant is already removed' })
 
-    restaurant.status = "deleted";
-    await restaurant.save();
+    restaurant.status = 'deleted'
+    await restaurant.save()
 
     res.send({
       message: `restaurant with ID ${req.params.id} has been deleted`,
-    });
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error deleting restaurant" });
+    console.error(error)
+    res.status(500).send({ error: 'Error deleting restaurant' })
   }
-});
+})
 
-router.get("/:id/events", async (req, res) => {
+router.get('/:id/events', async (req, res) => {
   try {
-    if (!req.params.id)
-      return res.status(404).send({ error: "No id provided" });
+    if (!req.params.id) return res.status(404).send({ error: 'No id provided' })
+    const currentDate = moment.tz('Africa/Nairobi') // Get current date in Nairobi timezone
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "restaurant",
-      status: { $ne: "deleted" },
-    });
+      category: 'hotel',
+      status: { $ne: 'deleted' },
+    })
+    const filteredEvents = events.filter((event) => {
+      const eventDate = moment.tz(event.endDate, 'MM/DD/YYYY', 'Africa/Nairobi') // Assuming event.date is in MM/DD/YYYY format
+      return eventDate.isSameOrAfter(currentDate, 'day') // Compare event date with current date
+    })
 
-    res.send(events);
+    res.send(filteredEvents)
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error fetching events" });
+    console.error(error)
+    res.status(500).send({ error: 'Error fetching events' })
   }
-});
+})
 
-router.get("/:id/programs", async (req, res) => {
+router.get('/:id/programs', async (req, res) => {
   try {
-    if (!req.params.id)
-      return res.status(404).send({ error: "No id provided" });
+    if (!req.params.id) return res.status(404).send({ error: 'No id provided' })
 
     const events = await Event.find({
       ID: req.params.id,
-      category: "restaurant",
+      category: 'restaurant',
       program: true,
-      status: { $ne: "deleted" },
-    });
+      status: { $ne: 'deleted' },
+    })
 
-    res.send(events);
+    res.send(events)
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error fetching events" });
+    console.error(error)
+    res.status(500).send({ error: 'Error fetching events' })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

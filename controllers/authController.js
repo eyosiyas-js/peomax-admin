@@ -362,7 +362,7 @@ async function reSend(req, res) {
   const prevOtp = await OTP.findOne({ userID: user.userID })
 
   if (prevOtp) {
-    await prevOtp.remove()
+    await OTP.findOneAndDelete({ userID: user.userID })
   }
 
   const code = generateOTP()

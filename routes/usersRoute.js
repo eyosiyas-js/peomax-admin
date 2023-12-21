@@ -1,20 +1,21 @@
-const express = require("express");
-const User = require("../models/User.js");
-const adminChecker = require("../middleware/adminChecker.js");
-const managerChecker = require("../middleware/managerChecker.js");
-const fetchAll = require("../utils/fetchAll.js");
+const express = require('express')
+const User = require('../models/User.js')
+const adminChecker = require('../middleware/adminChecker.js')
+const managerChecker = require('../middleware/managerChecker.js')
+const fetchAll = require('../utils/fetchAll.js')
+const superVisorChecker = require('../middleware/superVisorChecker.js')
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", managerChecker, async (req, res) => {
+router.get('/', superVisorChecker, async (req, res) => {
   try {
-    if (req.user.role == "admin") {
-      const users = await User.find({}, { password: 0 });
-      res.send(users);
+    if (req.user.role == 'admin') {
+      const users = await User.find({}, { password: 0 })
+      res.send(users)
     } else {
-      const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors).flat();
-      const employees = all.map((item) => item.employees).flat();
+      const all = await fetchAll(req.user.userID)
+      const supervisors = all.map((item) => item.supervisors).flat()
+      const employees = all.map((item) => item.employees).flat()
 
       const users = await User.aggregate([
         {
@@ -27,31 +28,31 @@ router.get("/", managerChecker, async (req, res) => {
             password: 0,
           },
         },
-      ]);
+      ])
 
-      res.send(users);
+      res.send(users)
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting users" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting users' })
   }
-});
+})
 
-router.get("/credits", adminChecker, async (req, res) => {
+router.get('/credits', adminChecker, async (req, res) => {
   try {
-    const users = await User.find({ role: "client" }).sort({ credits: -1 });
-    res.send(users);
+    const users = await User.find({ role: 'client' }).sort({ credits: -1 })
+    res.send(users)
   } catch (err) {
-    console.log(err);
-    res.status(400).send({ error: "Error" });
+    console.log(err)
+    res.status(400).send({ error: 'Error' })
   }
-});
+})
 
-router.get("/search", managerChecker, async (req, res) => {
+router.get('/search', managerChecker, async (req, res) => {
   try {
-    const regex = new RegExp(req.query.q, "i");
+    const regex = new RegExp(req.query.q, 'i')
 
-    if (req.user.role == "admin") {
+    if (req.user.role == 'admin') {
       const users = await User.find({
         $and: [
           {
@@ -64,13 +65,13 @@ router.get("/search", managerChecker, async (req, res) => {
             ],
           },
         ],
-      }).select("-password");
+      }).select('-password')
 
-      res.send(users);
+      res.send(users)
     } else {
-      const all = await fetchAll(req.user.userID);
-      const supervisors = all.map((item) => item.supervisors).flat();
-      const employees = all.map((item) => item.employees).flat();
+      const all = await fetchAll(req.user.userID)
+      const supervisors = all.map((item) => item.supervisors).flat()
+      const employees = all.map((item) => item.employees).flat()
 
       const users = await User.aggregate([
         {
@@ -83,7 +84,7 @@ router.get("/search", managerChecker, async (req, res) => {
             password: 0,
           },
         },
-      ]);
+      ])
 
       const searchResults = users.filter((user) => {
         return (
@@ -91,59 +92,59 @@ router.get("/search", managerChecker, async (req, res) => {
           user.firstName.match(regex) ||
           user.lastName.match(regex) ||
           user.userID === req.query.q
-        );
-      });
+        )
+      })
 
-      res.send(searchResults);
+      res.send(searchResults)
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting users" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting users' })
   }
-});
+})
 
-router.get("/:id", adminChecker, async (req, res) => {
+router.get('/:id', adminChecker, async (req, res) => {
   try {
-    const user = await User.findOne({ userID: req.params.id }, { password: 0 });
-    res.send(user.toObject());
+    const user = await User.findOne({ userID: req.params.id }, { password: 0 })
+    res.send(user.toObject())
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Error getting user" });
+    console.error(error)
+    res.status(500).send({ error: 'Error getting user' })
   }
-});
+})
 
-router.delete("/:id/ban", managerChecker, async (req, res) => {
+router.delete('/:id/ban', managerChecker, async (req, res) => {
   try {
-    if (req.user.role === "admin") {
-      const user = await User.findOne({ userID: req.params.id });
-      if (!user) return res.status(404).send({ error: "User not found" });
+    if (req.user.role === 'admin') {
+      const user = await User.findOne({ userID: req.params.id })
+      if (!user) return res.status(404).send({ error: 'User not found' })
 
-      user.isBanned = !user.isBanned;
-      await user.save();
+      user.isBanned = !user.isBanned
+      await user.save()
 
-      res.send({ message: `User ${user.isBanned ? "banned" : "unbanned"}` });
+      res.send({ message: `User ${user.isBanned ? 'banned' : 'unbanned'}` })
     } else {
-      const all = await fetchAll(req.user.userID);
-      const supervisors = all.flatMap((item) => item.supervisors);
-      const employees = all.flatMap((item) => item.employees);
+      const all = await fetchAll(req.user.userID)
+      const supervisors = all.flatMap((item) => item.supervisors)
+      const employees = all.flatMap((item) => item.employees)
 
       const users = await User.find(
         { userID: { $in: [...supervisors, ...employees] } },
-        { password: 0 }
-      );
+        { password: 0 },
+      )
 
-      const user = users.find((user) => user.userID === req.params.id);
-      if (!user) return res.status(404).send({ error: "User not found" });
+      const user = users.find((user) => user.userID === req.params.id)
+      if (!user) return res.status(404).send({ error: 'User not found' })
 
-      user.isBanned = !user.isBanned;
-      await user.save();
+      user.isBanned = !user.isBanned
+      await user.save()
 
-      res.send({ message: `User ${user.isBanned ? "banned" : "unbanned"}` });
+      res.send({ message: `User ${user.isBanned ? 'banned' : 'unbanned'}` })
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: "Couldn't ban user" });
+    console.error(error)
+    res.status(500).send({ error: "Couldn't ban user" })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

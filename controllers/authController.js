@@ -9,6 +9,7 @@ const {
   validateLoginData,
 } = require('../utils/validator.js')
 const { uid } = require('uid')
+const Reservation = require('../models/Reservation.js')
 
 require('dotenv').config()
 
@@ -255,6 +256,7 @@ async function authProvider(req, res) {
       return res.status(400).send({ error: 'Please fill the required fields' })
 
     const existingUser = await User.findOne({ email: email })
+    const reservations = await Reservation.find({ email: email })
 
     if (existingUser && existingUser.isBanned)
       return res.status(403).send({ error: 'User is banned' })
@@ -268,6 +270,7 @@ async function authProvider(req, res) {
         verified: true,
         role: existingUser.role,
         reference: existingUser.reference,
+        reservations: reservations,
       }
 
       const token1 = await jwt.sign(
@@ -337,6 +340,7 @@ async function authProvider(req, res) {
       })
       await newRefreshToken.save()
       const status = 'signup'
+      userData.reservations = reservations
 
       res.send({ status, token, refresh_token, userData })
     }
@@ -404,6 +408,7 @@ async function login(req, res) {
     }
     const { email, password } = req.body
     const user = await User.findOne({ email: email, role: 'client' })
+    const reservations = await Reservation.find({ email: email })
 
     const isMatch = await bcrypt.compare(password, user.password)
 
@@ -491,6 +496,7 @@ async function login(req, res) {
     })
 
     await newRefreshToken.save()
+    userData.reservations = reservations
 
     res.send({ token, refresh_token, userData })
   } catch (error) {
@@ -563,6 +569,8 @@ async function changePassword(req, res) {
       return res.status(404).send({ error: 'Passwords do not match' })
 
     const user = await User.findOne({ userID: otp.userID })
+    const reservations = await Reservation.find({ email: user.email })
+
 
     if (!user.password)
       return res
@@ -612,6 +620,7 @@ async function changePassword(req, res) {
     await newRefreshToken.save()
 
     delete userData.password
+    userData.reservations = reservations
 
     res.send({ token, refresh_token, userData })
   } catch (error) {

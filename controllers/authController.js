@@ -270,7 +270,6 @@ async function authProvider(req, res) {
         verified: true,
         role: existingUser.role,
         reference: existingUser.reference,
-        reservations: reservations,
       }
 
       const token1 = await jwt.sign(
@@ -298,6 +297,7 @@ async function authProvider(req, res) {
       })
       await newRefreshToken.save()
       const status = 'login'
+      userData.reservations = reservations
 
       res.send({ status, token, refresh_token, userData })
     } else {
@@ -570,7 +570,6 @@ async function changePassword(req, res) {
 
     const user = await User.findOne({ userID: otp.userID })
     const reservations = await Reservation.find({ email: user.email })
-
 
     if (!user.password)
       return res
